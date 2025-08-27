@@ -1,0 +1,49 @@
+{
+  "name": "",
+  "attributes": [
+    {
+      "name": "panelMode",
+      "type": "Number"
+    },
+    {
+      "name": "episodesStart",
+      "type": "Number"
+    },
+    {
+      "name": "episodesMode",
+      "type": "Number"
+    },
+    {
+      "name": "watchHistory",
+      "type": "Number"
+    },
+    {
+      "name": "playPanelBack",
+      "type": "Number"
+    },
+    {
+      "name": "overShadeMode",
+      "type": "Number"
+    },
+    {
+      "name": "overShadeBack",
+      "type": "Number"
+    },
+    {
+      "name": "navBarHeight",
+      "type": "Number"
+    },
+    {
+      "name": "supplyEpisodes",
+      "type": "Object"
+    },
+    {
+      "name": "playletDetail",
+      "type": "Object"
+    },
+    {
+      "name": "episodesList",
+      "type": "Array"
+    }
+  ]
+}
