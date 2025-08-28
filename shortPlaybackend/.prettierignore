@@ -1,0 +1,6 @@
+node_modules
+dist
+build
+package-lock.json:7:5 - Empty key found
+Documentation/module.md:167:1 - Missing code block language
+warning: Unexpected console statement  no-console

@@ -7,19 +7,19 @@
  * @lastTime     : 2021-08-20 17:07:33
  * @FilePath     : /u-view2.0/uview-ui/libs/config/props/section.js
  */
-import { t } from '../../libs/i18n'
+import { t } from '../../libs/i18n';
 export default {
-    // u-section组件
-    section: {
-        title: '',
-        subTitle: t("up.common.more"),
-        right: true,
-        fontSize: 15,
-        bold: true,
-        color: '#303133',
-        subColor: '#909399',
-        showLine: true,
-        lineColor: '',
-        arrow: true
-    }
-}
+  // u-section组件
+  section: {
+    title: '',
+    subTitle: t('up.common.more'),
+    right: true,
+    fontSize: 15,
+    bold: true,
+    color: '#303133',
+    subColor: '#909399',
+    showLine: true,
+    lineColor: '',
+    arrow: true,
+  },
+};

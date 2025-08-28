@@ -1,23 +1,23 @@
 // models/PlayData.js
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 const PlayDataSchema = new mongoose.Schema(
   {
     user: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: 'User',
       required: true,
       index: true,
     },
     collection: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Collection",
+      ref: 'Collection',
       required: true,
       index: true,
     },
     work: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Work",
+      ref: 'Work',
       required: true,
       index: true,
     },
@@ -35,5 +35,5 @@ const PlayDataSchema = new mongoose.Schema(
   { timestamps: { createdAt: true, updatedAt: false } }
 ); // 我们只关心播放行为的创建时间
 
-const PlayData = mongoose.model("PlayData", PlayDataSchema);
+const PlayData = mongoose.model('PlayData', PlayDataSchema);
 module.exports = PlayData;

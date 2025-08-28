@@ -1,0 +1,6 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# 性能优化的 lint-staged 执行
+echo "🚀 开始代码质量检查..."
+npx lint-staged --verbose

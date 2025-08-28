@@ -1,0 +1,18 @@
+{
+  "extends": ["stylelint-config-standard", "stylelint-config-standard-vue"],
+  "rules": {
+    "selector-pseudo-class-no-unknown": [
+      true,
+      {
+        "ignorePseudoClasses": ["deep", "global"]
+      }
+    ],
+    "selector-pseudo-element-no-unknown": [
+      true,
+      {
+        "ignorePseudoElements": ["v-deep", "v-global", "v-slotted"]
+      }
+    ],
+    "unit-allowed-list": ["px", "rpx", "%", "vh", "vw", "em", "rem", "s", "ms", "deg"]
+  }
+}

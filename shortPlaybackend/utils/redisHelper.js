@@ -5,7 +5,6 @@ const { safeRedisExecute } = require('../config/redis');
  * Redis操作工具类 - 带错误处理和降级机制
  */
 class RedisHelper {
-  
   /**
    * 设置键值对
    * @param {string} key 键
@@ -13,10 +12,10 @@ class RedisHelper {
    * @param {number} expireTime 过期时间(秒)
    */
   static async set(key, value, expireTime = null) {
-    return safeRedisExecute(async (client) => {
+    return safeRedisExecute(async client => {
       const keyStr = String(key);
       const val = typeof value === 'object' ? JSON.stringify(value) : String(value);
-      
+
       if (expireTime) {
         const expireSeconds = parseInt(expireTime, 10);
         if (isNaN(expireSeconds) || expireSeconds <= 0) {
@@ -36,10 +35,10 @@ class RedisHelper {
    * @param {boolean} parseJson 是否解析为JSON对象
    */
   static async get(key, parseJson = false) {
-    return safeRedisExecute(async (client) => {
+    return safeRedisExecute(async client => {
       const keyStr = String(key);
       const value = await client.get(keyStr);
-      
+
       if (value && parseJson) {
         try {
           return JSON.parse(value);
@@ -57,7 +56,7 @@ class RedisHelper {
    * @param {string|string[]} key 键或键数组
    */
   static async del(key) {
-    return safeRedisExecute(async (client) => {
+    return safeRedisExecute(async client => {
       const keys = Array.isArray(key) ? key.map(k => String(k)) : [String(key)];
       return await client.del(keys);
     }, 0); // 失败时返回0
@@ -68,7 +67,7 @@ class RedisHelper {
    * @param {string} key 键
    */
   static async exists(key) {
-    return safeRedisExecute(async (client) => {
+    return safeRedisExecute(async client => {
       const keyStr = String(key);
       return await client.exists(keyStr);
     }, false); // 失败时返回false
@@ -80,7 +79,7 @@ class RedisHelper {
    * @param {number} seconds 秒数
    */
   static async expire(key, seconds) {
-    return safeRedisExecute(async (client) => {
+    return safeRedisExecute(async client => {
       const keyStr = String(key);
       const expireSeconds = parseInt(seconds, 10);
       if (isNaN(expireSeconds) || expireSeconds <= 0) {
@@ -95,7 +94,7 @@ class RedisHelper {
    * @param {string} key 键
    */
   static async ttl(key) {
-    return safeRedisExecute(async (client) => {
+    return safeRedisExecute(async client => {
       const keyStr = String(key);
       return await client.ttl(keyStr);
     }, -1); // 失败时返回-1
@@ -107,10 +106,10 @@ class RedisHelper {
    * @param {number} increment 递增值，默认为1
    */
   static async incr(key, increment = 1) {
-    return safeRedisExecute(async (client) => {
+    return safeRedisExecute(async client => {
       const keyStr = String(key);
       const incrValue = parseInt(increment, 10) || 1;
-      
+
       if (incrValue === 1) {
         return await client.incr(keyStr);
       } else {
@@ -125,10 +124,10 @@ class RedisHelper {
    * @param {number} decrement 递减值，默认为1
    */
   static async decr(key, decrement = 1) {
-    return safeRedisExecute(async (client) => {
+    return safeRedisExecute(async client => {
       const keyStr = String(key);
       const decrValue = parseInt(decrement, 10) || 1;
-      
+
       if (decrValue === 1) {
         return await client.decr(keyStr);
       } else {
@@ -143,7 +142,7 @@ class RedisHelper {
    * @param {string|string[]} value 值
    */
   static async lpush(key, value) {
-    return safeRedisExecute(async (client) => {
+    return safeRedisExecute(async client => {
       const keyStr = String(key);
       const values = Array.isArray(value) ? value.map(v => String(v)) : [String(value)];
       return await client.lPush(keyStr, values);
@@ -155,7 +154,7 @@ class RedisHelper {
    * @param {string} key 键
    */
   static async rpop(key) {
-    return safeRedisExecute(async (client) => {
+    return safeRedisExecute(async client => {
       const keyStr = String(key);
       return await client.rPop(keyStr);
     }, null); // 失败时返回null
@@ -166,7 +165,7 @@ class RedisHelper {
    * @param {string} key 键
    */
   static async llen(key) {
-    return safeRedisExecute(async (client) => {
+    return safeRedisExecute(async client => {
       const keyStr = String(key);
       return await client.lLen(keyStr);
     }, 0); // 失败时返回0
@@ -179,7 +178,7 @@ class RedisHelper {
    * @param {string} value 值
    */
   static async hset(key, field, value) {
-    return safeRedisExecute(async (client) => {
+    return safeRedisExecute(async client => {
       const keyStr = String(key);
       const fieldStr = String(field);
       const valueStr = String(value);
@@ -193,7 +192,7 @@ class RedisHelper {
    * @param {string} field 字段
    */
   static async hget(key, field) {
-    return safeRedisExecute(async (client) => {
+    return safeRedisExecute(async client => {
       const keyStr = String(key);
       const fieldStr = String(field);
       return await client.hGet(keyStr, fieldStr);
@@ -206,7 +205,7 @@ class RedisHelper {
    * @param {string|string[]} member 成员
    */
   static async sadd(key, member) {
-    return safeRedisExecute(async (client) => {
+    return safeRedisExecute(async client => {
       const keyStr = String(key);
       const members = Array.isArray(member) ? member.map(m => String(m)) : [String(member)];
       return await client.sAdd(keyStr, members);
@@ -219,13 +218,13 @@ class RedisHelper {
    * @param {number} expireTime 统一过期时间(秒)
    */
   static async mset(keyValuePairs, expireTime = null) {
-    return safeRedisExecute(async (client) => {
+    return safeRedisExecute(async client => {
       const pipeline = client.multi();
-      
+
       for (const [key, value] of Object.entries(keyValuePairs)) {
         const keyStr = String(key);
         const val = typeof value === 'object' ? JSON.stringify(value) : String(value);
-        
+
         if (expireTime) {
           const expireSeconds = parseInt(expireTime, 10);
           if (!isNaN(expireSeconds) && expireSeconds > 0) {
@@ -237,7 +236,7 @@ class RedisHelper {
           pipeline.set(keyStr, val);
         }
       }
-      
+
       await pipeline.exec();
       return true;
     }, false); // 失败时返回false
@@ -248,7 +247,7 @@ class RedisHelper {
    * @param {string[]} keys 键数组
    */
   static async mget(keys) {
-    return safeRedisExecute(async (client) => {
+    return safeRedisExecute(async client => {
       const keyStrs = keys.map(k => String(k));
       return await client.mGet(keyStrs);
     }, []); // 失败时返回空数组

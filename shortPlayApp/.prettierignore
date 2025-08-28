@@ -1,0 +1,4 @@
+node_modules
+dist
+build
+uni_modules/**

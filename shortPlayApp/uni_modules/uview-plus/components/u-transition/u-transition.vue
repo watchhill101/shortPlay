@@ -1,15 +1,15 @@
 <template>
-	<view
-		v-if="inited"
-		class="u-transition"
-		ref="u-transition"
-		@tap="clickHandler"
-		:class="classes"
-		:style="[mergeStyle]"
-		@touchmove="noop"
-	>
-		<slot />
-	</view>
+  <view
+    v-if="inited"
+    class="u-transition"
+    ref="u-transition"
+    @tap="clickHandler"
+    :class="classes"
+    :style="[mergeStyle]"
+    @touchmove="noop"
+  >
+    <slot />
+  </view>
 </template>
 
 <script>
@@ -18,7 +18,7 @@ import { mpMixin } from '../../libs/mixin/mpMixin';
 import { mixin } from '../../libs/mixin/mixin';
 import { addStyle } from '../../libs/function/index';
 // 组件的methods方法，由于内容较长，写在外部文件中通过mixin引入
-import transitionMixin from "./transitionMixin.js";
+import transitionMixin from './transitionMixin.js';
 /**
  * transition  动画组件
  * @description
@@ -37,51 +37,51 @@ import transitionMixin from "./transitionMixin.js";
  * @example
  */
 export default {
-	name: 'u-transition',
-	data() {
-		return {
-			inited: false, // 是否显示/隐藏组件
-			viewStyle: {}, // 组件内部的样式
-			status: '', // 记录组件动画的状态
-			transitionEnded: false, // 组件是否结束的标记
-			display: false, // 组件是否展示
-			classes: '', // 应用的类名
-		}
-	},
-	emits: ['click', 'beforeEnter', 'enter', 'afterEnter', 'beforeLeave', 'leave', 'afterLeave'],
-	computed: {
-	    mergeStyle() {
-	        const { viewStyle, customStyle } = this
-	        return {
-	            // #ifndef APP-NVUE
-	            transitionDuration: `${this.duration}ms`,
-	            // display: `${this.display ? '' : 'none'}`,
-				transitionTimingFunction: this.timingFunction,
-	            // #endif
-				// 避免自定义样式影响到动画属性，所以写在viewStyle前面
-	            ...addStyle(customStyle),
-	            ...viewStyle
-	        }
-	    }
-	},
-	// 将mixin挂在到组件中，实际上为一个vue格式对象。
-	mixins: [mpMixin, mixin, transitionMixin, props],
-	watch: {
-		show: {
-			handler(newVal) {
-				// vue和nvue分别执行不同的方法
-				// #ifdef APP-NVUE
-				newVal ? this.nvueEnter() : this.nvueLeave()
-				// #endif
-				// #ifndef APP-NVUE
-				newVal ? this.vueEnter() : this.vueLeave()
-				// #endif
-			},
-			// 表示同时监听初始化时的props的show的意思
-			immediate: true
-		}
-	}
-}
+  name: 'u-transition',
+  data() {
+    return {
+      inited: false, // 是否显示/隐藏组件
+      viewStyle: {}, // 组件内部的样式
+      status: '', // 记录组件动画的状态
+      transitionEnded: false, // 组件是否结束的标记
+      display: false, // 组件是否展示
+      classes: '', // 应用的类名
+    };
+  },
+  emits: ['click', 'beforeEnter', 'enter', 'afterEnter', 'beforeLeave', 'leave', 'afterLeave'],
+  computed: {
+    mergeStyle() {
+      const { viewStyle, customStyle } = this;
+      return {
+        // #ifndef APP-NVUE
+        transitionDuration: `${this.duration}ms`,
+        // display: `${this.display ? '' : 'none'}`,
+        transitionTimingFunction: this.timingFunction,
+        // #endif
+        // 避免自定义样式影响到动画属性，所以写在viewStyle前面
+        ...addStyle(customStyle),
+        ...viewStyle,
+      };
+    },
+  },
+  // 将mixin挂在到组件中，实际上为一个vue格式对象。
+  mixins: [mpMixin, mixin, transitionMixin, props],
+  watch: {
+    show: {
+      handler(newVal) {
+        // vue和nvue分别执行不同的方法
+        // #ifdef APP-NVUE
+        newVal ? this.nvueEnter() : this.nvueLeave();
+        // #endif
+        // #ifndef APP-NVUE
+        newVal ? this.vueEnter() : this.vueLeave();
+        // #endif
+      },
+      // 表示同时监听初始化时的props的show的意思
+      immediate: true,
+    },
+  },
+};
 </script>
 
 <style lang="scss" scoped>
@@ -103,27 +103,27 @@ export default {
  * slide-right：右滑进入
  */
 
- $u-zoom-scale: scale(0.95);
+$u-zoom-scale: scale(0.95);
 
 .u-fade-enter-active,
 .u-fade-leave-active {
-	transition-property: opacity;
+  transition-property: opacity;
 }
 
 .u-fade-enter,
 .u-fade-leave-to {
-	opacity: 0
+  opacity: 0;
 }
 
 .u-fade-zoom-enter,
 .u-fade-zoom-leave-to {
-	transform: $u-zoom-scale;
-	opacity: 0;
+  transform: $u-zoom-scale;
+  opacity: 0;
 }
 
 .u-fade-zoom-enter-active,
 .u-fade-zoom-leave-active {
-	transition-property: transform, opacity;
+  transition-property: transform, opacity;
 }
 
 .u-fade-down-enter-active,
@@ -134,31 +134,31 @@ export default {
 .u-fade-right-leave-active,
 .u-fade-up-enter-active,
 .u-fade-up-leave-active {
-	transition-property: opacity, transform;
+  transition-property: opacity, transform;
 }
 
 .u-fade-up-enter,
 .u-fade-up-leave-to {
-	transform: translate3d(0, 100%, 0);
-	opacity: 0
+  transform: translate3d(0, 100%, 0);
+  opacity: 0;
 }
 
 .u-fade-down-enter,
 .u-fade-down-leave-to {
-	transform: translate3d(0, -100%, 0);
-	opacity: 0
+  transform: translate3d(0, -100%, 0);
+  opacity: 0;
 }
 
 .u-fade-left-enter,
 .u-fade-left-leave-to {
-	transform: translate3d(-100%, 0, 0);
-	opacity: 0
+  transform: translate3d(-100%, 0, 0);
+  opacity: 0;
 }
 
 .u-fade-right-enter,
 .u-fade-right-leave-to {
-	transform: translate3d(100%, 0, 0);
-	opacity: 0
+  transform: translate3d(100%, 0, 0);
+  opacity: 0;
 }
 
 .u-slide-down-enter-active,
@@ -169,39 +169,40 @@ export default {
 .u-slide-right-leave-active,
 .u-slide-up-enter-active,
 .u-slide-up-leave-active {
-	transition-property: transform;
+  transition-property: transform;
 }
 
 .u-slide-up-enter,
 .u-slide-up-leave-to {
-	transform: translate3d(0, 100%, 0)
+  transform: translate3d(0, 100%, 0);
 }
 
 .u-slide-down-enter,
 .u-slide-down-leave-to {
-	transform: translate3d(0, -100%, 0)
+  transform: translate3d(0, -100%, 0);
 }
 
 .u-slide-left-enter,
 .u-slide-left-leave-to {
-	transform: translate3d(-100%, 0, 0)
+  transform: translate3d(-100%, 0, 0);
 }
 
 .u-slide-right-enter,
 .u-slide-right-leave-to {
-	transform: translate3d(100%, 0, 0)
+  transform: translate3d(100%, 0, 0);
 }
 
 .u-zoom-enter-active,
 .u-zoom-leave-active {
-	transition-property: transform
+  transition-property: transform;
 }
 
 .u-zoom-enter,
 .u-zoom-leave-to {
-	transform: $u-zoom-scale
+  transform: $u-zoom-scale;
 }
 /* #endif */
 
-.u-transition {}
+.u-transition {
+}
 </style>

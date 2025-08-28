@@ -1,21 +1,21 @@
-import {getTransferedObjectUUID} from './classUtils';
+import { getTransferedObjectUUID } from './classUtils';
 
 const name = 'WebGLRenderBuffer';
 
 function uuid(id) {
-    return getTransferedObjectUUID(name, id);
+  return getTransferedObjectUUID(name, id);
 }
 
 export default class WebGLRenderbuffer {
-    className = name;
+  className = name;
 
-    constructor(id) {
-        this.id = id;
-    }
+  constructor(id) {
+    this.id = id;
+  }
 
-    static uuid = uuid;
+  static uuid = uuid;
 
-    uuid() {
-        return uuid(this.id);
-    }
+  uuid() {
+    return uuid(this.id);
+  }
 }

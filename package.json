@@ -1,0 +1,59 @@
+{
+  "name": "shortplay-monorepo",
+  "version": "1.0.0",
+  "description": "短视频应用 - 多项目代码规范管理",
+  "private": true,
+  "workspaces": [
+    "shortPlayApp",
+    "shortPlaybackend",
+    "shortPlayPC"
+  ],
+  "scripts": {
+    "install:all": "npm install",
+    "dev:app": "npm run dev --workspace=shortPlayApp",
+    "dev:backend": "npm run dev --workspace=shortPlaybackend",
+    "dev:pc": "npm run dev --workspace=shortPlayPC",
+    "build:app": "npm run build --workspace=shortPlayApp",
+    "build:backend": "npm run build --workspace=shortPlaybackend",
+    "build:pc": "npm run build --workspace=shortPlayPC",
+    "lint": "npm run lint --workspaces",
+    "lint:fix": "npm run lint:fix --workspaces",
+    "lint:app": "npm run lint --workspace=shortPlayApp",
+    "lint:backend": "npm run lint --workspace=shortPlaybackend",
+    "lint:pc": "npm run lint --workspace=shortPlayPC",
+    "format": "npm run format --workspaces",
+    "format:check": "npm run format:check --workspaces",
+    "stylelint": "npm run stylelint --workspaces",
+    "stylelint:fix": "npm run stylelint:fix --workspaces",
+    "lint:performance": "node scripts/lint-performance-test.mjs",
+    "precommit": "lint-staged",
+    "prepare": "husky install"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^18.4.3",
+    "@commitlint/config-conventional": "^18.4.3",
+    "husky": "^8.0.0",
+    "lint-staged": "^15.0.0",
+    "prettier": "^3.6.2",
+    "stylelint": "^16.23.1",
+    "stylelint-config-standard": "^36.0.1",
+    "stylelint-config-standard-vue": "^1.0.0"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/shortPlay.git"
+  },
+  "keywords": [
+    "shortplay",
+    "video",
+    "vue",
+    "node",
+    "monorepo"
+  ],
+  "author": "",
+  "license": "MIT"
+}

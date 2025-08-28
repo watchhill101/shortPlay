@@ -21,11 +21,10 @@ uview-plus现已推出免费可视化设计，可以方便的进行页面可视�
 <img src="https://s3.bmp.ovh/imgs/2024/11/24/fd58d00071e6e5df.png" width="900" height="auto" >
 <img src="https://s3.bmp.ovh/imgs/2024/11/24/8e85a519fe627fb1.png" width="900" height="auto" >
 
-
 ## 文档
+
 [官方文档：https://uview-plus.jiangruyi.com](https://uview-plus.jiangruyi.com)
 [备用文档：https://uiadmin.net/uview-plus](https://uiadmin.net/uview-plus)
-
 
 ## 预览
 
@@ -61,14 +60,15 @@ uview-plus现已推出免费可视化设计，可以方便的进行页面可视�
 请通过[快速上手](https://uview-plus.jiangruyi.com/components/quickstart.html)了解更详细的内容
 
 ## 使用方法
+
 配置easycom规则后，自动按需引入，无需`import`组件，直接引用即可。
 
 ```html
 <template>
-	<u-button text="按钮"></u-button>
+  <u-button text="按钮"></u-button>
 </template>
 ```
 
 ## 版权信息
-uview-plus遵循[MIT](https://en.wikipedia.org/wiki/MIT_License)开源协议，意味着您无需支付任何费用，也无需授权，即可将uview-plus应用到您的产品中。
 
+uview-plus遵循[MIT](https://en.wikipedia.org/wiki/MIT_License)开源协议，意味着您无需支付任何费用，也无需授权，即可将uview-plus应用到您的产品中。

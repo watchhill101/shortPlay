@@ -155,7 +155,6 @@ export function enableBoundaryChecking(flag = true) {
   _boundaryCheckingState = flag;
 }
 
-
 export default {
   times,
   plus,
@@ -164,4 +163,3 @@ export default {
   round,
   enableBoundaryChecking,
 };
-
