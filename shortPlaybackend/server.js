@@ -21,10 +21,10 @@ const startServer = async () => {
     
     // 2. 启动服务器监听
     server.listen(config.port, () => {
-      console.log(`🚀 Server is running on port ${config.port} in ${config.env} mode.`);
+      console.log(`🚀 服务正在以${config.env}模式在 ${config.port}端口运行.`);
     });
   } catch (error) {
-    console.error('❌ Failed to start server:', error);
+    console.error('❌ 服务启动失败:', error);
     process.exit(1);
   }
 };

@@ -260,16 +260,21 @@
 				});
 			},
 			// 进度条值改变
-			onProgressChange(value) {
-				// 更新当前视频的进度值
-				if (this.videoList[this.currentVideo]) {
-					this.$set(this.videoList[this.currentVideo], 'progressValue', value.detail.value);
-				}
-				this.$emit('progressChange', {
-					progress: value.detail.value,
-					index: this.currentVideo
-				});
-			},
+		onProgressChange(value) {
+			// 添加空值检查，防止value或value.detail为undefined
+			if (!value || !value.detail) {
+				return;
+			}
+			
+			// 更新当前视频的进度值
+			if (this.videoList[this.currentVideo]) {
+				this.$set(this.videoList[this.currentVideo], 'progressValue', value.detail.value);
+			}
+			this.$emit('progressChange', {
+				progress: value.detail.value,
+				index: this.currentVideo
+			});
+		},
 			// 显示倍速选项
 			showSpeedOptions(index) {
 				this.currentSpeedVideoIndex = index;

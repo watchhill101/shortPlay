@@ -20,6 +20,7 @@ const WorkSchema = new mongoose.schema(
       type: Number,
       required: [true, "剧集编号不能为空"],
     },
+    // 视频地址
     videoUrl: {
       type: String,
       required: [true, "视频地址不能为空"],

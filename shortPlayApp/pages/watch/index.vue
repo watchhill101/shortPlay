@@ -93,7 +93,7 @@ const videoList = reactive([
 	{
 		// 视频唯一ID
 		id: '2',
-		// 视频播放地址 - 更换为更可靠的测试地址(HTTPS)
+		// 视频播放地址
 		videoUrl: 'http://v-cdn.zjol.com.cn/280443.mp4',
 		// 视频进度
 		progress: 0,
