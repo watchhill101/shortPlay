@@ -1,12 +1,16 @@
-// 超简化的 lint-staged 配置
-// 暂时只进行格式化，跳过lint检查以确保稳定性
+// 优化的 lint-staged 配置
+// 添加ESLint检查 + 代码格式化
 
 export default {
-  // 所有项目的源码文件 - 只格式化
-  'shortPlayApp/**/*.{js,vue,ts}': ['prettier --write'],
-  'shortPlaybackend/**/*.{js,mjs}': ['prettier --write'],
-  'shortPlayPC/src/**/*.{vue,js,ts}': ['prettier --write'],
+  // shortPlayApp项目 - 使用workspace命令确保正确的eslint配置
+  'shortPlayApp/**/*.{js,vue,ts}': ['npm run lint:fix --workspace=shortPlayApp', 'prettier --write'],
 
-  // 配置文件
+  // shortPlaybackend项目 - 使用workspace命令确保正确的eslint配置
+  'shortPlaybackend/**/*.{js,mjs}': ['npm run lint:fix --workspace=shortPlaybackend', 'prettier --write'],
+
+  // shortPlayPC项目 - 使用workspace命令确保正确的eslint配置
+  'shortPlayPC/src/**/*.{vue,js,ts}': ['npm run lint:fix --workspace=shortPlayPC', 'prettier --write'],
+
+  // 配置文件 - 只格式化
   '*.{json,md,mjs}': ['prettier --write'],
 };
