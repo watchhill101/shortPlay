@@ -47,16 +47,95 @@
 
 - `account`: 管理员账号 (唯一，必填)
 - `password`: 密码 (必填)
-- `role`: 管理员角色 (admin/content_manager/moderator)
+- `roles`: 关联角色数组 (RBAC系统)
+- `additionalPermissions`: 额外权限数组 (特殊权限分配)
 - `name`: 管理员姓名 (必填)
 - `email`: 邮箱地址
 - `status`: 账号状态 (active/inactive/locked)
 - `lastLoginAt`: 最后登录时间
-  **关联关系**: 一对多关联 Collection
+  **关联关系**:
+- 一对多关联 Collection
+- 多对多关联 Role (RBAC角色)
+- 多对多关联 Permission (额外权限)
+- 一对多关联 PrimaryNavigation (创建的导航)
+- 一对多关联 SecondaryNavigation (创建的导航)
+
+### 🔐 RBAC权限管理模块
+
+#### 4. 权限表 (Permission)
+
+**集合名**: `Permission`
+**功能**: 定义系统中的所有权限
+**主要字段**:
+
+- `name`: 权限名称 (必填)
+- `code`: 权限编码 (唯一，必填，用于程序判断)
+- `description`: 权限描述
+- `group`: 权限分组 (navigation/content/user/system/data)
+- `type`: 权限类型 (menu/button/api/data)
+- `resource`: 资源路径 (用于菜单权限)
+- `status`: 权限状态 (active/inactive)
+  **关联关系**: 多对多关联 Role、BackgroundUser
+
+#### 5. 角色表 (Role)
+
+**集合名**: `Role`
+**功能**: 定义系统角色和角色权限
+**主要字段**:
+
+- `name`: 角色名称 (必填)
+- `code`: 角色编码 (唯一，必填)
+- `description`: 角色描述
+- `level`: 角色级别 (数字越小权限越高)
+- `permissions`: 关联权限数组
+- `status`: 角色状态 (active/inactive)
+- `isBuiltIn`: 是否为系统内置角色
+  **关联关系**: 多对多关联 Permission、BackgroundUser
+
+### 🧭 导航管理模块
+
+#### 6. 一级导航表 (PrimaryNavigation)
+
+**集合名**: `PrimaryNavigation`
+**功能**: 系统一级导航菜单，支持权限控制
+**主要字段**:
+
+- `title`: 导航标题 (必填)
+- `link`: 导航链接 (必填)
+- `icon`: 图标
+- `permission`: 关联权限 (必填，RBAC控制)
+- `order`: 排序权重
+- `status`: 状态 (active/inactive)
+- `visible`: 是否显示
+- `createdBy`: 创建者 (关联BackgroundUser)
+  **关联关系**:
+- 多对一关联 Permission (权限控制)
+- 多对一关联 BackgroundUser (创建者)
+- 一对多关联 SecondaryNavigation (子导航)
+
+#### 7. 二级导航表 (SecondaryNavigation)
+
+**集合名**: `SecondaryNavigation`
+**功能**: 系统二级导航菜单，支持权限控制和层级关系
+**主要字段**:
+
+- `title`: 二级导航标题 (必填)
+- `link`: 二级导航链接 (必填)
+- `icon`: 图标
+- `parentNavigation`: 父级导航 (必填，关联PrimaryNavigation)
+- `permission`: 关联权限 (必填，RBAC控制)
+- `order`: 排序权重
+- `status`: 状态 (active/inactive)
+- `visible`: 是否显示
+- `createdBy`: 创建者 (关联BackgroundUser)
+  **关联关系**:
+- 多对一关联 PrimaryNavigation (父级导航)
+- 多对一关联 Permission (权限控制)
+- 多对一关联 BackgroundUser (创建者)
 
 ### 📚 内容管理模块
 
-#### 4. 分类表 (Classifier)
+#### 8. 分类表 (Classifier)
 
 **集合名**: `Classifier`
 **功能**: 短剧内容分类管理
@@ -68,7 +147,7 @@
 - `status`: 分类状态 (active/inactive)
   **关联关系**: 一对多关联 Collection
 
-#### 5. 合集表 (Collection)
+#### 9. 合集表 (Collection)
 
 **集合名**: `Collection`
 **功能**: 短剧合集信息，包含多个作品
@@ -92,7 +171,7 @@
 - 一对多关联 Work
 - 一对多关联 Collect、Comment、PlayData
 
-#### 6. 作品表 (Work)
+#### 10. 作品表 (Work)
 
 **集合名**: `Work`
 **功能**: 短剧单集作品信息
@@ -116,7 +195,7 @@
 
 ### 📈 用户行为模块
 
-#### 7. 播放数据表 (PlayData)
+#### 11. 播放数据表 (PlayData)
 
 **集合名**: `PlayData`
 **功能**: 记录用户播放行为数据
@@ -130,7 +209,7 @@
   **时间戳**: 仅记录创建时间
   **关联关系**: 多对一关联 User、Collection、Work
 
-#### 8. 收藏表 (Collect)
+#### 12. 收藏表 (Collect)
 
 **集合名**: `Collect`
 **功能**: 用户收藏合集记录
@@ -142,7 +221,7 @@
   **时间戳**: 仅记录创建时间
   **关联关系**: 多对一关联 User、Collection
 
-#### 9. 评论表 (Comment)
+#### 13. 评论表 (Comment)
 
 **集合名**: `Comment`
 **功能**: 合集评论系统，支持回复
@@ -160,7 +239,7 @@
 
 ### 🎯 运营管理模块
 
-#### 10. 活动表 (Activity)
+#### 14. 活动表 (Activity)
 
 **集合名**: `Activity`
 **功能**: 平台活动和广告管理
@@ -180,14 +259,38 @@
 ## 🔗 关系图谱
 
 ```mermaid
-User (用户)
+User (前端用户)
 ├── 1:1 → Wallet (钱包)
 ├── 1:N → Collect (收藏)
 ├── 1:N → Comment (评论)
 └── 1:N → PlayData (播放数据)
 
 BackgroundUser (后台管理员)
-└── 1:N → Collection (合集)
+├── N:M → Role (角色) [RBAC]
+├── N:M → Permission (额外权限) [RBAC]
+├── 1:N → Collection (合集)
+├── 1:N → PrimaryNavigation (一级导航)
+└── 1:N → SecondaryNavigation (二级导航)
+
+Role (角色) [RBAC]
+├── N:M → BackgroundUser (后台用户)
+└── N:M → Permission (权限)
+
+Permission (权限) [RBAC]
+├── N:M → Role (角色)
+├── N:M → BackgroundUser (额外权限)
+├── 1:N → PrimaryNavigation (导航权限)
+└── 1:N → SecondaryNavigation (导航权限)
+
+PrimaryNavigation (一级导航)
+├── N:1 → Permission (权限控制)
+├── N:1 → BackgroundUser (创建者)
+└── 1:N → SecondaryNavigation (子导航)
+
+SecondaryNavigation (二级导航)
+├── N:1 → PrimaryNavigation (父导航)
+├── N:1 → Permission (权限控制)
+└── N:1 → BackgroundUser (创建者)
 
 Classifier (分类)
 └── 1:N → Collection (合集)
@@ -214,6 +317,10 @@ Activity (活动)
 
 - **用户表**: mobilePhoneNumber, douyinProfile.openId, douyinProfile.unionId (稀疏唯一索引)
 - **后台用户表**: account, status
+- **权限表**: code, (group + type), status
+- **角色表**: code, level, status
+- **一级导航表**: permission, (status + visible), order
+- **二级导航表**: (parentNavigation + order), permission, (status + visible)
 - **分类表**: status, order
 - **合集表**: backgroundUser, title, classifier, status
 - **作品表**: collectionId, status, (collectionId + episodeNumber) 复合唯一索引
@@ -233,10 +340,39 @@ Activity (活动)
 - **金额字段**: 使用 Decimal128 避免浮点数精度问题
 - **时间戳**: 根据业务需求选择性启用 updatedAt
 
+## 🔐 RBAC权限系统使用
+
+### 初始化系统
+
+```javascript
+const { initRBACSystem } = require('./models/rbac-init');
+await initRBACSystem();
+```
+
+### 默认角色说明
+
+- **超级管理员** (SUPER_ADMIN): 拥有所有权限
+- **内容管理员** (CONTENT_MANAGER): 负责内容和导航管理
+- **数据分析员** (DATA_ANALYST): 负责数据统计分析
+- **审核员** (MODERATOR): 负责内容审核
+
+### 权限验证示例
+
+```javascript
+// 检查用户是否有特定权限
+const user = await BackgroundUser.findById(userId).populate('roles');
+const hasPermission = await user.hasPermission('CONTENT_MANAGEMENT');
+
+// 获取用户所有权限
+const permissions = await user.getAllPermissions();
+```
+
 ## 🚀 扩展建议
 
-1. **缓存层**: Redis缓存热门数据
+1. **缓存层**: Redis缓存热门数据和权限信息
 2. **搜索引擎**: Elasticsearch支持全文搜索
 3. **CDN**: 视频和图片资源分发
 4. **分库分表**: 大数据量时考虑分片策略
 5. **消息队列**: 异步处理统计数据更新
+6. **权限缓存**: Redis缓存用户权限以提升验证性能
+7. **审计日志**: 记录所有权限相关操作
