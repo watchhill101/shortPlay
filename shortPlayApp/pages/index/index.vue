@@ -14,7 +14,7 @@
         </view>
 
         <view class="search-box" @click="toSearchGoods">
-          <image class="search-icon"></image>
+          <image class="search-icon" src="../../static/img/search-icon.png"></image>
         </view>
       </view>
 
