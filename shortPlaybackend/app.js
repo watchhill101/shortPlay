@@ -5,7 +5,7 @@ const helmet = require('helmet');
 const cookieParser = require('cookie-parser');
 const session = require('express-session');
 const RedisStore = require('connect-redis').default;
-
+const path = require('path');
 const config = require('./config');
 const { getRedisClient, isRedisAvailable } = require('./config/redis');
 const apiRoutes = require('./routes/api');
@@ -38,7 +38,8 @@ app.use(morgan(config.env === 'development' ? 'dev' : 'combined'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-
+// 🔴 新增：静态资源托管 —— 让 /uploads 目录可通过 HTTP 访问
+app.use('/upload', express.static(path.join(__dirname, 'upload')));
 // 5. Session 管理 (使用 Redis 存储)
 const setupSession = async () => {
   try {
