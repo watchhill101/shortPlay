@@ -1,64 +1,75 @@
 {
-  "easycom": {
-    "autoscan": true,
-    "custom": {
-      "^u--(.*)": "@/uni_modules/uview-plus/components/u-$1/u-$1.vue",
-      "^up-(.*)": "@/uni_modules/uview-plus/components/u-$1/u-$1.vue",
-      "^u-((^-).*)": "@/uni_modules/uview-plus/components/u-$1/u-$1.vue"
-    }
-  },
-  "pages": [
-    {
-      "path": "pages/index/index",
-      "style": {
-        "app-plus": {
-          "bounce": "none"
-        },
-        "navigationBarTitleText": "",
-        "enablePullDownRefresh": false
-      }
-    },
-    {
-      "path": "pages/watch/index",
-      "style": {
-        "app-plus": {
-          "bounce": "none"
-        },
-        "navigationBarTitleText": "",
-        "enablePullDownRefresh": false
-      }
-    },
-    {
-      "path": "pages/mine/index",
-      "style": {
-        "app-plus": {
-          "bounce": "none"
-        },
-        "navigationBarTitleText": "",
-        "enablePullDownRefresh": false
-      }
-    },
-    {
-      "path": "pages/playlet/episodes",
-      "style": {
-        "app-plus": {
-          "bounce": "none"
-        },
-        "navigationBarTitleText": "",
-        "enablePullDownRefresh": false
-      }
-    },
-    {
-      "path": "pages/playlet/detail",
-      "style": {
-        "app-plus": {
-          "bounce": "none"
-        },
-        "navigationBarTitleText": "",
-        "enablePullDownRefresh": true
-      }
-    }
-  ],
+
+	"easycom": {
+		"autoscan": true,
+		"custom": {
+			"^u--(.*)": "@/uni_modules/uview-plus/components/u-$1/u-$1.vue",
+			"^up-(.*)": "@/uni_modules/uview-plus/components/u-$1/u-$1.vue",
+			"^u-((^-).*)": "@/uni_modules/uview-plus/components/u-$1/u-$1.vue"
+		}
+	},
+	"pages": [{
+			"path": "pages/index/index",
+			"style": {
+				"app-plus": {
+					"bounce": "none"
+				},
+				"navigationBarTitleText": "",
+				"enablePullDownRefresh": false
+			}
+		},
+		{
+			"path": "pages/watch/index",
+			"style": {
+				"app-plus": {
+					"bounce": "none"
+				},
+				"navigationBarTitleText": "",
+				"enablePullDownRefresh": false
+			}
+		},
+		{
+			"path": "pages/mine/index",
+			"style": {
+				"app-plus": {
+					"bounce": "none"
+				},
+				"navigationBarTitleText": "",
+				"enablePullDownRefresh": false
+			}
+		},
+		{
+			"path": "pages/playlet/episodes",
+			"style": {
+				"app-plus": {
+					"bounce": "none"
+				},
+				"navigationBarTitleText": "",
+				"enablePullDownRefresh": false
+			}
+		},
+		{
+			"path": "pages/playlet/detail",
+			"style": {
+				"app-plus": {
+					"bounce": "none"
+				},
+				"navigationBarTitleText": "",
+				"enablePullDownRefresh": true
+			}
+		},
+		{
+			"path": "pages/index/search",
+			"style": {
+				"app-plus": {
+					"bounce": "none"
+				},
+				"navigationBarTitleText": "",
+				"enablePullDownRefresh": true
+			}
+		}
+	],
+
 
   "globalStyle": {
     "mp-alipay": {
