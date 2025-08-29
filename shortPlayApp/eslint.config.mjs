@@ -7,7 +7,41 @@ import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended'
 export default [
   // 忽略文件配置
   {
-    ignores: ['node_modules/**', 'unpackage/**', 'dist/**', 'build/**', 'uni_modules/**', '.DS_Store', '*.log'],
+    ignores: [
+      'node_modules/**',
+      'unpackage/**',
+      'dist/**',
+      'build/**',
+      '.DS_Store',
+      '*.log',
+      // 只忽略第三方库的特定文件类型，保留Vue组件检查
+      'uni_modules/**/libs/**/*.js',
+      'uni_modules/**/static/**/*',
+      'uni_modules/**/*.min.js',
+      'uni_modules/**/*.bundle.js',
+    ],
+  },
+
+  // 第三方uni_modules组件的宽松规则
+  {
+    files: ['uni_modules/**/*.vue'],
+    rules: {
+      'vue/multi-word-component-names': 'off',
+      'vue/valid-v-for': 'off',
+      'vue/no-unused-vars': 'off',
+      'vue/require-v-for-key': 'off',
+      'vue/no-mutating-props': 'off',
+      'vue/component-definition-name-casing': 'off',
+      'no-unused-vars': 'off',
+      'no-console': 'off',
+      // 但保留关键的错误检查
+      'no-undef': 'error',
+      'no-unreachable': 'error',
+      'no-dupe-keys': 'error',
+      'no-duplicate-case': 'error',
+      'no-empty': 'warn',
+      'valid-typeof': 'error',
+    },
   },
 
   // 基础 JavaScript 文件配置
