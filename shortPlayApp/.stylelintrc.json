@@ -5,7 +5,7 @@
     "selector-pseudo-class-no-unknown": [
       true,
       {
-        "ignorePseudoClasses": ["deep", "global"]
+        "ignorePseudoClasses": ["deep", "global", "full-screen"]
       }
     ],
     "selector-pseudo-element-no-unknown": [
@@ -39,12 +39,6 @@
     "no-duplicate-selectors": null,
     "no-descending-specificity": null,
     "keyframes-name-pattern": null,
-    "selector-pseudo-class-no-unknown": [
-      true,
-      {
-        "ignorePseudoClasses": ["deep", "global", "full-screen"]
-      }
-    ],
     "declaration-property-value-no-unknown": null
   }
 }
