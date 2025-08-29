@@ -56,6 +56,16 @@
 				"navigationBarTitleText": "",
 				"enablePullDownRefresh": true
 			}
+		},
+		{
+			"path": "pages/index/search",
+			"style": {
+				"app-plus": {
+					"bounce": "none"
+				},
+				"navigationBarTitleText": "",
+				"enablePullDownRefresh": true
+			}
 		}
 	],
 

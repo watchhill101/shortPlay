@@ -132,6 +132,7 @@ export default {
 	top: 65rpx;
 	padding: 20rpx 30rpx;
 	background-color: #0e0f0f;
+	box-sizing: border-box;
 }
 
 .search-box {

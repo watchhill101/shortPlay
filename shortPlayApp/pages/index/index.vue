@@ -133,7 +133,11 @@
 
 			toSearchGoods() {
 				let me = this;
-
+				
+				// 跳转到搜索页面
+				uni.navigateTo({
+					url: '/pages/index/search'
+				});
 			},
 
 		}
