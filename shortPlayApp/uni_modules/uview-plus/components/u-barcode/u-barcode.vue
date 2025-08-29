@@ -1167,7 +1167,7 @@ export default {
   justify-content: center;
   align-items: center;
   background-color: #f0f0f0;
-  color: #ff0000;
+  color: #f00;
 }
 
 .error-text {

@@ -8,7 +8,9 @@
     "dev": "cross-env NODE_ENV=development nodemon server.js",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "init:rbac": "node scripts/init-rbac.js",
+    "test:rbac": "node scripts/test-rbac.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

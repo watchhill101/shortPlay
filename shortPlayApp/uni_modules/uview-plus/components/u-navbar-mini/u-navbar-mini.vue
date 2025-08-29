@@ -19,7 +19,7 @@
             <up-icon :name="leftIcon" :size="iconSize" :color="iconColor"></up-icon>
           </slot>
         </view>
-        <view style="padding: 10px 10px">
+        <view style="padding: 10px">
           <up-line direction="col" color="#fff" length="16px"></up-line>
         </view>
         <view class="u-navbar-mini__content__center" @tap="homeClick">

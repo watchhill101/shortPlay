@@ -616,7 +616,7 @@ export default {
 <style>
 /* a 标签默认效果 */
 ._a {
-  padding: 1.5px 0 1.5px 0;
+  padding: 1.5px 0;
   color: #366092;
   word-break: break-all;
 }
@@ -783,5 +783,6 @@ export default {
   width: 300px;
   height: 225px;
 }
+
 /* #endif */
 </style>

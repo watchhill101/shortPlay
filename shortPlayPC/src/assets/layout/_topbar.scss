@@ -96,7 +96,7 @@
   }
 }
 
-@media (max-width: 991px) {
+@media (width <= 991px) {
   .layout-topbar {
     padding: 0 2rem;
 
@@ -118,9 +118,9 @@
       background-color: var(--surface-overlay);
       transform-origin: top;
       box-shadow:
-        0px 3px 5px rgba(0, 0, 0, 0.02),
-        0px 0px 2px rgba(0, 0, 0, 0.05),
-        0px 1px 4px rgba(0, 0, 0, 0.08);
+        0 3px 5px rgb(0 0 0 / 2%),
+        0 0 2px rgb(0 0 0 / 5%),
+        0 1px 4px rgb(0 0 0 / 8%);
       border-radius: var(--content-border-radius);
       padding: 1rem;
       right: 2rem;
@@ -181,9 +181,7 @@
         border-radius: 50%;
         padding: 0;
         cursor: pointer;
-        outline-color: transparent;
-        outline-width: 2px;
-        outline-style: solid;
+        outline: transparent solid 2px;
         outline-offset: 1px;
 
         &.active-color {

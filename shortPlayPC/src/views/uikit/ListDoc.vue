@@ -82,8 +82,8 @@ function getSeverity(product) {
                         style="
                           border-radius: 30px;
                           box-shadow:
-                            0px 1px 2px 0px rgba(0, 0, 0, 0.04),
-                            0px 1px 2px 0px rgba(0, 0, 0, 0.06);
+                            0 1px 2px 0 rgb(0 0 0 / 4%),
+                            0 1px 2px 0 rgb(0 0 0 / 6%);
                         "
                       >
                         <span class="text-surface-900 font-medium text-sm">{{ item.rating }}</span>
@@ -149,8 +149,8 @@ function getSeverity(product) {
                         style="
                           border-radius: 30px;
                           box-shadow:
-                            0px 1px 2px 0px rgba(0, 0, 0, 0.04),
-                            0px 1px 2px 0px rgba(0, 0, 0, 0.06);
+                            0 1px 2px 0 rgb(0 0 0 / 4%),
+                            0 1px 2px 0 rgb(0 0 0 / 6%);
                         "
                       >
                         <span class="text-surface-900 font-medium text-sm">{{ item.rating }}</span>

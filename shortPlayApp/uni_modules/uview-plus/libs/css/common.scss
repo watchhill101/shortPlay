@@ -1,14 +1,19 @@
 // 超出行数，自动显示行尾省略号，最多5行
 // 来自uview-plus的温馨提示：当您在控制台看到此报错，说明需要在App.vue的style标签加上【lang="scss"】
 @for $i from 1 through 10 {
-  .u-line-#{$i},
-  .up-line-#{$i} {
+  .u-line-#{$i}
+
+,
+  .up-line-#{$i}
+
+ {
     /* #ifdef APP-NVUE */
     // nvue下，可以直接使用lines属性，这是weex特有样式
-    lines: $i;
+    lines: $i;nvue下，可以直接使用lines属性，这是weex特有样式lines
     text-overflow: ellipsis;
     overflow: hidden;
     flex: 1;
+
     /* #endif */
 
     /* #ifndef APP-NVUE */
@@ -17,7 +22,9 @@
       overflow: hidden;
       white-space: nowrap;
       text-overflow: ellipsis;
-    } @else {
+    }
+
+ @else {
       display: -webkit-box !important;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -25,6 +32,7 @@
       -webkit-line-clamp: $i;
       -webkit-box-orient: vertical !important;
     }
+
     /* #endif */
   }
 }
@@ -82,13 +90,17 @@
 .up-reset-button {
   padding: 0;
   background-color: transparent;
+
   /* #ifndef APP-PLUS */
   font-size: inherit;
   line-height: inherit;
   color: inherit;
+
   /* #endif */
+
   /* #ifdef APP-NVUE */
   border-width: 0;
+
   /* #endif */
 }
 
@@ -97,6 +109,7 @@
 .up-reset-button::after {
   border: none;
 }
+
 /* #endif */
 
 .u-hover-class,
@@ -107,5 +120,6 @@
 .cursor-pointer {
   /* #ifdef H5 */
   cursor: pointer;
+
   /* #endif */
 }

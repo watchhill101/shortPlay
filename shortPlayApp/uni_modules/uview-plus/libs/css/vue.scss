@@ -1,10 +1,20 @@
 // 历遍生成4个方向的底部安全区
 @each $d in top, right, bottom, left {
-  .u-safe-area-inset-#{$d},
-  .up-safe-area-inset-#{$d} {
-    padding-#{$d}: 0;
-    padding-#{$d}: constant(safe-area-inset-#{$d});
-    padding-#{$d}: env(safe-area-inset-#{$d});
+  .u-safe-area-inset-#{$d}
+
+,
+  .up-safe-area-inset-#{$d}
+
+ {
+    padding-#{$d}
+
+: 0;
+    padding-#{$d}
+
+: constant(safe-area-inset-#{$d});
+    padding-#{$d}
+
+: env(safe-area-inset-#{$d});
   }
 }
 
@@ -13,9 +23,11 @@
 uni-toast {
   z-index: 10090;
 }
+
 uni-toast .uni-toast {
   z-index: 10090;
 }
+
 /* #endif */
 
 // 隐藏scroll-view的滚动条
@@ -23,6 +35,6 @@ uni-toast .uni-toast {
   display: none;
   width: 0 !important;
   height: 0 !important;
-  -webkit-appearance: none;
+  appearance: none;
   background: transparent;
 }

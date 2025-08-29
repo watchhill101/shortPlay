@@ -1,8 +1,8 @@
 // 引入公共基础类
 @import './libs/css/common.scss';
-@import './libs/css/components.scss';
-@import './libs/css/flex.scss';
-@import './libs/css/color.scss';
+@import url('./libs/css/components.scss');
+@import url('./libs/css/flex.scss');
+@import url('./libs/css/color.scss');
 
 // 非nvue的样式
 /* #ifndef APP-NVUE */
@@ -11,7 +11,7 @@
 
 // nvue的特有样式
 /* #ifdef APP-NVUE */
-@import './libs/css/nvue.scss';
+// @import './libs/css/nvue.scss';
 /* #endif */
 
 // 小程序特有的样式

@@ -127,6 +127,7 @@ export default {
   align-items: center;
   padding-left: 20px;
 }
+
 .u-tree-node-toggle {
   margin-right: 5px;
 }

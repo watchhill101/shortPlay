@@ -1,6 +1,6 @@
 <template>
   <view class="content">
-    <image class="back" src="../../static/img/left_jt.png" mode="scaleToFill" @click="toBack"></image>
+    <image class="back" src="" mode="scaleToFill" @click="toBack"></image>
 
     <view class="text-area">
       <text class="title">短剧详情</text>
@@ -78,14 +78,14 @@ export default {
 }
 
 .episodes .tips {
-  color: #ffffff;
+  color: #fff;
 }
 
 .episodes .item {
   width: 60rpx;
   height: 60rpx;
   text-align: center;
-  color: #ffffff;
+  color: #fff;
   background-color: #8f8f94;
   margin-left: 10rpx;
   border-radius: 10rpx;
@@ -94,9 +94,9 @@ export default {
 
 .episodescurrent {
   margin-top: 60rpx;
-  color: #ffffff;
+  color: #fff;
   background-color: #8f8f94;
-  padding: 10rpx 30rpx 10rpx 30rpx;
+  padding: 10rpx 30rpx;
   border-radius: 10rpx;
   line-height: 60rpx;
 }
@@ -107,7 +107,7 @@ export default {
   top: 70rpx;
   left: 20rpx;
   font-size: 38rpx;
-  color: #ffffff;
+  color: #fff;
   width: 50rpx;
   height: 50rpx;
   text-align: center;

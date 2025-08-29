@@ -504,13 +504,14 @@ scroll-view {
 
 /* 底部导航栏样式优化 */
 :deep(.u-tabbar) {
-  --u-tabbar-border-color: rgba(255, 255, 255, 0.25) !important;
-  background-color: rgba(0, 0, 0, 0.7) !important;
+  --u-tabbar-border-color: rgb(255 255 255 / 25%) !important;
+
+  background-color: rgb(0 0 0 / 70%) !important;
 }
 
 /* 底部导航栏文字颜色 */
 :deep(.u-tabbar__item__text) {
-  color: rgba(255, 255, 255, 0.8) !important;
+  color: rgb(255 255 255 / 80%) !important;
 }
 
 /* 底部导航栏激活状态文字颜色 */

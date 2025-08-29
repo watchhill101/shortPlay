@@ -73,6 +73,16 @@ export default [
     },
   },
 
+  // package-lock.json 特殊配置 - 忽略空键警告
+  {
+    files: ['**/package-lock.json'],
+    plugins: { json },
+    language: 'json/json',
+    rules: {
+      'json/no-empty-keys': 'off', // package-lock.json 中的空键是正常的
+    },
+  },
+
   // Markdown 文件配置
   {
     files: ['**/*.md'],

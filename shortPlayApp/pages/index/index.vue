@@ -39,116 +39,114 @@
 </template>
 
 <script>
+import Discor from './discor.vue';
+import Foryou from './foryou.vue';
 
-	import Discor from './discor.vue';
-	import Foryou from './foryou.vue';
+export default {
+  components: {
+    Discor,
+    Foryou,
+  },
 
-	export default {
-		components: {
-			Discor,
-			Foryou
-		},
+  data() {
+    return {
+      meUni: uni,
 
-		data() {
-			return {
-				meUni: uni,
+      tabIndex: 0,
+      panelTabs: [
+        {
+          index: 0,
+          name: '发现',
+        },
+        {
+          index: 1,
+          name: '推荐',
+        },
+      ],
 
-				tabIndex: 0,
-				panelTabs: [{
-					index: 0,
-					name: "发现"
-				}, {
-					index: 1,
-					name: "推荐"
-				}],
+      foryouShow: false,
+      navBarHeight: 0,
+    };
+  },
 
-				foryouShow: false,
-				navBarHeight: 0
-			}
-		},
+  onLoad(options) {
+    let me = this;
 
-		onLoad(options) {
-			let me = this;
+    me.initViewInfo();
+    me.initPageData();
+  },
 
-			me.initViewInfo();
-			me.initPageData();
-		},
+  onShow() {
+    let me = this;
+    if (me.tabIndex == 1) {
+      me.foryouShow = true;
+    } else {
+      me.foryouShow = false;
+    }
+  },
 
-		onShow() {
-			let me = this;
-			if (me.tabIndex == 1) {
-				me.foryouShow = true;
-			} else {
-				me.foryouShow = false;
-			}
-		},
+  onHide() {
+    let me = this;
+    me.foryouShow = false;
+  },
 
-		onHide() {
-			let me = this;
-			me.foryouShow = false;
-		},
+  onReady() {},
 
-		onReady() {
+  onReachBottom() {},
 
-		},
+  onPullDownRefresh() {},
 
-		onReachBottom() {},
+  beforeUnmount() {
+    let me = this;
+  },
 
-		onPullDownRefresh() {},
+  computed: {},
 
-		beforeDestroy() {
-			let me = this;
-		},
+  methods: {
+    //根据不同运行环境，计算高度适配
+    initViewInfo() {
+      let me = this;
 
-		computed: {},
+      // pages.json 中tabBar 设置了高度
+      // #ifdef APP-PLUS
+      me.navBarHeight = 0;
+      // #endif
+      // #ifndef APP-PLUS
+      me.navBarHeight = 60;
+      // #endif
+    },
 
-		methods: {
-			//根据不同运行环境，计算高度适配
-			initViewInfo() {
-				let me = this;
+    initPageData() {
+      let me = this;
+    },
 
-				// pages.json 中tabBar 设置了高度
-				// #ifdef APP-PLUS
-				me.navBarHeight = 0;
-				// #endif
-				// #ifndef APP-PLUS
-				me.navBarHeight = 60;
-				// #endif
-			},
+    toTabClick(index) {
+      let me = this;
 
-			initPageData() {
-				let me = this;
-			},
+      me.tabIndex = index;
+    },
 
-			toTabClick(index) {
-				let me = this;
+    onTabChange(e) {
+      let me = this;
 
-				me.tabIndex = index;
-			},
+      me.tabIndex = e.detail.current;
+      if (me.tabIndex == 1) {
+        me.foryouShow = true;
+      } else {
+        me.foryouShow = false;
+      }
+    },
 
-			onTabChange(e) {
-				let me = this;
+    toSearchGoods() {
+      let me = this;
 
-				me.tabIndex = e.detail.current;
-				if (me.tabIndex == 1) {
-					me.foryouShow = true;
-				} else {
-					me.foryouShow = false;
-				}
-			},
-
-			toSearchGoods() {
-				let me = this;
-				
-				// 跳转到搜索页面
-				uni.navigateTo({
-					url: '/pages/index/search'
-				});
-			},
-
-		}
-	}
-
+      // 跳转到搜索页面
+      uni.navigateTo({
+        url: '/pages/index/search',
+      });
+    },
+  },
+};
 </script>
 
 <style scoped lang="scss">

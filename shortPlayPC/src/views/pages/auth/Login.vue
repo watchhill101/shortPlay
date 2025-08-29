@@ -17,7 +17,7 @@ const checked = ref(false);
         style="
           border-radius: 56px;
           padding: 0.3rem;
-          background: linear-gradient(180deg, var(--primary-color) 10%, rgba(33, 150, 243, 0) 30%);
+          background: linear-gradient(180deg, var(--primary-color) 10%, rgb(33 150 243 / 0%) 30%);
         "
       >
         <div class="w-full bg-surface-0 dark:bg-surface-900 py-20 px-8 sm:px-20" style="border-radius: 53px">

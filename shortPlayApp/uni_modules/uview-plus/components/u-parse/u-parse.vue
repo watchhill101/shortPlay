@@ -522,11 +522,11 @@ export default {
 
 <style>
 /* #ifndef APP-PLUS-NVUE */
+
 /* 根节点样式 */
 ._root {
   padding: 1px 0;
-  overflow-x: auto;
-  overflow-y: hidden;
+  overflow: auto hidden;
   -webkit-overflow-scrolling: touch;
 }
 

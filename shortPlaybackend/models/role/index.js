@@ -54,7 +54,6 @@ const roleSchema = new mongoose.Schema(
 );
 
 // 添加索引
-roleSchema.index({ code: 1 });
 roleSchema.index({ level: 1 });
 roleSchema.index({ status: 1 });
 

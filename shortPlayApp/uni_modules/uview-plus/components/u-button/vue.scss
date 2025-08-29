@@ -1,5 +1,5 @@
 // nvue下hover-class无效
-$u-button-before-top: 50% !default;
+$u-button-before-top: 50% !default;nvue下hover-class无效$u-button-before-top
 $u-button-before-left: 50% !default;
 $u-button-before-width: 100% !default;
 $u-button-before-height: 100% !default;
@@ -23,7 +23,7 @@ $u-button-plain-u-button-warning-color: $u-warning;
     line-height: 1;
   }
 
-  &:before {
+  &::before {
     position: absolute;
     top: $u-button-before-top;
     left: $u-button-before-left;
@@ -39,7 +39,7 @@ $u-button-plain-u-button-warning-color: $u-warning;
   }
 
   &--active {
-    &:before {
+    &::before {
       opacity: 0.15;
     }
   }

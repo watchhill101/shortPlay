@@ -12,7 +12,7 @@ import FloatingConfigurator from '@/components/FloatingConfigurator.vue';
         style="
           border-radius: 56px;
           padding: 0.3rem;
-          background: linear-gradient(180deg, rgba(247, 149, 48, 0.4) 10%, rgba(247, 149, 48, 0) 30%);
+          background: linear-gradient(180deg, rgb(247 149 48 / 40%) 10%, rgb(247 149 48 / 0%) 30%);
         "
       >
         <div

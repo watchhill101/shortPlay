@@ -8,7 +8,6 @@ const backgroundUserSchema = new mongoose.Schema(
       required: [true, '账号不能为空'],
       unique: true,
       trim: true,
-      index: true,
     },
     password: {
       type: String,
@@ -60,8 +59,6 @@ const backgroundUserSchema = new mongoose.Schema(
 backgroundUserSchema.index({ account: 1 });
 backgroundUserSchema.index({ status: 1 });
 
-const BackgroundUser = mongoose.model('BackgroundUser', backgroundUserSchema, 'BackgroundUser');
-module.exports = BackgroundUser;
 // 用户权限验证方法
 backgroundUserSchema.methods.hasPermission = function (_permissionCode) {
   // 这里可以实现复杂的权限验证逻辑
@@ -98,3 +95,6 @@ backgroundUserSchema.methods.getAllPermissions = async function () {
 
   return uniquePermissions;
 };
+
+const BackgroundUser = mongoose.model('BackgroundUser', backgroundUserSchema, 'BackgroundUser');
+module.exports = BackgroundUser;

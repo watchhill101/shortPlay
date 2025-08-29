@@ -53,7 +53,6 @@ const permissionSchema = new mongoose.Schema(
 );
 
 // 添加索引
-permissionSchema.index({ code: 1 });
 permissionSchema.index({ group: 1, type: 1 });
 permissionSchema.index({ status: 1 });
 

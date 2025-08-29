@@ -9,9 +9,11 @@ const mongoose = require('mongoose');
 const path = require('path');
 
 // 加载配置
-require('dotenv-expand').expand(require('dotenv').config({ 
-  path: path.resolve(__dirname, '../.env.development') 
-}));
+require('dotenv-expand').expand(
+  require('dotenv').config({
+    path: path.resolve(__dirname, '../.env.development'),
+  })
+);
 
 // 导入模型
 const Work = require('../models/work/index');
@@ -29,7 +31,6 @@ async function clearWorks() {
     console.log(`已删除 ${result.deletedCount} 条work记录`);
 
     console.log('✅ works数据清空完成！');
-    
   } catch (error) {
     console.error('❌ 清空数据时出错:', error);
   } finally {
