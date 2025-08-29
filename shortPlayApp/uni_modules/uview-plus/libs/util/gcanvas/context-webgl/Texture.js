@@ -1,22 +1,22 @@
-import {getTransferedObjectUUID} from './classUtils';
+import { getTransferedObjectUUID } from './classUtils';
 
 const name = 'WebGLTexture';
 
 function uuid(id) {
-    return getTransferedObjectUUID(name, id);
+  return getTransferedObjectUUID(name, id);
 }
 
 export default class WebGLTexture {
-    className = name;
+  className = name;
 
-    constructor(id, type) {
-        this.id = id;
-        this.type = type;
-    }
+  constructor(id, type) {
+    this.id = id;
+    this.type = type;
+  }
 
-    static uuid = uuid;
+  static uuid = uuid;
 
-    uuid() {
-        return uuid(this.id);
-    }
+  uuid() {
+    return uuid(this.id);
+  }
 }

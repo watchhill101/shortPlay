@@ -1,0 +1,14 @@
+node_modules/
+dist/
+build/
+coverage/
+.DS_Store
+*.log
+
+# 子项目有自己的配置
+shortPlayApp/node_modules/
+shortPlayApp/unpackage/
+shortPlayApp/uni_modules/
+shortPlaybackend/node_modules/
+shortPlayPC/node_modules/
+shortPlayPC/dist/

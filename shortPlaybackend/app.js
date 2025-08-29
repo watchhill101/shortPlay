@@ -1,15 +1,15 @@
-const express = require("express");
-const cors = require("cors");
-const morgan = require("morgan");
-const helmet = require("helmet");
-const cookieParser = require("cookie-parser");
-const session = require("express-session");
-const RedisStore = require("connect-redis").default;
+const express = require('express');
+const cors = require('cors');
+const morgan = require('morgan');
+const helmet = require('helmet');
+const cookieParser = require('cookie-parser');
+const session = require('express-session');
+const RedisStore = require('connect-redis').default;
 
-const config = require("./config");
-const { getRedisClient, isRedisAvailable } = require("./config/redis");
-const apiRoutes = require("./routes/api");
-const errorHandler = require("./middleware/errorHandler");
+const config = require('./config');
+const { getRedisClient, isRedisAvailable } = require('./config/redis');
+const apiRoutes = require('./routes/api');
+const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
 
@@ -24,7 +24,7 @@ const corsOptions = {
     if (!origin || config.cors.origin.includes(origin)) {
       callback(null, true);
     } else {
-      callback(new Error("Not allowed by CORS"));
+      callback(new Error('Not allowed by CORS'));
     }
   },
   credentials: true, // 允许携带 cookie
@@ -32,7 +32,7 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 // 3. 日志：根据环境选择不同日志格式
-app.use(morgan(config.env === "development" ? "dev" : "combined"));
+app.use(morgan(config.env === 'development' ? 'dev' : 'combined'));
 
 // 4. 请求解析
 app.use(express.json());
@@ -42,11 +42,11 @@ app.use(cookieParser());
 // 5. Session 管理 (使用 Redis 存储)
 const setupSession = async () => {
   try {
-    if (config.redis.url && await isRedisAvailable()) {
+    if (config.redis.url && (await isRedisAvailable())) {
       const redisClient = await getRedisClient();
       if (redisClient) {
         const redisStore = new RedisStore({ client: redisClient });
-        
+
         app.use(
           session({
             store: redisStore,
@@ -55,17 +55,17 @@ const setupSession = async () => {
             saveUninitialized: false,
             cookie: {
               httpOnly: true,
-              secure: config.env === "production", // 生产环境需要 HTTPS
+              secure: config.env === 'production', // 生产环境需要 HTTPS
               maxAge: 24 * 60 * 60 * 1000, // 1 day
             },
           })
         );
-        
+
         console.log('✅ Session store configured with Redis');
         return;
       }
     }
-    
+
     // Redis不可用时的降级处理 - 使用内存存储
     console.warn('⚠️  Redis not available, using memory session store (not recommended for production)');
     app.use(
@@ -75,12 +75,11 @@ const setupSession = async () => {
         saveUninitialized: false,
         cookie: {
           httpOnly: true,
-          secure: config.env === "production",
+          secure: config.env === 'production',
           maxAge: 24 * 60 * 60 * 1000,
         },
       })
     );
-    
   } catch (error) {
     console.error('❌ Session setup failed:', error.message);
     // 继续使用内存存储作为最后的降级选项
@@ -91,7 +90,7 @@ const setupSession = async () => {
         saveUninitialized: false,
         cookie: {
           httpOnly: true,
-          secure: config.env === "production",
+          secure: config.env === 'production',
           maxAge: 24 * 60 * 60 * 1000,
         },
       })
@@ -103,12 +102,12 @@ const setupSession = async () => {
 setupSession();
 
 // --- 路由 ---
-app.get("/", (req, res) => res.send("API is running...")); // 健康检查路由
-app.use("/api", apiRoutes); // 所有 API 路由都以 /api 开头
+app.get('/', (req, res) => res.send('API is running...')); // 健康检查路由
+app.use('/api', apiRoutes); // 所有 API 路由都以 /api 开头
 
 // 捕获 404
 app.use((req, res, next) => {
-  const error = new Error("Not Found");
+  const error = new Error('Not Found');
   error.status = 404;
   next(error);
 });

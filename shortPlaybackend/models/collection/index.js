@@ -1,40 +1,40 @@
 // models/Collection.js
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 const CollectionSchema = new mongoose.Schema(
   {
-    user: {
+    backgroundUser: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: 'BackgroundUser',
       required: true,
       index: true,
     },
     title: {
       type: String,
-      required: [true, "合集标题不能为空"],
+      required: [true, '合集标题不能为空'],
       trim: true,
       index: true, // 为标题添加索引，便于搜索
     },
     description: {
       type: String,
-      required: [true, "合集简介不能为空"],
+      required: [true, '合集简介不能为空'],
     },
     coverImage: {
       type: String,
-      required: [true, "合集封面图不能为空"],
+      required: [true, '合集封面图不能为空'],
     },
     // 关联分类
     classifier: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Classifier",
+      ref: 'Classifier',
       required: true,
       index: true,
     },
     // 状态：draft（草稿）, published（已发布）, archived（已归档）
     status: {
       type: String,
-      enum: ["draft", "published", "archived"],
-      default: "draft",
+      enum: ['draft', 'published', 'archived'],
+      default: 'draft',
       index: true,
     },
     tags: [String],
@@ -63,5 +63,5 @@ const CollectionSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-const Collection = mongoose.model("Collection", CollectionSchema, "Collection");
+const Collection = mongoose.model('Collection', CollectionSchema, 'Collection');
 module.exports = Collection;

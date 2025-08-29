@@ -1,93 +1,71 @@
 <template>
-    <view class="u-input" :class="inputClass" :style="[wrapperStyle]">
-        <view class="u-input__content">
-            <view
-                class="u-input__content__prefix-icon"
-                v-if="prefixIcon || $slots.prefix"
-            >
-                <slot name="prefix">
-                    <up-icon
-                        :name="prefixIcon"
-                        size="18"
-                        :customStyle="prefixIconStyle"
-                    ></up-icon>
-                </slot>
-            </view>
-            <view class="u-input__content__field-wrapper" @tap="clickHandler">
-				<!-- 根据uni-app的input组件文档，H5和APP中只要声明了password参数(无论true还是false)，type均失效，此时
+  <view class="u-input" :class="inputClass" :style="[wrapperStyle]">
+    <view class="u-input__content">
+      <view class="u-input__content__prefix-icon" v-if="prefixIcon || $slots.prefix">
+        <slot name="prefix">
+          <up-icon :name="prefixIcon" size="18" :customStyle="prefixIconStyle"></up-icon>
+        </slot>
+      </view>
+      <view class="u-input__content__field-wrapper" @tap="clickHandler">
+        <!-- 根据uni-app的input组件文档，H5和APP中只要声明了password参数(无论true还是false)，type均失效，此时
 					为了防止type=number时，又存在password属性，type无效，此时需要设置password为undefined
 				 -->
-            	<input
-                    ref="input-native"
-            	    class="u-input__content__field-wrapper__field"
-            	    :style="[inputStyle]"
-            	    :type="showPassword && 'password' == type ? 'text' : type"
-            	    :focus="focus"
-            	    :cursor="cursor"
-            	    :value="innerValue"
-            	    :auto-blur="autoBlur"
-            	    :disabled="disabled || readonly"
-            	    :maxlength="maxlength"
-            	    :placeholder="placeholder"
-            	    :placeholder-style="placeholderStyle"
-            	    :placeholder-class="placeholderClass"
-            	    :confirm-type="confirmType"
-            	    :confirm-hold="confirmHold"
-            	    :hold-keyboard="holdKeyboard"
-                    :cursor-color="cursorColor"
-            	    :cursor-spacing="cursorSpacing"
-            	    :adjust-position="adjustPosition"
-            	    :selection-end="selectionEnd"
-            	    :selection-start="selectionStart"
-            	    :password="isPassword"
-                    :ignoreCompositionEvent="ignoreCompositionEvent"
-            	    @input="onInput"
-            	    @blur="onBlur"
-            	    @focus="onFocus"
-            	    @confirm="onConfirm"
-            	    @keyboardheightchange="onkeyboardheightchange"
-                    @nicknamereview="onnicknamereview"
-            	/>
-            </view>
-            <view
-                class="u-input__content__clear"
-                v-if="isShowClear"
-                @click="onClear"
-            >
-                <up-icon
-                    name="close"
-                    size="11"
-                    color="#ffffff"
-                    customStyle="line-height: 12px"
-                ></up-icon>
-            </view>
-            <view
-                class="u-input__content__subfix-password-shower"
-                v-if="(type == 'password' || password) && passwordVisibilityToggle"
-            >
-                <up-icon @click="showPassword = !showPassword"
-                    :name="showPassword ? 'eye-off' : 'eye-fill'"
-                    size="18"
-                ></up-icon>
-            </view>
-            <view
-                class="u-input__content__subfix-icon"
-                v-if="suffixIcon || $slots.suffix"
-            >
-                <slot name="suffix">
-                    <up-icon
-                        :name="suffixIcon"
-                        size="18"
-                        :customStyle="suffixIconStyle"
-                    ></up-icon>
-                </slot>
-            </view>
-        </view>
+        <input
+          ref="input-native"
+          class="u-input__content__field-wrapper__field"
+          :style="[inputStyle]"
+          :type="showPassword && 'password' == type ? 'text' : type"
+          :focus="focus"
+          :cursor="cursor"
+          :value="innerValue"
+          :auto-blur="autoBlur"
+          :disabled="disabled || readonly"
+          :maxlength="maxlength"
+          :placeholder="placeholder"
+          :placeholder-style="placeholderStyle"
+          :placeholder-class="placeholderClass"
+          :confirm-type="confirmType"
+          :confirm-hold="confirmHold"
+          :hold-keyboard="holdKeyboard"
+          :cursor-color="cursorColor"
+          :cursor-spacing="cursorSpacing"
+          :adjust-position="adjustPosition"
+          :selection-end="selectionEnd"
+          :selection-start="selectionStart"
+          :password="isPassword"
+          :ignoreCompositionEvent="ignoreCompositionEvent"
+          @input="onInput"
+          @blur="onBlur"
+          @focus="onFocus"
+          @confirm="onConfirm"
+          @keyboardheightchange="onkeyboardheightchange"
+          @nicknamereview="onnicknamereview"
+        />
+      </view>
+      <view class="u-input__content__clear" v-if="isShowClear" @click="onClear">
+        <up-icon name="close" size="11" color="#ffffff" customStyle="line-height: 12px"></up-icon>
+      </view>
+      <view
+        class="u-input__content__subfix-password-shower"
+        v-if="(type == 'password' || password) && passwordVisibilityToggle"
+      >
+        <up-icon
+          @click="showPassword = !showPassword"
+          :name="showPassword ? 'eye-off' : 'eye-fill'"
+          size="18"
+        ></up-icon>
+      </view>
+      <view class="u-input__content__subfix-icon" v-if="suffixIcon || $slots.suffix">
+        <slot name="suffix">
+          <up-icon :name="suffixIcon" size="18" :customStyle="suffixIconStyle"></up-icon>
+        </slot>
+      </view>
     </view>
+  </view>
 </template>
 
 <script>
-import { props } from "./props.js";
+import { props } from './props.js';
 import { mpMixin } from '../../libs/mixin/mpMixin';
 import { mixin } from '../../libs/mixin/mixin';
 import { debounce } from '../../libs/function/debounce';
@@ -136,298 +114,290 @@ import { addStyle, addUnit, deepMerge, formValidate, $parent, sleep, os } from '
  * @example <u-input v-model="value" :password="true" suffix-icon="lock-fill" />
  */
 export default {
-    name: "u-input",
-    mixins: [mpMixin, mixin, props],
-    data() {
-        return {
-            // 清除操作
-            clearInput: false,
-            // 输入框的值
-            innerValue: "",
-            // 是否处于获得焦点状态
-            focused: false,
-            // value是否第一次变化，在watch中，由于加入immediate属性，会在第一次触发，此时不应该认为value发生了变化
-            firstChange: true,
-            // value绑定值的变化是由内部还是外部引起的
-            changeFromInner: false,
-			// 过滤处理方法
-			innerFormatter: value => value,
-            showPassword: false
-        };
-    },
-    created() {
-        // 格式化过滤方法
-        if (this.formatter) {
-            this.innerFormatter = this.formatter;
+  name: 'u-input',
+  mixins: [mpMixin, mixin, props],
+  data() {
+    return {
+      // 清除操作
+      clearInput: false,
+      // 输入框的值
+      innerValue: '',
+      // 是否处于获得焦点状态
+      focused: false,
+      // value是否第一次变化，在watch中，由于加入immediate属性，会在第一次触发，此时不应该认为value发生了变化
+      firstChange: true,
+      // value绑定值的变化是由内部还是外部引起的
+      changeFromInner: false,
+      // 过滤处理方法
+      innerFormatter: (value) => value,
+      showPassword: false,
+    };
+  },
+  created() {
+    // 格式化过滤方法
+    if (this.formatter) {
+      this.innerFormatter = this.formatter;
+    }
+  },
+  watch: {
+    modelValue: {
+      immediate: true,
+      handler(newVal, oldVal) {
+        // console.log(newVal, oldVal)
+        if (this.changeFromInner || this.innerValue === newVal) {
+          this.changeFromInner = false; // 重要否则会出现双向绑定失效问题https://github.com/ijry/uview-plus/issues/419
+          return;
         }
-    },
-    watch: {
-        modelValue: {
-            immediate: true,
-            handler(newVal, oldVal) {
-                // console.log(newVal, oldVal)
-                if (this.changeFromInner || this.innerValue === newVal) {
-                    this.changeFromInner = false; // 重要否则会出现双向绑定失效问题https://github.com/ijry/uview-plus/issues/419
-                    return;
-                }
-                this.innerValue = newVal;
-                // 在H5中，外部value变化后，修改input中的值，不会触发@input事件，此时手动调用值变化方法
-                if (
-                    this.firstChange === false &&
-					this.changeFromInner === false
-                ) {
-                    this.valueChange(this.innerValue, true);
-                } else {
-					// 尝试调用up-form的验证方法
-                    if(!this.firstChange) formValidate(this, "change");
-				}
-                this.firstChange = false;
-                // 重置changeFromInner的值为false，标识下一次引起默认为外部引起的
-                this.changeFromInner = false;
-            }
+        this.innerValue = newVal;
+        // 在H5中，外部value变化后，修改input中的值，不会触发@input事件，此时手动调用值变化方法
+        if (this.firstChange === false && this.changeFromInner === false) {
+          this.valueChange(this.innerValue, true);
+        } else {
+          // 尝试调用up-form的验证方法
+          if (!this.firstChange) formValidate(this, 'change');
         }
+        this.firstChange = false;
+        // 重置changeFromInner的值为false，标识下一次引起默认为外部引起的
+        this.changeFromInner = false;
+      },
     },
-    computed: {
-        // 是否密码
-        isPassword() {
-            let ret = false;
-            if(this.password) {
-                ret = true;
-            } else if (this.type == 'password') {
-                ret = true;
-            } else {
-                ret = false;
-            }
-            if (this.showPassword) {
-                ret = false;
-            }
-            return ret;
-        },
-        // 是否显示清除控件
-        isShowClear() {
-            const { clearable, readonly, focused, innerValue, onlyClearableOnFocused } = this;
-            if (!clearable || readonly) {
-                return false;
-            }
-            if (onlyClearableOnFocused) {
-                return !!focused && innerValue !== "";
-            } else {
-                return innerValue !== "";
-            }
-        },
-        // 组件的类名
-        inputClass() {
-            let classes = [],
-                { border, disabled, shape } = this;
-            border === "surround" &&
-                (classes = classes.concat(["u-border", "u-input--radius"]));
-            classes.push(`u-input--${shape}`);
-            border === "bottom" &&
-                (classes = classes.concat([
-                    "u-border-bottom",
-                    "u-input--no-radius",
-                ]));
-            return classes.join(" ");
-        },
-        // 组件的样式
-        wrapperStyle() {
-            const style = {};
-            // 禁用状态下，被背景色加上对应的样式
-            if (this.disabled) {
-                style.backgroundColor = this.disabledColor;
-            }
-            // 无边框时，去除内边距
-            if (this.border === "none") {
-                style.padding = "0";
-            } else {
-                // 由于uni-app的iOS端限制，导致需要分开写才有效
-                style.paddingTop = "6px";
-                style.paddingBottom = "6px";
-                style.paddingLeft = "9px";
-                style.paddingRight = "9px";
-            }
-            return deepMerge(style, addStyle(this.customStyle));
-        },
-        // 输入框的样式
-        inputStyle() {
-            const style = {
-                color: this.color,
-                fontSize: addUnit(this.fontSize),
-				textAlign: this.inputAlign
-            };
-            return style;
-        },
+  },
+  computed: {
+    // 是否密码
+    isPassword() {
+      let ret = false;
+      if (this.password) {
+        ret = true;
+      } else if (this.type == 'password') {
+        ret = true;
+      } else {
+        ret = false;
+      }
+      if (this.showPassword) {
+        ret = false;
+      }
+      return ret;
     },
-    // #ifdef VUE3
-    emits: ['update:modelValue', 'focus', 'blur', 'change', 'confirm', 'clear', 'keyboardheightchange', 'nicknamereview'],
-    // #endif
-    methods: {
-		// 在微信小程序中，不支持将函数当做props参数，故只能通过ref形式调用
-		setFormatter(e) {
-			this.innerFormatter = e
-		},
-        // 当键盘输入时，触发input事件
-        onInput(e) {
-            let { value = "" } = e.detail || {};
-            // 为了避免props的单向数据流特性，需要先将innerValue值设置为当前值，再在$nextTick中重新赋予设置后的值才有效
-            // console.log('onInput', value, this.innerValue)
-            this.innerValue = value;
-            this.$nextTick(() => {
-                let formatValue = this.innerFormatter(value);
-            	this.innerValue = formatValue;
-                this.valueChange(formatValue);
-            })
-        },
-        // 输入框失去焦点时触发
-        onBlur(event) {
-            this.$emit("blur", event.detail.value);
-            // H5端的blur会先于点击清除控件的点击click事件触发，导致focused
-            // 瞬间为false，从而隐藏了清除控件而无法被点击到
-            sleep(150).then(() => {
-                this.focused = false;
-            });
-            // 尝试调用u-form的验证方法
-            formValidate(this, "blur");
-        },
-        // 输入框聚焦时触发
-        onFocus(event) {
-            this.focused = true;
-            this.$emit("focus");
-        },
-        doFocus() {
-            this.$refs['input-native'].focus();
-        },
-        doBlur() {
-            this.$refs['input-native'].blur();
-        },
-        // 点击完成按钮时触发
-        onConfirm(event) {
-            this.$emit("confirm", this.innerValue);
-        },
-        // 键盘高度发生变化的时候触发此事件
-        // 兼容性：微信小程序2.7.0+、App 3.1.0+
-		onkeyboardheightchange(event) {
-            this.$emit("keyboardheightchange", event);
-        },
-        onnicknamereview(event) {
-            this.$emit("nicknamereview", event);
-        },
-        // 内容发生变化，进行处理
-        valueChange(value, isOut = false) {
-            if(this.clearInput) {
-                this.innerValue = '';
-                this.clearInput = false;
-            }
-            this.$nextTick(() => {
-                if (!isOut || this.clearInput) {
-                    // 标识value值的变化是由内部引起的
-                    this.changeFromInner = true;
-                    this.$emit("change", value);
+    // 是否显示清除控件
+    isShowClear() {
+      const { clearable, readonly, focused, innerValue, onlyClearableOnFocused } = this;
+      if (!clearable || readonly) {
+        return false;
+      }
+      if (onlyClearableOnFocused) {
+        return !!focused && innerValue !== '';
+      } else {
+        return innerValue !== '';
+      }
+    },
+    // 组件的类名
+    inputClass() {
+      let classes = [],
+        { border, disabled, shape } = this;
+      border === 'surround' && (classes = classes.concat(['u-border', 'u-input--radius']));
+      classes.push(`u-input--${shape}`);
+      border === 'bottom' && (classes = classes.concat(['u-border-bottom', 'u-input--no-radius']));
+      return classes.join(' ');
+    },
+    // 组件的样式
+    wrapperStyle() {
+      const style = {};
+      // 禁用状态下，被背景色加上对应的样式
+      if (this.disabled) {
+        style.backgroundColor = this.disabledColor;
+      }
+      // 无边框时，去除内边距
+      if (this.border === 'none') {
+        style.padding = '0';
+      } else {
+        // 由于uni-app的iOS端限制，导致需要分开写才有效
+        style.paddingTop = '6px';
+        style.paddingBottom = '6px';
+        style.paddingLeft = '9px';
+        style.paddingRight = '9px';
+      }
+      return deepMerge(style, addStyle(this.customStyle));
+    },
+    // 输入框的样式
+    inputStyle() {
+      const style = {
+        color: this.color,
+        fontSize: addUnit(this.fontSize),
+        textAlign: this.inputAlign,
+      };
+      return style;
+    },
+  },
+  // #ifdef VUE3
+  emits: ['update:modelValue', 'focus', 'blur', 'change', 'confirm', 'clear', 'keyboardheightchange', 'nicknamereview'],
+  // #endif
+  methods: {
+    // 在微信小程序中，不支持将函数当做props参数，故只能通过ref形式调用
+    setFormatter(e) {
+      this.innerFormatter = e;
+    },
+    // 当键盘输入时，触发input事件
+    onInput(e) {
+      let { value = '' } = e.detail || {};
+      // 为了避免props的单向数据流特性，需要先将innerValue值设置为当前值，再在$nextTick中重新赋予设置后的值才有效
+      // console.log('onInput', value, this.innerValue)
+      this.innerValue = value;
+      this.$nextTick(() => {
+        let formatValue = this.innerFormatter(value);
+        this.innerValue = formatValue;
+        this.valueChange(formatValue);
+      });
+    },
+    // 输入框失去焦点时触发
+    onBlur(event) {
+      this.$emit('blur', event.detail.value);
+      // H5端的blur会先于点击清除控件的点击click事件触发，导致focused
+      // 瞬间为false，从而隐藏了清除控件而无法被点击到
+      sleep(150).then(() => {
+        this.focused = false;
+      });
+      // 尝试调用u-form的验证方法
+      formValidate(this, 'blur');
+    },
+    // 输入框聚焦时触发
+    onFocus(event) {
+      this.focused = true;
+      this.$emit('focus');
+    },
+    doFocus() {
+      this.$refs['input-native'].focus();
+    },
+    doBlur() {
+      this.$refs['input-native'].blur();
+    },
+    // 点击完成按钮时触发
+    onConfirm(event) {
+      this.$emit('confirm', this.innerValue);
+    },
+    // 键盘高度发生变化的时候触发此事件
+    // 兼容性：微信小程序2.7.0+、App 3.1.0+
+    onkeyboardheightchange(event) {
+      this.$emit('keyboardheightchange', event);
+    },
+    onnicknamereview(event) {
+      this.$emit('nicknamereview', event);
+    },
+    // 内容发生变化，进行处理
+    valueChange(value, isOut = false) {
+      if (this.clearInput) {
+        this.innerValue = '';
+        this.clearInput = false;
+      }
+      this.$nextTick(() => {
+        if (!isOut || this.clearInput) {
+          // 标识value值的变化是由内部引起的
+          this.changeFromInner = true;
+          this.$emit('change', value);
 
-                    // #ifdef VUE3
-                    this.$emit("update:modelValue", value);
-                    // #endif
-                    // #ifdef VUE2
-                    this.$emit("input", value);
-                    // #endif
-                }
+          // #ifdef VUE3
+          this.$emit('update:modelValue', value);
+          // #endif
+          // #ifdef VUE2
+          this.$emit('input', value);
+          // #endif
+        }
 
-                // 尝试调用u-form的验证方法
-                formValidate(this, "change");
-            });
-        },
-        // 点击清除控件
-        onClear() {
-            this.clearInput = true;
-            this.innerValue = "";
-            this.$nextTick(() => {
-                this.valueChange("");
-                this.$emit("clear");
-            });
-        },
-        /**
-         * 在安卓nvue上，事件无法冒泡
-         * 在某些时间，我们希望监听u-from-item的点击事件，此时会导致点击u-form-item内的u-input后
-         * 无法触发u-form-item的点击事件，这里通过手动调用u-form-item的方法进行触发
-         */
-        clickHandler() {
-            if (this.disabled || this.readonly) {
-                uni.hideKeyboard();
-            }
-            // #ifdef APP-NVUE
-            if (os() === "android") {
-                const formItem = $parent.call(this, "u-form-item");
-                if (formItem) {
-                    formItem.clickHandler();
-                }
-            }
-            // #endif
-        },
+        // 尝试调用u-form的验证方法
+        formValidate(this, 'change');
+      });
     },
+    // 点击清除控件
+    onClear() {
+      this.clearInput = true;
+      this.innerValue = '';
+      this.$nextTick(() => {
+        this.valueChange('');
+        this.$emit('clear');
+      });
+    },
+    /**
+     * 在安卓nvue上，事件无法冒泡
+     * 在某些时间，我们希望监听u-from-item的点击事件，此时会导致点击u-form-item内的u-input后
+     * 无法触发u-form-item的点击事件，这里通过手动调用u-form-item的方法进行触发
+     */
+    clickHandler() {
+      if (this.disabled || this.readonly) {
+        uni.hideKeyboard();
+      }
+      // #ifdef APP-NVUE
+      if (os() === 'android') {
+        const formItem = $parent.call(this, 'u-form-item');
+        if (formItem) {
+          formItem.clickHandler();
+        }
+      }
+      // #endif
+    },
+  },
 };
 </script>
 
 <style lang="scss" scoped>
 .u-input {
+  @include flex(row);
+  align-items: center;
+  justify-content: space-between;
+  flex: 1;
+
+  &--radius,
+  &--square {
+    border-radius: 4px;
+  }
+
+  &--no-radius {
+    border-radius: 0;
+  }
+
+  &--circle {
+    border-radius: 100px;
+  }
+
+  &__content {
+    flex: 1;
     @include flex(row);
     align-items: center;
     justify-content: space-between;
-    flex: 1;
 
-    &--radius,
-    &--square {
-        border-radius: 4px;
-    }
+    &__field-wrapper {
+      position: relative;
+      @include flex(row);
+      margin: 0;
+      flex: 1;
 
-    &--no-radius {
-        border-radius: 0;
-    }
-
-    &--circle {
-        border-radius: 100px;
-    }
-
-    &__content {
+      &__field {
+        line-height: 26px;
+        text-align: left;
+        color: $u-main-color;
+        height: 24px;
+        font-size: 15px;
         flex: 1;
-        @include flex(row);
-        align-items: center;
-        justify-content: space-between;
-
-        &__field-wrapper {
-            position: relative;
-            @include flex(row);
-            margin: 0;
-            flex: 1;
-			
-			&__field {
-				line-height: 26px;
-				text-align: left;
-				color: $u-main-color;
-				height: 24px;
-				font-size: 15px;
-				flex: 1;
-			}
-        }
-
-        &__clear {
-            width: 20px;
-            height: 20px;
-            border-radius: 100px;
-            background-color: #c6c7cb;
-            @include flex(row);
-            align-items: center;
-            justify-content: center;
-            transform: scale(0.82);
-            margin-left: 4px;
-        }
-
-        &__subfix-icon {
-            margin-left: 4px;
-        }
-
-        &__prefix-icon {
-            margin-right: 4px;
-        }
+      }
     }
+
+    &__clear {
+      width: 20px;
+      height: 20px;
+      border-radius: 100px;
+      background-color: #c6c7cb;
+      @include flex(row);
+      align-items: center;
+      justify-content: center;
+      transform: scale(0.82);
+      margin-left: 4px;
+    }
+
+    &__subfix-icon {
+      margin-left: 4px;
+    }
+
+    &__prefix-icon {
+      margin-right: 4px;
+    }
+  }
 }
 </style>

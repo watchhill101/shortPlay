@@ -17,8 +17,8 @@ router.get('/', async (req, res) => {
       services: {
         api: 'healthy',
         mongodb: 'unknown',
-        redis: 'unknown'
-      }
+        redis: 'unknown',
+      },
     };
 
     // 检查MongoDB连接状态
@@ -45,27 +45,24 @@ router.get('/', async (req, res) => {
     health.services.redis = redisHealthy ? 'connected' : 'disconnected';
 
     // 判断整体状态
-    const allServicesHealthy = 
-      health.services.mongodb === 'connected' && 
-      health.services.redis === 'connected';
-    
+    const allServicesHealthy = health.services.mongodb === 'connected' && health.services.redis === 'connected';
+
     health.status = allServicesHealthy ? 'healthy' : 'degraded';
 
     // 根据服务状态返回相应的HTTP状态码
     const statusCode = allServicesHealthy ? 200 : 503;
-    
+
     res.status(statusCode).json({
       success: true,
-      data: health
+      data: health,
     });
-
   } catch (error) {
     console.error('Health check failed:', error);
     res.status(500).json({
       success: false,
       status: 'error',
       message: 'Health check failed',
-      error: error.message
+      error: error.message,
     });
   }
 });
@@ -78,12 +75,12 @@ router.get('/redis', async (req, res) => {
   try {
     const isHealthy = await isRedisAvailable();
     const status = isHealthy ? 'healthy' : 'unhealthy';
-    
+
     res.status(isHealthy ? 200 : 503).json({
       success: true,
       service: 'redis',
       status: status,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   } catch (error) {
     res.status(500).json({
@@ -91,7 +88,7 @@ router.get('/redis', async (req, res) => {
       service: 'redis',
       status: 'error',
       message: error.message,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
 });
@@ -104,12 +101,12 @@ router.get('/mongodb', async (req, res) => {
   try {
     const mongoState = mongoose.connection.readyState;
     const isHealthy = mongoState === 1;
-    
+
     const stateMap = {
       0: 'disconnected',
       1: 'connected',
       2: 'connecting',
-      3: 'disconnecting'
+      3: 'disconnecting',
     };
 
     res.status(isHealthy ? 200 : 503).json({
@@ -117,7 +114,7 @@ router.get('/mongodb', async (req, res) => {
       service: 'mongodb',
       status: isHealthy ? 'healthy' : 'unhealthy',
       state: stateMap[mongoState] || 'unknown',
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   } catch (error) {
     res.status(500).json({
@@ -125,7 +122,7 @@ router.get('/mongodb', async (req, res) => {
       service: 'mongodb',
       status: 'error',
       message: error.message,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
 });

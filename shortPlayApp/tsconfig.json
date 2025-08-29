@@ -1,0 +1,13 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "target": "ES2017",
+    "lib": ["ES2017", "DOM", "DOM.Iterable"],
+    "types": ["@dcloudio/types"],
+    "paths": {
+      "@/*": ["./*"]
+    }
+  },
+  "include": ["./**/*.ts", "./**/*.tsx", "./**/*.vue", "./**/*.d.ts"],
+  "exclude": ["node_modules", "unpackage", "dist", "uni_modules"]
+}

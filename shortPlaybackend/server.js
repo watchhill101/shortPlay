@@ -18,7 +18,7 @@ const startServer = async () => {
   try {
     // 1. 连接数据库
     await connectDB();
-    
+
     // 2. 启动服务器监听
     server.listen(config.port, () => {
       console.log(`🚀 Server is running on port ${config.port} in ${config.env} mode.`);
@@ -32,21 +32,21 @@ const startServer = async () => {
 startServer();
 
 // 优雅停机逻辑
-const shutdown = (signal) => {
+const shutdown = signal => {
   process.on(signal, async () => {
     console.log(`\n${signal} received. Shutting down gracefully...`);
-    
+
     server.close(async () => {
       console.log('✅ HTTP server closed.');
-      
+
       try {
         // 关闭Redis连接
         await closeRedis();
-        
+
         // 关闭MongoDB连接
         await mongoose.connection.close(false);
         console.log('✅ MongoDB connection closed.');
-        
+
         console.log('✅ All connections closed. Exiting...');
         process.exit(0);
       } catch (error) {

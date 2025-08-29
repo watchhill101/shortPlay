@@ -1,11 +1,11 @@
 // models/Wallet.js
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 // 定义交易记录的子文档 Schema
 const TransactionSchema = new mongoose.Schema({
   type: {
     type: String,
-    enum: ["deposit", "withdrawal", "reward", "purchase"], // 充值, 提现, 奖励, 消费
+    enum: ['deposit', 'withdrawal', 'reward', 'purchase'], // 充值, 提现, 奖励, 消费
     required: true,
   },
   // 使用 Decimal128 类型来精确存储金额，避免浮点数计算误差
@@ -27,7 +27,7 @@ const WalletSchema = new mongoose.Schema(
   {
     user: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: 'User',
       required: true,
       unique: true, // 确保一个用户只有一个钱包
     },
@@ -42,5 +42,5 @@ const WalletSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-const Wallet = mongoose.model("Wallet", WalletSchema);
+const Wallet = mongoose.model('Wallet', WalletSchema);
 module.exports = Wallet;
