@@ -98,7 +98,6 @@ jspm_packages/
 
 # Gatsby files
 .cache/
-public/
 
 # Storybook build outputs
 .out/
@@ -125,7 +124,7 @@ ehthumbs.db
 Thumbs.db
 
 # Package managers
-package-lock.json
+
 yarn.lock
 pnpm-lock.yaml
 
