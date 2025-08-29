@@ -3,9 +3,9 @@ const mongoose = require('mongoose');
 
 const CollectionSchema = new mongoose.Schema(
   {
-    user: {
+    backgroundUser: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
+      ref: 'BackgroundUser',
       required: true,
       index: true,
     },
