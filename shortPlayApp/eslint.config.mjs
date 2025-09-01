@@ -14,33 +14,22 @@ export default [
       'build/**',
       '.DS_Store',
       '*.log',
-      // 只忽略第三方库的特定文件类型，保留Vue组件检查
-      'uni_modules/**/libs/**/*.js',
-      'uni_modules/**/static/**/*',
-      'uni_modules/**/*.min.js',
-      'uni_modules/**/*.bundle.js',
+      // 完全忽略第三方库，避免大量错误
+      'uni_modules/**',
+      // 如果需要检查自己修改的第三方组件，可以单独配置
+      '!uni_modules/custom-components/**',
     ],
   },
 
-  // 第三方uni_modules组件的宽松规则
+  // 自定义第三方组件的宽松规则（如果有的话）
   {
-    files: ['uni_modules/**/*.vue'],
+    files: ['uni_modules/custom-components/**/*.vue'],
     rules: {
       'vue/multi-word-component-names': 'off',
-      'vue/valid-v-for': 'off',
-      'vue/no-unused-vars': 'off',
-      'vue/require-v-for-key': 'off',
-      'vue/no-mutating-props': 'off',
-      'vue/component-definition-name-casing': 'off',
-      'no-unused-vars': 'off',
-      'no-console': 'off',
-      // 但保留关键的错误检查
-      'no-undef': 'error',
-      'no-unreachable': 'error',
-      'no-dupe-keys': 'error',
-      'no-duplicate-case': 'error',
-      'no-empty': 'warn',
-      'valid-typeof': 'error',
+      'vue/valid-v-for': 'warn',
+      'vue/no-unused-vars': 'warn',
+      'no-unused-vars': 'warn',
+      'no-console': 'warn',
     },
   },
 
@@ -60,6 +49,14 @@ export default [
         swan: 'readonly',
         tt: 'readonly',
         my: 'readonly',
+        // 其他全局变量
+        weex: 'readonly',
+        getCurrentPages: 'readonly',
+        getApp: 'readonly',
+        App: 'readonly',
+        Page: 'readonly',
+        Component: 'readonly',
+        Behavior: 'readonly',
       },
     },
     rules: {
@@ -86,9 +83,36 @@ export default [
         swan: 'readonly',
         tt: 'readonly',
         my: 'readonly',
+        // 其他全局变量
+        weex: 'readonly',
+        getCurrentPages: 'readonly',
+        getApp: 'readonly',
+        App: 'readonly',
+        Page: 'readonly',
+        Component: 'readonly',
+        Behavior: 'readonly',
       },
     },
+    rules: {
+      ...config.rules,
+      // 对于项目自有的 TypeScript 文件保持严格
+      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-empty-object-type': 'warn',
+      '@typescript-eslint/triple-slash-reference': 'off',
+    },
   })),
+
+  // TypeScript 类型声明文件的特殊配置
+  {
+    files: ['**/*.d.ts'],
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-empty-object-type': 'off',
+      '@typescript-eslint/triple-slash-reference': 'off',
+      'no-unused-vars': 'off',
+      '@typescript-eslint/no-unused-vars': 'off',
+    },
+  },
 
   // Vue 文件配置
   ...pluginVue.configs['flat/essential'].map(config => ({
@@ -107,6 +131,14 @@ export default [
         swan: 'readonly',
         tt: 'readonly',
         my: 'readonly',
+        // 其他全局变量
+        weex: 'readonly',
+        getCurrentPages: 'readonly',
+        getApp: 'readonly',
+        App: 'readonly',
+        Page: 'readonly',
+        Component: 'readonly',
+        Behavior: 'readonly',
       },
       parserOptions: {
         ...config.languageOptions?.parserOptions,

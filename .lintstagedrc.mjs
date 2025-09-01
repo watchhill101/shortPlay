@@ -2,11 +2,14 @@
 // ESLint检查 + Stylelint检查 + 代码格式化
 
 export default {
-  // shortPlayApp项目 - JavaScript/Vue文件
-  'shortPlayApp/**/*.{js,vue,ts}': ['npm run lint:fix --workspace=shortPlayApp', 'prettier --write'],
+  // shortPlayApp项目 - JavaScript/Vue文件（排除第三方库）
+  'shortPlayApp/!(uni_modules)/**/*.{js,vue,ts}': ['npm run lint:fix --workspace=shortPlayApp', 'prettier --write'],
 
-  // shortPlayApp项目 - 仅检查自定义样式文件
-  'shortPlayApp/**/*.{css,scss}': ['npm run stylelint:fix --workspace=shortPlayApp'],
+  // shortPlayApp项目根目录文件
+  'shortPlayApp/*.{js,vue,ts,mjs}': ['npm run lint:fix --workspace=shortPlayApp', 'prettier --write'],
+
+  // shortPlayApp项目 - 仅检查自定义样式文件（排除第三方库）
+  'shortPlayApp/!(uni_modules)/**/*.{css,scss}': ['npm run stylelint:fix --workspace=shortPlayApp'],
 
   // shortPlaybackend项目 - 只有JS文件（无样式文件）
   'shortPlaybackend/**/*.{js,mjs}': ['npm run lint:fix --workspace=shortPlaybackend', 'prettier --write'],
