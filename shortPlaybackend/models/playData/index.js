@@ -3,18 +3,24 @@ const mongoose = require('mongoose');
 
 const PlayDataSchema = new mongoose.Schema(
   {
+    // 播放数据所属用户
+
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       required: true,
       index: true,
     },
+    // 播放数据所属合集
+
     collection: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Collection',
       required: true,
       index: true,
     },
+    // 播放数据所属作品
+
     work: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Work',

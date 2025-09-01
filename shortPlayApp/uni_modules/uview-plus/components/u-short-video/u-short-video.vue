@@ -158,149 +158,159 @@
 </template>
 
 <script>
-export default {
-  name: 'u-short-video',
-  props: {
-    // tabs标签列表
-    tabsList: {
-      type: Array,
-      default: () => [{ name: '推荐' }, { name: '关注' }, { name: '朋友' }, { name: '本地' }],
-    },
-    // 视频列表数据
-    videoList: {
-      type: Array,
-      default: () => [],
-    },
-    // 当前选中的tab索引
-    currentTab: {
-      type: Number,
-      default: 0,
-    },
-    // 当前播放的视频索引
-    currentVideo: {
-      type: Number,
-      default: 0,
-    },
-  },
-  data() {
-    return {
-      progressValue: 0,
-      showSpeedSheet: false,
-      currentSpeedVideoIndex: 0,
-      speedOptions: [
-        { name: '0.5x', value: 0.5 },
-        { name: '0.75x', value: 0.75 },
-        { name: '1.0x', value: 1.0 },
-        { name: '1.25x', value: 1.25 },
-        { name: '1.5x', value: 1.5 },
-        { name: '2.0x', value: 2.0 },
-      ],
-    };
-  },
-  methods: {
-    // 处理tab切换
-    handleTabChange(index) {
-      this.$emit('tabChange', index);
-    },
-    // 处理swiper切换
-    handleSwiperChange(e) {
-      const currentIndex = e.detail.current;
-      // 暂停当前播放的视频
-      this.pauseCurrentVideo();
-      // 播放新切换到的视频
-      this.$nextTick(() => {
-        this.playVideo(currentIndex);
-      });
-      this.$emit('videoChange', currentIndex);
-    },
-    // 处理点赞
-    handleLike(item, index) {
-      this.$emit('like', { item, index });
-    },
-    // 处理评论
-    handleComment(item, index) {
-      this.$emit('comment', { item, index });
-    },
-    // 处理分享
-    handleShare(item, index) {
-      this.$emit('share', { item, index });
-    },
-    // 处理收藏
-    handleCollect(item, index) {
-      this.$emit('collect', { item, index });
-    },
-    // 进度条拖动中
-    onProgressChanging(value) {
-      // 更新当前视频的进度值
-      if (this.videoList[this.currentVideo]) {
-        this.videoList[this.currentVideo]['progressValue'] = value.detail.value;
-      }
-      this.$emit('progressChanging', {
-        progress: value.detail.value,
-        index: this.currentVideo,
-      });
-    },
-    // 进度条值改变
-    onProgressChange(value) {
-      // 更新当前视频的进度值
-      if (this.videoList[this.currentVideo]) {
-        this.$set(this.videoList[this.currentVideo], 'progressValue', value.detail.value);
-      }
-      this.$emit('progressChange', {
-        progress: value.detail.value,
-        index: this.currentVideo,
-      });
-    },
-    // 显示倍速选项
-    showSpeedOptions(index) {
-      this.currentSpeedVideoIndex = index;
-      this.showSpeedSheet = true;
-    },
-    // 选择倍速
-    selectSpeed(action) {
-      const videoContext = uni.createVideoContext('video-' + this.currentSpeedVideoIndex, this);
-      videoContext.playbackRate(action.value);
-
-      // 更新视频倍速数据
-      this.$set(this.videoList[this.currentSpeedVideoIndex], 'playbackRate', action.value);
-      this.showSpeedSheet = false;
-    },
-    // 播放指定索引的视频
-    playVideo(index) {
-      const videoContext = uni.createVideoContext('video-' + index, this);
-      videoContext.play();
-    },
-    // 暂停当前视频
-    pauseCurrentVideo() {
-      const videoContext = uni.createVideoContext('video-' + this.currentVideo, this);
-      videoContext.pause();
-    },
-    // 视频播放事件
-    onVideoPlay(e) {
-      this.$emit('videoPlay', { index: this.currentVideo, event: e });
-    },
-    // 视频暂停事件
-    onVideoPause(e) {
-      this.$emit('videoPause', { index: this.currentVideo, event: e });
-    },
-    // 视频结束事件
-    onVideoEnded(e) {
-      this.$emit('videoEnded', { index: this.currentVideo, event: e });
-    },
-    // 视频时间更新事件
-    onTimeUpdate(e) {
-      const progress = (e.detail.currentTime / e.detail.duration) * 100;
-      if (this.videoList[this.currentVideo]) {
-        this.$set(this.videoList[this.currentVideo], 'progress', progress);
-      }
-      this.$emit('timeUpdate', { index: this.currentVideo, event: e });
-    },
-    // 视频元数据加载完成事件
-    onLoadedMetadata(e) {
-      this.$emit('loadedMetadata', { index: this.currentVideo, event: e });
-    },
-  },
-};
+	export default {
+		name: 'u-short-video',
+		props: {
+			// tabs标签列表
+			tabsList: {
+				type: Array,
+				default: () => [
+					{ name: '推荐' },
+					{ name: '关注' },
+					{ name: '朋友' },
+					{ name: '本地' }
+				]
+			},
+			// 视频列表数据
+			videoList: {
+				type: Array,
+				default: () => []
+			},
+			// 当前选中的tab索引
+			currentTab: {
+				type: Number,
+				default: 0
+			},
+			// 当前播放的视频索引
+			currentVideo: {
+				type: Number,
+				default: 0
+			}
+		},
+		data() {
+			return {
+				progressValue: 0,
+				showSpeedSheet: false,
+				currentSpeedVideoIndex: 0,
+				speedOptions: [
+					{ name: '0.5x', value: 0.5 },
+					{ name: '0.75x', value: 0.75 },
+					{ name: '1.0x', value: 1.0 },
+					{ name: '1.25x', value: 1.25 },
+					{ name: '1.5x', value: 1.5 },
+					{ name: '2.0x', value: 2.0 }
+				]
+			}
+		},
+		methods: {
+			// 处理tab切换
+			handleTabChange(index) {
+				this.$emit('tabChange', index);
+			},
+			// 处理swiper切换
+			handleSwiperChange(e) {
+				const currentIndex = e.detail.current;
+				// 暂停当前播放的视频
+				this.pauseCurrentVideo();
+				// 播放新切换到的视频
+				this.$nextTick(() => {
+					this.playVideo(currentIndex);
+				});
+				this.$emit('videoChange', currentIndex);
+			},
+			// 处理点赞
+			handleLike(item, index) {
+				this.$emit('like', { item, index });
+			},
+			// 处理评论
+			handleComment(item, index) {
+				this.$emit('comment', { item, index });
+			},
+			// 处理分享
+			handleShare(item, index) {
+				this.$emit('share', { item, index });
+			},
+			// 处理收藏
+			handleCollect(item, index) {
+				this.$emit('collect', { item, index });
+			},
+			// 进度条拖动中
+			onProgressChanging(value) {
+				// 更新当前视频的进度值
+				if (this.videoList[this.currentVideo]) {
+					this.videoList[this.currentVideo]['progressValue'] = value.detail.value
+				}
+				this.$emit('progressChanging', {
+					progress: value.detail.value,
+					index: this.currentVideo
+				});
+			},
+			// 进度条值改变
+		onProgressChange(value) {
+			// 添加空值检查，防止value或value.detail为undefined
+			if (!value || !value.detail) {
+				return;
+			}
+			
+			// 更新当前视频的进度值
+			if (this.videoList[this.currentVideo]) {
+				this.$set(this.videoList[this.currentVideo], 'progressValue', value.detail.value);
+			}
+			this.$emit('progressChange', {
+				progress: value.detail.value,
+				index: this.currentVideo
+			});
+		},
+			// 显示倍速选项
+			showSpeedOptions(index) {
+				this.currentSpeedVideoIndex = index;
+				this.showSpeedSheet = true;
+			},
+			// 选择倍速
+			selectSpeed(action) {
+				const videoContext = uni.createVideoContext('video-' + this.currentSpeedVideoIndex, this);
+				videoContext.playbackRate(action.value);
+				
+				// 更新视频倍速数据
+				this.$set(this.videoList[this.currentSpeedVideoIndex], 'playbackRate', action.value);
+				this.showSpeedSheet = false;
+			},
+			// 播放指定索引的视频
+			playVideo(index) {
+				const videoContext = uni.createVideoContext('video-' + index, this);
+				videoContext.play();
+			},
+			// 暂停当前视频
+			pauseCurrentVideo() {
+				const videoContext = uni.createVideoContext('video-' + this.currentVideo, this);
+				videoContext.pause();
+			},
+			// 视频播放事件
+			onVideoPlay(e) {
+				this.$emit('videoPlay', { index: this.currentVideo, event: e });
+			},
+			// 视频暂停事件
+			onVideoPause(e) {
+				this.$emit('videoPause', { index: this.currentVideo, event: e });
+			},
+			// 视频结束事件
+			onVideoEnded(e) {
+				this.$emit('videoEnded', { index: this.currentVideo, event: e });
+			},
+			// 视频时间更新事件
+			onTimeUpdate(e) {
+				const progress = (e.detail.currentTime / e.detail.duration) * 100;
+				if (this.videoList[this.currentVideo]) {
+					this.$set(this.videoList[this.currentVideo], 'progress', progress);
+				}
+				this.$emit('timeUpdate', { index: this.currentVideo, event: e });
+			},
+			// 视频元数据加载完成事件
+			onLoadedMetadata(e) {
+				this.$emit('loadedMetadata', { index: this.currentVideo, event: e });
+			}
+		}
+	}
 </script>
 
 <style lang="scss" scoped>
