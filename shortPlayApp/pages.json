@@ -1,5 +1,4 @@
 {
-
 	"easycom": {
 		"autoscan": true,
 		"custom": {
@@ -57,69 +56,56 @@
 				"navigationBarTitleText": "",
 				"enablePullDownRefresh": true
 			}
-		},
-		{
-			"path": "pages/index/search",
-			"style": {
-				"app-plus": {
-					"bounce": "none"
-				},
-				"navigationBarTitleText": "",
-				"enablePullDownRefresh": true
-			}
 		}
 	],
 
+	"globalStyle": {
+		"mp-alipay": {
+			
+			"transparentTitle": "always",
+			"allowsBounceVertical": "NO"
+		},
+		"navigationBarBackgroundColor": "#0081ff",
+		"navigationBarTitleText": "MaiShort",
+		"navigationStyle": "custom",
+		"navigationBarTextStyle": "black"
+	},
 
-  "globalStyle": {
-    "mp-alipay": {
-      "transparentTitle": "always",
-      "allowsBounceVertical": "NO"
-    },
-    "navigationBarBackgroundColor": "#0081ff",
-    "navigationBarTitleText": "MaiShort",
-    "navigationStyle": "custom",
-    "navigationBarTextStyle": "black"
-  },
-
-  "tabBar": {
-    "color": "#636363",
-    "selectedColor": "#f44627",
-    "borderStyle": "black",
-    "fontSize": "12px",
-    "iconWidth": "22px",
-    "height": "60px",
-    "backgroundColor": "#141818",
-    "list": [
-      {
-        "pagePath": "pages/index/index",
-        "iconPath": "static/tabbar/index.png",
-        "selectedIconPath": "static/tabbar/index-cur.png",
-        "text": "首页"
-      },
-      {
-        "pagePath": "pages/watch/index",
-        "iconPath": "static/tabbar/subs.png",
-        "selectedIconPath": "static/tabbar/subs-cur.png",
-        "text": "在追"
-      },
-      {
-        "pagePath": "pages/mine/index",
-        "iconPath": "static/tabbar/user.png",
-        "selectedIconPath": "static/tabbar/user-cur.png",
-        "text": "我的"
-      }
-    ]
-  },
-  "usingComponents": true,
-  "condition": {
-    "current": 0,
-    "list": [
-      {
-        "name": "XQXPlugin",
-        "path": "pages/index/index",
-        "query": ""
-      }
-    ]
-  }
+	"tabBar": {
+		"color": "#636363",
+		"selectedColor": "#f44627",
+		"borderStyle": "black",
+		"fontSize": "12px",
+		"iconWidth": "22px",
+		"height": "60px",
+		"backgroundColor": "#141818",
+		"list": [{
+				"pagePath": "pages/index/index",
+				"iconPath": "static/tabbar/index.png",
+				"selectedIconPath": "static/tabbar/index-cur.png",
+				"text": "首页"
+			},
+			{
+				"pagePath": "pages/watch/index",
+				"iconPath": "static/tabbar/subs.png",
+				"selectedIconPath": "static/tabbar/subs-cur.png",
+				"text": "在追"
+			},
+			{
+				"pagePath": "pages/mine/index",
+				"iconPath": "static/tabbar/user.png",
+				"selectedIconPath": "static/tabbar/user-cur.png",
+				"text": "我的"
+			}
+		]
+	},
+	"usingComponents": true,
+	"condition": { 
+		"current": 0, 
+		"list": [{
+			"name": "XQXPlugin", 
+			"path": "pages/index/index", 
+			"query": "" 
+		}]
+	}
 }

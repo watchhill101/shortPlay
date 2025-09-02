@@ -5,6 +5,14 @@ coverage/
 .DS_Store
 *.log
 
+# 样式文件忽略规则
+*.css
+*.scss
+*.sass
+*.less
+*.styl
+*.stylus
+
 # 子项目有自己的配置
 shortPlayApp/node_modules/
 shortPlayApp/unpackage/

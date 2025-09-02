@@ -2,3 +2,12 @@ node_modules
 dist
 build
 uni_modules/**
+
+# 样式文件忽略规则
+*.css
+*.scss
+*.sass
+*.less
+*.styl
+*.stylus
+uni.scss

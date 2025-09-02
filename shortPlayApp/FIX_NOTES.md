@@ -3,7 +3,6 @@
 ## 问题描述 (Problem Description)
 
 项目中的 `xqx-player` 组件是一个付费插件，导致以下错误：
-
 - 模块解析失败：`Failed to resolve import "uni_modules/xqx-player/components/xqx-player/xqx-player.vue"`
 - 动态导入失败：`Failed to fetch dynamically imported module`
 - 付费插件解析失败：`付费插件: uni_modules/xqx-player 解析失败,请重新发行`
@@ -25,7 +24,6 @@
 ### 修改内容 (Changes Made)
 
 #### 移除的代码 (Removed Code)
-
 ```javascript
 // 移除了付费插件的导入
 import XqxPlayer from 'uni_modules/xqx-player/components/xqx-player/xqx-player.vue';
@@ -40,37 +38,30 @@ components: {
 ```
 
 #### 添加的代码 (Added Code)
-
 ```javascript
 // 添加了占位符组件
 <view class="video-placeholder">
-  <text>视频播放器组件</text>
-  <text class="subtitle">原使用付费插件 xqx-player</text>
+    <text>视频播放器组件</text>
+    <text class="subtitle">原使用付费插件 xqx-player</text>
 </view>
 ```
 
 ## 后续开发建议 (Development Recommendations)
 
 ### 方案1：使用免费的视频播放器组件
-
 可以考虑使用以下免费替代方案：
-
 - uni-app 内置的 `<video>` 组件
 - 第三方免费的视频播放器插件
 - 自定义实现的视频播放器
 
 ### 方案2：购买 xqx-player 插件
-
 如果需要使用原插件功能：
-
 1. 访问 [插件市场](https://ext.dcloud.net.cn/plugin?id=20373)
 2. 购买插件授权
 3. 按照插件文档进行配置
 
 ### 方案3：自定义实现
-
 基于现有代码结构，可以实现自定义的视频播放器：
-
 1. 使用 `<video>` 组件作为基础
 2. 实现上下滑动切换功能
 3. 添加播放控制、进度条等功能
@@ -91,4 +82,4 @@ components: {
 
 ---
 
-_此修复确保了项目的基础功能正常运行，为后续开发提供了稳定的基础。_
+*此修复确保了项目的基础功能正常运行，为后续开发提供了稳定的基础。*

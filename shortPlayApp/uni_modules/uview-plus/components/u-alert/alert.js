@@ -8,19 +8,19 @@
  * @FilePath     : /uview-plus/libs/config/props/alert.js
  */
 export default {
-  // alert警告组件
-  alert: {
-    title: '',
-    type: 'warning',
-    description: '',
-    closable: false,
-    showIcon: false,
-    effect: 'light',
-    center: false,
-    fontSize: 14,
-    transitionMode: 'fade',
-    duration: 0,
-    icon: '',
-    value: true,
-  },
-};
+    // alert警告组件
+    alert: {
+        title: '',
+        type: 'warning',
+        description: '',
+        closable: false,
+        showIcon: false,
+        effect: 'light',
+        center: false,
+        fontSize: 14,
+        transitionMode: 'fade',
+        duration: 0,
+        icon: '',
+        value: true
+    }
+}

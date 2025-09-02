@@ -7,7 +7,21 @@ import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended'
 export default [
   // 忽略文件配置
   {
-    ignores: ['node_modules/**', 'dist/**', 'build/**', 'coverage/**', '.DS_Store', '*.log'],
+    ignores: [
+      'node_modules/**', 
+      'dist/**', 
+      'build/**', 
+      'coverage/**', 
+      '.DS_Store', 
+      '*.log',
+      // 忽略样式文件
+      '**/*.css',
+      '**/*.scss',
+      '**/*.sass',
+      '**/*.less',
+      '**/*.styl',
+      '**/*.stylus',
+    ],
   },
 
   // ES Module 文件配置 (如 .mjs 文件)

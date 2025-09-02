@@ -17,6 +17,13 @@ export default [
       '!eslint.config.mjs',
       '.DS_Store',
       '*.log',
+      // 忽略样式文件
+      '**/*.css',
+      '**/*.scss',
+      '**/*.sass',
+      '**/*.less',
+      '**/*.styl',
+      '**/*.stylus',
     ],
   },
 

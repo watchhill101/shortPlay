@@ -25,5 +25,5 @@
 5. pages/playlet/episodes.vue 剧集播放页面，集成视频插件xqx-player，演示插件剧集模式的使用
 
 ### 演示视频
-
 [观看演示视频](https://env-00jxhb2rkow0.normal.cloudstatic.cn/xqx-playlet/xqx-playler_v1.5.6_2.mp4)
+

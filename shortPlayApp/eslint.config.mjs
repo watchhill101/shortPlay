@@ -18,6 +18,13 @@ export default [
       'uni_modules/**',
       // 如果需要检查自己修改的第三方组件，可以单独配置
       '!uni_modules/custom-components/**',
+      // 忽略样式文件
+      '**/*.css',
+      '**/*.scss',
+      '**/*.sass',
+      '**/*.less',
+      '**/*.styl',
+      '**/*.stylus',
     ],
   },
 
