@@ -1,13 +1,13 @@
 // routes/api/auth.js
 const express = require('express');
-const { 
-  sendSmsCode, 
-  loginWithPhone, 
-  loginWithDouyin, 
-  refreshToken, 
-  verifyToken, 
-  logout, 
-  getSessions 
+const {
+  sendSmsCode,
+  loginWithPhone,
+  loginWithDouyin,
+  refreshToken,
+  verifyToken,
+  logout,
+  getSessions,
 } = require('../../models/User/indexApi');
 const protect = require('../../middleware/auth');
 

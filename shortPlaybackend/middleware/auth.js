@@ -30,7 +30,7 @@ const protect = async (req, res, next) => {
 
     // 将用户信息附加到请求对象上
     req.user = await User.findById(decoded.user.id);
-    
+
     if (!req.user) {
       const err = new Error('User not found');
       err.status = 401;

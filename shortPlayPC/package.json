@@ -34,7 +34,7 @@
     "globals": "^16.3.0",
     "lint-staged": "^15.5.2",
     "postcss": "^8.4.40",
-    "prettier": "^3.2.5",
+    "prettier": "^3.6.2",
     "sass": "^1.55.0",
     "stylelint": "^16.23.1",
     "stylelint-config-standard": "^36.0.1",

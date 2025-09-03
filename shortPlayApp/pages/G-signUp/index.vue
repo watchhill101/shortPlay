@@ -1,0 +1,583 @@
+<template>
+  <view class="login-container">
+    <!-- 关闭按钮 -->
+    <view class="close-btn" @click="goBack">
+      <text class="close-text">×</text>
+    </view>
+
+    <!-- 主内容 -->
+    <view class="login-content">
+      <text class="login-title">登录</text>
+      <text class="login-subtitle">发现更多精彩短剧</text>
+
+      <!-- 手机号输入区域 -->
+      <view class="phone-input-section">
+        <view class="phone-input-container">
+          <text class="country-code">+86</text>
+          <input
+            class="phone-input"
+            type="number"
+            placeholder="请输入您的手机号"
+            v-model="phoneNumber"
+            maxlength="11"
+          />
+        </view>
+
+        <!-- 验证码输入区域 -->
+        <view class="code-input-container" v-if="showCodeInput">
+          <input class="code-input" type="number" placeholder="请输入验证码" v-model="verificationCode" maxlength="6" />
+        </view>
+
+        <!-- 获取验证码按钮 -->
+        <view class="get-code-btn" :class="{ disabled: countdown > 0 || isGettingCode }" @click="handleButtonClick">
+          <text class="get-code-text">
+            {{ getButtonText() }}
+          </text>
+        </view>
+      </view>
+
+      <!-- 协议勾选 -->
+      <view class="agreement-wrapper">
+        <view class="agreement-row" @click="toggleAgreement">
+          <view class="checkbox-container">
+            <view class="checkbox" :class="agreedToTerms ? 'checked' : ''"></view>
+          </view>
+          <text class="agreement-text">
+            已阅读并同意
+            <text class="link-text" @click.stop="openUserAgreement">用户协议</text>
+            和
+            <text class="link-text" @click.stop="openPrivacyPolicy">隐私政策</text>
+            以及运营商服务协议
+          </text>
+        </view>
+      </view>
+
+      <!-- 抖音图标 -->
+      <view class="douyin-icon" @click="handleDouyinLogin">
+        <text class="douyin-symbol">♪</text>
+      </view>
+    </view>
+  </view>
+</template>
+//
+
+<script>
+import tokenManager from '../../utils/tokenManager.js';
+import { sendSmsCode, loginWithPhone } from '../../api/auth.js';
+
+export default {
+  data() {
+    return {
+      agreedToTerms: false,
+      phoneNumber: '',
+      verificationCode: '',
+      countdown: 0,
+      isGettingCode: false,
+      isLoggingIn: false,
+      showCodeInput: false,
+      codeAlreadySent: false,
+    };
+  },
+
+  methods: {
+    // 返回上一页
+    goBack() {
+      uni.navigateBack();
+    },
+
+    // 获取按钮文本
+    getButtonText() {
+      if (!this.codeAlreadySent) {
+        return this.isGettingCode ? '发送中...' : '获取验证码';
+      } else {
+        if (this.countdown > 0) {
+          return `${this.countdown}s后重新获取`;
+        } else if (this.isLoggingIn) {
+          return '登录中...';
+        } else {
+          return '立即登录';
+        }
+      }
+    },
+
+    // 处理按钮点击
+    async handleButtonClick() {
+      if (!this.codeAlreadySent) {
+        // 第一次点击 - 获取验证码
+        await this.getVerificationCode();
+      } else {
+        // 已发送验证码后点击
+        if (this.countdown > 0) {
+          return; // 倒计时中，不处理
+        } else if (this.verificationCode) {
+          // 有验证码，执行登录
+          await this.loginWithVerificationCode();
+        } else {
+          // 重新获取验证码
+          await this.getVerificationCode();
+        }
+      }
+    },
+
+    // 获取验证码
+    async getVerificationCode() {
+      if (!this.phoneNumber) {
+        uni.showToast({
+          title: '请输入手机号',
+          icon: 'none',
+          duration: 2000,
+        });
+        return;
+      }
+
+      if (!/^1[3-9]\d{9}$/.test(this.phoneNumber)) {
+        uni.showToast({
+          title: '请输入正确的手机号',
+          icon: 'none',
+          duration: 2000,
+        });
+        return;
+      }
+
+      if (!this.agreedToTerms) {
+        uni.showToast({
+          title: '请先同意用户协议',
+          icon: 'none',
+          duration: 2000,
+        });
+        return;
+      }
+
+      if (this.isGettingCode || this.countdown > 0) {
+        return;
+      }
+
+      try {
+        this.isGettingCode = true;
+        uni.showLoading({ title: '发送中...' });
+
+        // 调用真实的发送验证码API
+        const response = await sendSmsCode(this.phoneNumber);
+
+        if (response.data.success) {
+          uni.showToast({
+            title: '验证码已发送',
+            icon: 'success',
+            duration: 1500,
+          });
+
+          // 开始倒计时
+          this.startCountdown();
+
+          // 显示验证码输入框
+          this.showCodeInput = true;
+          this.codeAlreadySent = true;
+
+          // 显示验证码提示（开发环境）
+          if (process.env.NODE_ENV === 'development') {
+            setTimeout(() => {
+              uni.showModal({
+                title: '开发提示',
+                content: '开发环境下，验证码将通过控制台输出或推送服务发送',
+                showCancel: false,
+              });
+            }, 2000);
+          }
+        } else {
+          throw new Error(response.data.message || '发送失败');
+        }
+      } catch (error) {
+        console.error('获取验证码失败:', error);
+
+        let errorMessage = '获取验证码失败，请重试';
+        if (error.isNetworkError) {
+          errorMessage = '网络连接失败，请检查网络连接';
+        } else if (error.data?.message) {
+          errorMessage = error.data.message;
+        } else if (error.message) {
+          errorMessage = error.message;
+        }
+
+        uni.showToast({
+          title: errorMessage,
+          icon: 'none',
+          duration: 3000,
+        });
+      } finally {
+        uni.hideLoading();
+        this.isGettingCode = false;
+      }
+    },
+
+    // 开始倒计时
+    startCountdown() {
+      this.countdown = 60;
+      const timer = setInterval(() => {
+        this.countdown--;
+        if (this.countdown <= 0) {
+          clearInterval(timer);
+        }
+      }, 1000);
+    },
+
+    // 验证码登录
+    async loginWithVerificationCode() {
+      if (!this.verificationCode) {
+        uni.showToast({
+          title: '请输入验证码',
+          icon: 'none',
+          duration: 2000,
+        });
+        return;
+      }
+
+      if (this.verificationCode.length !== 6) {
+        uni.showToast({
+          title: '请输入6位验证码',
+          icon: 'none',
+          duration: 2000,
+        });
+        return;
+      }
+
+      try {
+        this.isLoggingIn = true;
+        uni.showLoading({ title: '登录中...' });
+
+        // 调用真实的登录API
+        const response = await loginWithPhone(this.phoneNumber, this.verificationCode, tokenManager.getDeviceId());
+
+        if (response.data.success) {
+          // 保存Token和用户信息
+          tokenManager.saveTokens(response.data.data);
+
+          uni.showToast({
+            title: '登录成功',
+            icon: 'success',
+            duration: 1500,
+          });
+
+          // 延迟跳转到首页
+          setTimeout(() => {
+            uni.switchTab({
+              url: '/pages/index/index',
+            });
+          }, 1500);
+        } else {
+          throw new Error(response.data.message || '登录失败');
+        }
+      } catch (error) {
+        console.error('登录失败:', error);
+
+        let errorMessage = '登录失败，请重试';
+        if (error.isNetworkError) {
+          errorMessage = '网络连接失败，请检查网络连接';
+        } else if (error.data?.message) {
+          errorMessage = error.data.message;
+        } else if (error.message) {
+          errorMessage = error.message;
+        }
+
+        uni.showToast({
+          title: errorMessage,
+          icon: 'none',
+          duration: 3000,
+        });
+      } finally {
+        uni.hideLoading();
+        this.isLoggingIn = false;
+      }
+    },
+
+    // 抖音登录
+    async handleDouyinLogin() {
+      if (!this.agreedToTerms) {
+        uni.showToast({
+          title: '请先同意用户协议',
+          icon: 'none',
+          duration: 2000,
+        });
+        return;
+      }
+
+      uni.showLoading({ title: '正在拉起抖音...' });
+
+      try {
+        // 1. 调用 uni.login 获取抖音授权码
+        const loginRes = await uni.login({
+          provider: 'douyin',
+        });
+
+        const authCode = loginRes.code;
+        if (!authCode) {
+          throw new Error('未能获取到抖音授权码');
+        }
+
+        uni.showLoading({ title: '登录中...' });
+
+        // 2. 将授权码发送到后端进行登录
+        const response = await loginWithDouyin(authCode, tokenManager.getDeviceId());
+
+        if (response.data.success) {
+          // 3. 保存Token和用户信息
+          tokenManager.saveTokens(response.data.data);
+
+          uni.showToast({
+            title: '登录成功',
+            icon: 'success',
+            duration: 1500,
+          });
+
+          // 4. 延迟跳转到首页
+          setTimeout(() => {
+            uni.switchTab({
+              url: '/pages/index/index',
+            });
+          }, 1500);
+        } else {
+          throw new Error(response.data.message || '抖音登录失败');
+        }
+      } catch (error) {
+        console.error('抖音登录失败:', error);
+        let errorMessage = '抖音登录失败，请重试';
+
+        // uniapp 授权失败的错误处理
+        if (typeof error.errMsg === 'string' && error.errMsg.includes('login:fail')) {
+          errorMessage = '您取消了抖音授权';
+        } else if (error.isNetworkError) {
+          errorMessage = '网络连接失败，请检查网络连接';
+        } else if (error.data?.message) {
+          errorMessage = error.data.message;
+        } else if (error.message) {
+          errorMessage = error.message;
+        }
+
+        uni.showToast({
+          title: errorMessage,
+          icon: 'none',
+          duration: 3000,
+        });
+      } finally {
+        uni.hideLoading();
+      }
+    },
+
+    // 切换协议同意状态
+    toggleAgreement() {
+      this.agreedToTerms = !this.agreedToTerms;
+    },
+
+    // 打开用户协议
+    openUserAgreement() {
+      // 这里可以跳转到用户协议页面
+      console.log('打开用户协议');
+    },
+
+    // 打开隐私政策
+    openPrivacyPolicy() {
+      // 这里可以跳转到隐私政策页面
+      console.log('打开隐私政策');
+    },
+  },
+};
+</script>
+
+<style scoped lang="scss">
+.login-container {
+  width: 100%;
+  height: 100vh;
+  background: linear-gradient(180deg, #2d5043 0%, #1a3228 50%, #0e1814 100%);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.close-btn {
+  position: absolute;
+  top: 60rpx;
+  left: 60rpx;
+  width: 80rpx;
+  height: 80rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.close-text {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 60rpx;
+  font-weight: 300;
+  line-height: 1;
+}
+
+.login-content {
+  width: 100%;
+  max-width: 600rpx;
+  padding: 0 80rpx;
+  text-align: center;
+}
+
+.login-title {
+  display: block;
+  font-size: 64rpx;
+  font-weight: bold;
+  color: #ffffff;
+  margin-bottom: 30rpx;
+  letter-spacing: 4rpx;
+}
+
+.login-subtitle {
+  display: block;
+  font-size: 32rpx;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 120rpx;
+}
+
+.phone-input-section {
+  margin-bottom: 120rpx;
+}
+
+.phone-input-container {
+  display: flex;
+  align-items: center;
+  background: transparent;
+  border-bottom: 2rpx solid rgba(255, 255, 255, 0.3);
+  padding: 20rpx 0;
+  margin-bottom: 60rpx;
+}
+
+.code-input-container {
+  background: transparent;
+  border-bottom: 2rpx solid rgba(255, 255, 255, 0.3);
+  padding: 20rpx 0;
+  margin-bottom: 60rpx;
+}
+
+.country-code {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 32rpx;
+  margin-right: 40rpx;
+  font-weight: 500;
+}
+
+.phone-input {
+  flex: 1;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 32rpx;
+  background: transparent;
+  border: none;
+  outline: none;
+
+  &::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+  }
+}
+
+.code-input {
+  width: 100%;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 32rpx;
+  background: transparent;
+  border: none;
+  outline: none;
+  text-align: center;
+  letter-spacing: 8rpx;
+
+  &::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+    letter-spacing: normal;
+  }
+}
+
+.get-code-btn {
+  width: 100%;
+  padding: 35rpx 0;
+  background: linear-gradient(90deg, #ff6b47, #ff9529);
+  border-radius: 60rpx;
+  box-shadow: 0 8rpx 24rpx rgba(255, 107, 71, 0.3);
+
+  &.disabled {
+    background: rgba(255, 255, 255, 0.3);
+    box-shadow: none;
+  }
+}
+
+.get-code-text {
+  color: #ffffff;
+  font-size: 36rpx;
+  font-weight: bold;
+  letter-spacing: 2rpx;
+}
+
+.agreement-wrapper {
+  margin-bottom: 100rpx;
+}
+
+.agreement-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 20rpx;
+  text-align: left;
+}
+
+.checkbox-container {
+  margin-top: 6rpx;
+}
+
+.checkbox {
+  width: 32rpx;
+  height: 32rpx;
+  border: 2rpx solid rgba(255, 255, 255, 0.6);
+  border-radius: 50%;
+  position: relative;
+
+  &.checked {
+    background: #ff9529;
+    border-color: #ff9529;
+
+    &:after {
+      content: '✓';
+      position: absolute;
+      top: -2rpx;
+      left: 6rpx;
+      color: #ffffff;
+      font-size: 20rpx;
+      font-weight: bold;
+    }
+  }
+}
+
+.agreement-text {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 26rpx;
+  line-height: 1.6;
+  flex: 1;
+}
+
+.link-text {
+  color: #ff9529;
+  text-decoration: underline;
+}
+
+.douyin-icon {
+  position: fixed;
+  bottom: 100rpx;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120rpx;
+  height: 120rpx;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.douyin-symbol {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 48rpx;
+  font-weight: bold;
+}
+</style>

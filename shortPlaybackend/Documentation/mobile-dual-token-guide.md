@@ -473,16 +473,10 @@ export default {
       <div class="login-form">
         <!-- Tab切换 -->
         <div class="login-tabs">
-          <div 
-            :class="['tab-item', { active: loginType === 'password' }]"
-            @click="switchLoginType('password')"
-          >
+          <div :class="['tab-item', { active: loginType === 'password' }]" @click="switchLoginType('password')">
             密码登录
           </div>
-          <div 
-            :class="['tab-item', { active: loginType === 'phone' }]"
-            @click="switchLoginType('phone')"
-          >
+          <div :class="['tab-item', { active: loginType === 'phone' }]" @click="switchLoginType('phone')">
             验证码登录
           </div>
         </div>
@@ -511,22 +505,14 @@ export default {
                 :class="{ error: errors.password }"
                 @input="clearError('password')"
               />
-              <span 
-                class="password-toggle"
-                @click="showPassword = !showPassword"
-              >
+              <span class="password-toggle" @click="showPassword = !showPassword">
                 {{ showPassword ? '👁️' : '👁️‍🗨️' }}
               </span>
             </div>
             <span v-if="errors.password" class="error-text">{{ errors.password }}</span>
           </div>
 
-          <button 
-            class="login-btn"
-            :class="{ loading: loading }"
-            :disabled="loading"
-            @click="handlePasswordLogin"
-          >
+          <button class="login-btn" :class="{ loading: loading }" :disabled="loading" @click="handlePasswordLogin">
             <span v-if="loading" class="loading-spinner"></span>
             {{ loading ? '登录中...' : '登录' }}
           </button>
@@ -556,23 +542,14 @@ export default {
                 :class="{ error: errors.code }"
                 @input="clearError('code')"
               />
-              <button 
-                class="code-btn"
-                :disabled="codeSending || countdown > 0"
-                @click="sendSmsCode"
-              >
+              <button class="code-btn" :disabled="codeSending || countdown > 0" @click="sendSmsCode">
                 {{ getCodeButtonText }}
               </button>
             </div>
             <span v-if="errors.code" class="error-text">{{ errors.code }}</span>
           </div>
 
-          <button 
-            class="login-btn"
-            :class="{ loading: loading }"
-            :disabled="loading"
-            @click="handlePhoneLogin"
-          >
+          <button class="login-btn" :class="{ loading: loading }" :disabled="loading" @click="handlePhoneLogin">
             <span v-if="loading" class="loading-spinner"></span>
             {{ loading ? '登录中...' : '登录' }}
           </button>
@@ -583,12 +560,9 @@ export default {
           <div class="divider">
             <span>或</span>
           </div>
-          
+
           <div class="third-party-buttons">
-            <button 
-              class="third-party-btn douyin"
-              @click="handleDouyinLogin"
-            >
+            <button class="third-party-btn douyin" @click="handleDouyinLogin">
               <img src="/icons/douyin.png" alt="抖音" class="icon" />
               抖音登录
             </button>
@@ -605,238 +579,238 @@ export default {
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
-import { useRouter } from 'vue-router'
-import tokenManager from '@/utils/tokenManager.js'
-import httpClient from '@/utils/request.js'
+import { ref, reactive, computed, onMounted, onUnmounted } from 'vue';
+import { useRouter } from 'vue-router';
+import tokenManager from '@/utils/tokenManager.js';
+import httpClient from '@/utils/request.js';
 
-const router = useRouter()
+const router = useRouter();
 
 // 响应式数据
-const loginType = ref('password')
-const loading = ref(false)
-const showPassword = ref(false)
-const codeSending = ref(false)
-const countdown = ref(0)
-let countdownTimer = null
+const loginType = ref('password');
+const loading = ref(false);
+const showPassword = ref(false);
+const codeSending = ref(false);
+const countdown = ref(0);
+let countdownTimer = null;
 
 // 表单数据
 const passwordForm = reactive({
   username: '',
-  password: ''
-})
+  password: '',
+});
 
 const phoneForm = reactive({
   phone: '',
-  code: ''
-})
+  code: '',
+});
 
 // 错误信息
-const errors = reactive({})
+const errors = reactive({});
 
 // Toast提示
 const toast = reactive({
   show: false,
   message: '',
-  type: 'info' // info, success, error
-})
+  type: 'info', // info, success, error
+});
 
 // 计算属性
 const getCodeButtonText = computed(() => {
-  if (codeSending.value) return '发送中...'
-  if (countdown.value > 0) return `${countdown.value}s后重新发送`
-  return '获取验证码'
-})
+  if (codeSending.value) return '发送中...';
+  if (countdown.value > 0) return `${countdown.value}s后重新发送`;
+  return '获取验证码';
+});
 
 // 方法
-const switchLoginType = (type) => {
-  loginType.value = type
-  clearAllErrors()
-}
+const switchLoginType = type => {
+  loginType.value = type;
+  clearAllErrors();
+};
 
-const clearError = (field) => {
+const clearError = field => {
   if (errors[field]) {
-    delete errors[field]
+    delete errors[field];
   }
-}
+};
 
 const clearAllErrors = () => {
   Object.keys(errors).forEach(key => {
-    delete errors[key]
-  })
-}
+    delete errors[key];
+  });
+};
 
 const showToast = (message, type = 'info', duration = 3000) => {
-  toast.message = message
-  toast.type = type
-  toast.show = true
-  
+  toast.message = message;
+  toast.type = type;
+  toast.show = true;
+
   setTimeout(() => {
-    toast.show = false
-  }, duration)
-}
+    toast.show = false;
+  }, duration);
+};
 
 const validatePasswordForm = () => {
-  clearAllErrors()
-  let isValid = true
+  clearAllErrors();
+  let isValid = true;
 
   if (!passwordForm.username.trim()) {
-    errors.username = '请输入用户名'
-    isValid = false
+    errors.username = '请输入用户名';
+    isValid = false;
   }
 
   if (!passwordForm.password.trim()) {
-    errors.password = '请输入密码'
-    isValid = false
+    errors.password = '请输入密码';
+    isValid = false;
   } else if (passwordForm.password.length < 6) {
-    errors.password = '密码至少6位'
-    isValid = false
+    errors.password = '密码至少6位';
+    isValid = false;
   }
 
-  return isValid
-}
+  return isValid;
+};
 
 const validatePhoneForm = () => {
-  clearAllErrors()
-  let isValid = true
+  clearAllErrors();
+  let isValid = true;
 
-  const phoneRegex = /^1[3-9]\d{9}$/
+  const phoneRegex = /^1[3-9]\d{9}$/;
   if (!phoneForm.phone.trim()) {
-    errors.phone = '请输入手机号'
-    isValid = false
+    errors.phone = '请输入手机号';
+    isValid = false;
   } else if (!phoneRegex.test(phoneForm.phone)) {
-    errors.phone = '手机号格式不正确'
-    isValid = false
+    errors.phone = '手机号格式不正确';
+    isValid = false;
   }
 
   if (!phoneForm.code.trim()) {
-    errors.code = '请输入验证码'
-    isValid = false
+    errors.code = '请输入验证码';
+    isValid = false;
   } else if (phoneForm.code.length !== 6) {
-    errors.code = '验证码应为6位数字'
-    isValid = false
+    errors.code = '验证码应为6位数字';
+    isValid = false;
   }
 
-  return isValid
-}
+  return isValid;
+};
 
 // 密码登录
 const handlePasswordLogin = async () => {
-  if (!validatePasswordForm()) return
+  if (!validatePasswordForm()) return;
 
-  loading.value = true
+  loading.value = true;
 
   try {
     const response = await httpClient.post('/api/auth/login', {
       username: passwordForm.username,
       password: passwordForm.password,
-      deviceId: tokenManager.deviceId
-    })
+      deviceId: tokenManager.deviceId,
+    });
 
     if (response.data.success) {
       // 保存token
-      tokenManager.saveTokens(response.data.data)
-      
-      showToast('登录成功', 'success')
-      
+      tokenManager.saveTokens(response.data.data);
+
+      showToast('登录成功', 'success');
+
       // 跳转到主页
       setTimeout(() => {
-        router.push('/home')
-      }, 1000)
+        router.push('/home');
+      }, 1000);
     } else {
-      showToast(response.data.message || '登录失败', 'error')
+      showToast(response.data.message || '登录失败', 'error');
     }
   } catch (error) {
-    console.error('Login failed:', error)
-    showToast('网络错误，请重试', 'error')
+    console.error('Login failed:', error);
+    showToast('网络错误，请重试', 'error');
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-}
+};
 
 // 发送短信验证码
 const sendSmsCode = async () => {
-  const phoneRegex = /^1[3-9]\d{9}$/
+  const phoneRegex = /^1[3-9]\d{9}$/;
   if (!phoneRegex.test(phoneForm.phone)) {
-    showToast('请输入正确的手机号', 'error')
-    return
+    showToast('请输入正确的手机号', 'error');
+    return;
   }
 
-  codeSending.value = true
+  codeSending.value = true;
 
   try {
     const response = await httpClient.post('/api/auth/send-sms', {
-      phone: phoneForm.phone
-    })
+      phone: phoneForm.phone,
+    });
 
     if (response.data.success) {
-      showToast('验证码已发送', 'success')
-      startCountdown()
+      showToast('验证码已发送', 'success');
+      startCountdown();
     } else {
-      showToast(response.data.message || '发送失败', 'error')
+      showToast(response.data.message || '发送失败', 'error');
     }
   } catch (error) {
-    console.error('Send SMS failed:', error)
-    showToast('发送失败，请重试', 'error')
+    console.error('Send SMS failed:', error);
+    showToast('发送失败，请重试', 'error');
   } finally {
-    codeSending.value = false
+    codeSending.value = false;
   }
-}
+};
 
 // 开始倒计时
 const startCountdown = () => {
-  countdown.value = 60
+  countdown.value = 60;
   countdownTimer = setInterval(() => {
-    countdown.value--
+    countdown.value--;
     if (countdown.value <= 0) {
-      clearInterval(countdownTimer)
-      countdownTimer = null
+      clearInterval(countdownTimer);
+      countdownTimer = null;
     }
-  }, 1000)
-}
+  }, 1000);
+};
 
 // 手机验证码登录
 const handlePhoneLogin = async () => {
-  if (!validatePhoneForm()) return
+  if (!validatePhoneForm()) return;
 
-  loading.value = true
+  loading.value = true;
 
   try {
     const response = await httpClient.post('/api/auth/login-phone', {
       phone: phoneForm.phone,
       code: phoneForm.code,
-      deviceId: tokenManager.deviceId
-    })
+      deviceId: tokenManager.deviceId,
+    });
 
     if (response.data.success) {
       // 保存token
-      tokenManager.saveTokens(response.data.data)
-      
-      showToast('登录成功', 'success')
-      
+      tokenManager.saveTokens(response.data.data);
+
+      showToast('登录成功', 'success');
+
       // 跳转到主页
       setTimeout(() => {
-        router.push('/home')
-      }, 1000)
+        router.push('/home');
+      }, 1000);
     } else {
-      showToast(response.data.message || '登录失败', 'error')
+      showToast(response.data.message || '登录失败', 'error');
     }
   } catch (error) {
-    console.error('Phone login failed:', error)
-    showToast('网络错误，请重试', 'error')
+    console.error('Phone login failed:', error);
+    showToast('网络错误，请重试', 'error');
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-}
+};
 
 // 抖音登录
 const handleDouyinLogin = async () => {
-  showToast('抖音登录功能开发中...', 'info')
-  
+  showToast('抖音登录功能开发中...', 'info');
+
   // 抖音登录逻辑
   // 1. 调用抖音SDK获取授权码
   // 2. 发送到后端验证
-  
+
   /*
   try {
     // 假设已获取到authCode
@@ -858,22 +832,22 @@ const handleDouyinLogin = async () => {
     showToast('抖音登录失败', 'error')
   }
   */
-}
+};
 
 // 生命周期
 onMounted(() => {
   // 检查是否已登录
-  const accessToken = tokenManager.getAccessToken()
+  const accessToken = tokenManager.getAccessToken();
   if (accessToken) {
-    router.push('/home')
+    router.push('/home');
   }
-})
+});
 
 onUnmounted(() => {
   if (countdownTimer) {
-    clearInterval(countdownTimer)
+    clearInterval(countdownTimer);
   }
-})
+});
 </script>
 
 <style scoped>
@@ -1053,8 +1027,12 @@ onUnmounted(() => {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .third-party-login {
@@ -1153,15 +1131,15 @@ onUnmounted(() => {
   .login-container {
     padding: 16px;
   }
-  
+
   .login-card {
     padding: 30px 20px;
   }
-  
+
   .app-title {
     font-size: 24px;
   }
-  
+
   .form-input,
   .login-btn {
     padding: 14px;
@@ -1175,128 +1153,128 @@ onUnmounted(() => {
 
 ```javascript
 // utils/tokenManager.js (Vue3版本)
-import { ref, reactive } from 'vue'
+import { ref, reactive } from 'vue';
 
 class TokenManager {
   constructor() {
-    this.storagePrefix = 'shortplay_'
-    this.deviceId = this.getDeviceId()
-    
+    this.storagePrefix = 'shortplay_';
+    this.deviceId = this.getDeviceId();
+
     // 响应式状态
-    this.isLoggedIn = ref(false)
+    this.isLoggedIn = ref(false);
     this.userInfo = reactive({
       id: null,
       nickname: '',
-      avatar: ''
-    })
-    
-    this.checkLoginStatus()
+      avatar: '',
+    });
+
+    this.checkLoginStatus();
   }
 
   getDeviceId() {
-    let deviceId = localStorage.getItem(this.storagePrefix + 'deviceId')
+    let deviceId = localStorage.getItem(this.storagePrefix + 'deviceId');
     if (!deviceId) {
-      deviceId = this.generateDeviceId()
-      localStorage.setItem(this.storagePrefix + 'deviceId', deviceId)
+      deviceId = this.generateDeviceId();
+      localStorage.setItem(this.storagePrefix + 'deviceId', deviceId);
     }
-    return deviceId
+    return deviceId;
   }
 
   generateDeviceId() {
     // H5环境生成设备ID
-    const timestamp = Date.now().toString()
-    const random = Math.random().toString(36).substr(2, 9)
-    const userAgent = navigator.userAgent
-    const screen = `${screen.width}x${screen.height}`
-    
+    const timestamp = Date.now().toString();
+    const random = Math.random().toString(36).substr(2, 9);
+    const userAgent = navigator.userAgent;
+    const screen = `${screen.width}x${screen.height}`;
+
     // 创建设备指纹
-    const fingerprint = `web-${timestamp}-${random}-${btoa(userAgent + screen).substr(0, 8)}`
-    return fingerprint
+    const fingerprint = `web-${timestamp}-${random}-${btoa(userAgent + screen).substr(0, 8)}`;
+    return fingerprint;
   }
 
   saveTokens(tokenData) {
-    localStorage.setItem(this.storagePrefix + 'accessToken', tokenData.accessToken)
-    localStorage.setItem(this.storagePrefix + 'refreshToken', tokenData.refreshToken)
-    localStorage.setItem(this.storagePrefix + 'tokenExpiry', Date.now() + tokenData.accessTokenExpiresIn * 1000)
-    
+    localStorage.setItem(this.storagePrefix + 'accessToken', tokenData.accessToken);
+    localStorage.setItem(this.storagePrefix + 'refreshToken', tokenData.refreshToken);
+    localStorage.setItem(this.storagePrefix + 'tokenExpiry', Date.now() + tokenData.accessTokenExpiresIn * 1000);
+
     // 保存用户信息
     if (tokenData.user) {
-      this.updateUserInfo(tokenData.user)
-      localStorage.setItem(this.storagePrefix + 'userInfo', JSON.stringify(tokenData.user))
+      this.updateUserInfo(tokenData.user);
+      localStorage.setItem(this.storagePrefix + 'userInfo', JSON.stringify(tokenData.user));
     }
-    
-    this.isLoggedIn.value = true
+
+    this.isLoggedIn.value = true;
   }
 
   updateUserInfo(user) {
-    this.userInfo.id = user.id
-    this.userInfo.nickname = user.nickname
-    this.userInfo.avatar = user.avatar
+    this.userInfo.id = user.id;
+    this.userInfo.nickname = user.nickname;
+    this.userInfo.avatar = user.avatar;
   }
 
   getAccessToken() {
-    return localStorage.getItem(this.storagePrefix + 'accessToken')
+    return localStorage.getItem(this.storagePrefix + 'accessToken');
   }
 
   getRefreshToken() {
-    return localStorage.getItem(this.storagePrefix + 'refreshToken')
+    return localStorage.getItem(this.storagePrefix + 'refreshToken');
   }
 
   shouldRefreshToken() {
-    const expiry = localStorage.getItem(this.storagePrefix + 'tokenExpiry')
-    const now = Date.now()
-    const bufferTime = 2 * 60 * 1000 // 2分钟缓冲
-    return expiry && now + bufferTime >= parseInt(expiry)
+    const expiry = localStorage.getItem(this.storagePrefix + 'tokenExpiry');
+    const now = Date.now();
+    const bufferTime = 2 * 60 * 1000; // 2分钟缓冲
+    return expiry && now + bufferTime >= parseInt(expiry);
   }
 
   async refreshAccessToken() {
-    const refreshToken = this.getRefreshToken()
+    const refreshToken = this.getRefreshToken();
     if (!refreshToken) {
-      throw new Error('No refresh token available')
+      throw new Error('No refresh token available');
     }
 
     try {
       const response = await fetch('/api/auth/refresh', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           refreshToken,
-          deviceId: this.deviceId
-        })
-      })
+          deviceId: this.deviceId,
+        }),
+      });
 
-      const data = await response.json()
+      const data = await response.json();
 
       if (data.success) {
-        this.saveTokens(data.data)
-        return data.data
+        this.saveTokens(data.data);
+        return data.data;
       } else {
-        throw new Error('Token refresh failed')
+        throw new Error('Token refresh failed');
       }
     } catch (error) {
-      this.clearTokens()
-      window.location.href = '/login'
-      throw error
+      this.clearTokens();
+      window.location.href = '/login';
+      throw error;
     }
   }
 
   clearTokens() {
-    localStorage.removeItem(this.storagePrefix + 'accessToken')
-    localStorage.removeItem(this.storagePrefix + 'refreshToken')
-    localStorage.removeItem(this.storagePrefix + 'tokenExpiry')
-    localStorage.removeItem(this.storagePrefix + 'userInfo')
-    
-    this.isLoggedIn.value = false
-    this.userInfo.id = null
-    this.userInfo.nickname = ''
-    this.userInfo.avatar = ''
+    localStorage.removeItem(this.storagePrefix + 'accessToken');
+    localStorage.removeItem(this.storagePrefix + 'refreshToken');
+    localStorage.removeItem(this.storagePrefix + 'tokenExpiry');
+    localStorage.removeItem(this.storagePrefix + 'userInfo');
+
+    this.isLoggedIn.value = false;
+    this.userInfo.id = null;
+    this.userInfo.nickname = '';
+    this.userInfo.avatar = '';
   }
 
   async logout(logoutAllDevices = false) {
-    const accessToken = this.getAccessToken()
-    const refreshToken = this.getRefreshToken()
+    const accessToken = this.getAccessToken();
+    const refreshToken = this.getRefreshToken();
 
     if (accessToken) {
       try {
@@ -1304,33 +1282,33 @@ class TokenManager {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${accessToken}`
+            Authorization: `Bearer ${accessToken}`,
           },
           body: JSON.stringify({
             refreshToken,
-            logoutAllDevices
-          })
-        })
+            logoutAllDevices,
+          }),
+        });
       } catch (error) {
-        console.error('Logout API failed:', error)
+        console.error('Logout API failed:', error);
       }
     }
 
-    this.clearTokens()
-    window.location.href = '/login'
+    this.clearTokens();
+    window.location.href = '/login';
   }
 
   checkLoginStatus() {
-    const accessToken = this.getAccessToken()
-    const userInfo = localStorage.getItem(this.storagePrefix + 'userInfo')
-    
+    const accessToken = this.getAccessToken();
+    const userInfo = localStorage.getItem(this.storagePrefix + 'userInfo');
+
     if (accessToken && userInfo) {
       try {
-        const user = JSON.parse(userInfo)
-        this.updateUserInfo(user)
-        this.isLoggedIn.value = true
+        const user = JSON.parse(userInfo);
+        this.updateUserInfo(user);
+        this.isLoggedIn.value = true;
       } catch (error) {
-        this.clearTokens()
+        this.clearTokens();
       }
     }
   }
@@ -1339,29 +1317,29 @@ class TokenManager {
   getLoginState() {
     return {
       isLoggedIn: this.isLoggedIn,
-      userInfo: this.userInfo
-    }
+      userInfo: this.userInfo,
+    };
   }
 }
 
-export default new TokenManager()
+export default new TokenManager();
 ```
 
 #### 3. Vue3请求工具类
 
 ```javascript
 // utils/request.js (Vue3版本)
-import axios from 'axios'
-import tokenManager from './tokenManager.js'
+import axios from 'axios';
+import tokenManager from './tokenManager.js';
 
 // 创建axios实例
 const httpClient = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000',
   timeout: 10000,
   headers: {
-    'Content-Type': 'application/json'
-  }
-})
+    'Content-Type': 'application/json',
+  },
+});
 
 // 请求拦截器
 httpClient.interceptors.request.use(
@@ -1369,210 +1347,211 @@ httpClient.interceptors.request.use(
     // 检查是否需要刷新token
     if (tokenManager.shouldRefreshToken()) {
       try {
-        await tokenManager.refreshAccessToken()
+        await tokenManager.refreshAccessToken();
       } catch (error) {
-        console.error('Token refresh failed in request interceptor:', error)
-        tokenManager.clearTokens()
-        window.location.href = '/login'
-        return Promise.reject(error)
+        console.error('Token refresh failed in request interceptor:', error);
+        tokenManager.clearTokens();
+        window.location.href = '/login';
+        return Promise.reject(error);
       }
     }
 
     // 添加token
-    const accessToken = tokenManager.getAccessToken()
+    const accessToken = tokenManager.getAccessToken();
     if (accessToken) {
-      config.headers.Authorization = `Bearer ${accessToken}`
+      config.headers.Authorization = `Bearer ${accessToken}`;
     }
 
     // 添加设备ID
-    config.headers['X-Device-ID'] = tokenManager.deviceId
+    config.headers['X-Device-ID'] = tokenManager.deviceId;
 
-    return config
+    return config;
   },
   error => {
-    return Promise.reject(error)
+    return Promise.reject(error);
   }
-)
+);
 
 // 响应拦截器
 httpClient.interceptors.response.use(
   response => {
-    return response
+    return response;
   },
   async error => {
-    const originalRequest = error.config
+    const originalRequest = error.config;
 
     if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true
+      originalRequest._retry = true;
 
-      const errorCode = error.response.data?.code
-      
+      const errorCode = error.response.data?.code;
+
       if (errorCode === 'INVALID_ACCESS_TOKEN') {
         try {
-          await tokenManager.refreshAccessToken()
+          await tokenManager.refreshAccessToken();
           // 重新发送请求
-          const accessToken = tokenManager.getAccessToken()
-          originalRequest.headers.Authorization = `Bearer ${accessToken}`
-          return httpClient(originalRequest)
+          const accessToken = tokenManager.getAccessToken();
+          originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+          return httpClient(originalRequest);
         } catch (refreshError) {
-          console.error('Token refresh failed in response interceptor:', refreshError)
-          tokenManager.clearTokens()
-          window.location.href = '/login'
-          return Promise.reject(refreshError)
+          console.error('Token refresh failed in response interceptor:', refreshError);
+          tokenManager.clearTokens();
+          window.location.href = '/login';
+          return Promise.reject(refreshError);
         }
       } else {
         // 其他401错误，直接清除token并跳转
-        tokenManager.clearTokens()
-        window.location.href = '/login'
-        return Promise.reject(error)
+        tokenManager.clearTokens();
+        window.location.href = '/login';
+        return Promise.reject(error);
       }
     }
 
-    return Promise.reject(error)
+    return Promise.reject(error);
   }
-)
+);
 
-export default httpClient
+export default httpClient;
 ```
 
 #### 4. Vue3路由配置
 
 ```javascript
 // router/index.js
-import { createRouter, createWebHistory } from 'vue-router'
-import tokenManager from '@/utils/tokenManager.js'
+import { createRouter, createWebHistory } from 'vue-router';
+import tokenManager from '@/utils/tokenManager.js';
 
 const routes = [
   {
     path: '/login',
     name: 'Login',
     component: () => import('@/pages/login/Login.vue'),
-    meta: { 
+    meta: {
       requiresAuth: false,
-      title: '登录'
-    }
+      title: '登录',
+    },
   },
   {
     path: '/',
-    redirect: '/home'
+    redirect: '/home',
   },
   {
     path: '/home',
     name: 'Home',
     component: () => import('@/pages/home/Home.vue'),
-    meta: { 
+    meta: {
       requiresAuth: true,
-      title: '首页'
-    }
+      title: '首页',
+    },
   },
   {
     path: '/profile',
     name: 'Profile',
     component: () => import('@/pages/profile/Profile.vue'),
-    meta: { 
+    meta: {
       requiresAuth: true,
-      title: '个人中心'
-    }
+      title: '个人中心',
+    },
   },
   {
     path: '/video/:id',
     name: 'VideoDetail',
     component: () => import('@/pages/video/VideoDetail.vue'),
-    meta: { 
+    meta: {
       requiresAuth: true,
-      title: '视频详情'
-    }
+      title: '视频详情',
+    },
   },
   {
     path: '/:pathMatch(.*)*',
     name: 'NotFound',
     component: () => import('@/pages/error/404.vue'),
-    meta: { 
+    meta: {
       requiresAuth: false,
-      title: '页面不存在'
-    }
-  }
-]
+      title: '页面不存在',
+    },
+  },
+];
 
 const router = createRouter({
   history: createWebHistory(),
-  routes
-})
+  routes,
+});
 
 // 全局路由守卫
 router.beforeEach((to, from, next) => {
   // 设置页面标题
-  document.title = to.meta.title ? `${to.meta.title} - 短剧播放` : '短剧播放'
+  document.title = to.meta.title ? `${to.meta.title} - 短剧播放` : '短剧播放';
 
   // 检查是否需要认证
   if (to.meta.requiresAuth) {
-    const accessToken = tokenManager.getAccessToken()
-    
+    const accessToken = tokenManager.getAccessToken();
+
     if (!accessToken) {
       // 没有token，跳转到登录页
-      next('/login')
-      return
+      next('/login');
+      return;
     }
 
     // 检查token是否过期
     if (tokenManager.shouldRefreshToken()) {
       // Token即将过期，尝试刷新
-      tokenManager.refreshAccessToken()
+      tokenManager
+        .refreshAccessToken()
         .then(() => {
-          next()
+          next();
         })
         .catch(() => {
           // 刷新失败，跳转到登录页
-          next('/login')
-        })
-      return
+          next('/login');
+        });
+      return;
     }
   } else if (to.path === '/login') {
     // 如果已登录且访问登录页，重定向到首页
-    const accessToken = tokenManager.getAccessToken()
+    const accessToken = tokenManager.getAccessToken();
     if (accessToken) {
-      next('/home')
-      return
+      next('/home');
+      return;
     }
   }
 
-  next()
-})
+  next();
+});
 
-export default router
+export default router;
 ```
 
 #### 5. Vue3主应用入口
 
 ```javascript
 // main.js
-import { createApp } from 'vue'
-import App from './App.vue'
-import router from './router'
-import tokenManager from './utils/tokenManager.js'
+import { createApp } from 'vue';
+import App from './App.vue';
+import router from './router';
+import tokenManager from './utils/tokenManager.js';
 
 // 创建应用实例
-const app = createApp(App)
+const app = createApp(App);
 
 // 全局属性
-app.config.globalProperties.$tokenManager = tokenManager
+app.config.globalProperties.$tokenManager = tokenManager;
 
 // 全局错误处理
 app.config.errorHandler = (err, vm, info) => {
-  console.error('Vue Global Error:', err, info)
-  
+  console.error('Vue Global Error:', err, info);
+
   // 如果是认证相关错误，可以在这里统一处理
   if (err.message.includes('401') || err.message.includes('Unauthorized')) {
-    tokenManager.clearTokens()
-    router.push('/login')
+    tokenManager.clearTokens();
+    router.push('/login');
   }
-}
+};
 
 // 使用路由
-app.use(router)
+app.use(router);
 
 // 挂载应用
-app.mount('#app')
+app.mount('#app');
 ```
 
 #### 6. App.vue根组件
@@ -1596,51 +1575,51 @@ app.mount('#app')
 </template>
 
 <script setup>
-import { ref, onMounted, provide } from 'vue'
-import { useRouter } from 'vue-router'
-import tokenManager from '@/utils/tokenManager.js'
-import Toast from '@/components/Toast.vue'
+import { ref, onMounted, provide } from 'vue';
+import { useRouter } from 'vue-router';
+import tokenManager from '@/utils/tokenManager.js';
+import Toast from '@/components/Toast.vue';
 
-const router = useRouter()
-const globalLoading = ref(true)
-const toastRef = ref(null)
+const router = useRouter();
+const globalLoading = ref(true);
+const toastRef = ref(null);
 
 // 提供全局toast方法
 const showToast = (message, type = 'info', duration = 3000) => {
   if (toastRef.value) {
-    toastRef.value.show(message, type, duration)
+    toastRef.value.show(message, type, duration);
   }
-}
+};
 
 // 向子组件提供toast方法
-provide('showToast', showToast)
+provide('showToast', showToast);
 
 // 初始化应用
 onMounted(async () => {
   try {
     // 检查登录状态
-    const { isLoggedIn } = tokenManager.getLoginState()
-    
+    const { isLoggedIn } = tokenManager.getLoginState();
+
     if (isLoggedIn.value) {
       // 验证当前token是否有效
       try {
         await fetch('/api/auth/verify', {
           headers: {
-            'Authorization': `Bearer ${tokenManager.getAccessToken()}`
-          }
-        })
+            Authorization: `Bearer ${tokenManager.getAccessToken()}`,
+          },
+        });
       } catch (error) {
         // Token无效，清除并跳转登录
-        tokenManager.clearTokens()
-        router.push('/login')
+        tokenManager.clearTokens();
+        router.push('/login');
       }
     }
   } catch (error) {
-    console.error('App initialization failed:', error)
+    console.error('App initialization failed:', error);
   } finally {
-    globalLoading.value = false
+    globalLoading.value = false;
   }
-})
+});
 </script>
 
 <style>
@@ -1651,9 +1630,9 @@ onMounted(async () => {
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans',
+    'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-color: #f5f5f5;
@@ -1688,8 +1667,12 @@ body {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 </style>
 ```
@@ -1710,16 +1693,16 @@ VITE_APP_TITLE=短剧播放
 
 ```javascript
 // vite.config.js
-import { defineConfig } from 'vite'
-import vue from '@vitejs/plugin-vue'
-import { resolve } from 'path'
+import { defineConfig } from 'vite';
+import vue from '@vitejs/plugin-vue';
+import { resolve } from 'path';
 
 export default defineConfig({
   plugins: [vue()],
   resolve: {
     alias: {
-      '@': resolve(__dirname, 'src')
-    }
+      '@': resolve(__dirname, 'src'),
+    },
   },
   server: {
     host: '0.0.0.0',
@@ -1729,9 +1712,9 @@ export default defineConfig({
       '/api': {
         target: 'http://localhost:3000',
         changeOrigin: true,
-        secure: false
-      }
-    }
+        secure: false,
+      },
+    },
   },
   build: {
     outDir: 'dist',
@@ -1741,12 +1724,12 @@ export default defineConfig({
       output: {
         manualChunks: {
           vendor: ['vue', 'vue-router'],
-          axios: ['axios']
-        }
-      }
-    }
-  }
-})
+          axios: ['axios'],
+        },
+      },
+    },
+  },
+});
 ```
 
 ### H5/Web实现
