@@ -1,10 +1,17 @@
-import { defineMixin } from '../vue';
-import { deepMerge, $parent, sleep } from '../function/index';
-import test from '../function/test';
-import route from '../util/route';
+import { defineMixin } from '@/uni_modules/uview-plus/libs/vue.mjs';
+import { deepMerge, $parent, sleep } from '@/uni_modules/uview-plus/libs/function/index.js';
+import test from '@/uni_modules/uview-plus/libs/function/test.js';
+import route from '@/uni_modules/uview-plus/libs/util/route.js';
 // #ifdef APP-NVUE
 // 由于weex为阿里的KPI业绩考核的产物，所以不支持百分比单位，这里需要通过dom查询组件的宽度
-const dom = uni.requireNativePlugin('dom');
+let dom = null;
+if (uni.requireNativePlugin) {
+  try {
+    dom = uni.requireNativePlugin('dom');
+  } catch (e) {
+    console.warn('无法加载dom原生插件:', e);
+  }
+}
 // #endif
 
 export const mixin = defineMixin({

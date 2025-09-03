@@ -19,9 +19,25 @@ const app = express();
 app.use(helmet());
 
 // 2. CORS：配置跨域资源共享
+// 开发环境下添加日志，查看实际的请求来源和配置
 const corsOptions = {
   origin: (origin, callback) => {
-    if (!origin || config.cors.origin.includes(origin)) {
+    // 开发环境下打印日志，帮助调试
+    if (config.env === 'development') {
+      console.log('CORS 请求来源:', origin);
+      console.log('CORS 配置:', config.cors.origin);
+    }
+    
+    // 开发环境下简化CORS配置，允许所有来源
+    if (config.env === 'development') {
+      callback(null, true);
+    }
+    // 生产环境下严格检查
+    else if (config.cors.origin === '*') {
+      callback(null, true);
+    }
+    // 如果请求没有来源（如curl请求）或来源在白名单中，允许访问
+    else if (!origin || (Array.isArray(config.cors.origin) && config.cors.origin.includes(origin))) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));

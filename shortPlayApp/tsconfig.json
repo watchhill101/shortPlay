@@ -3,11 +3,13 @@
   "compilerOptions": {
     "target": "ES2017",
     "lib": ["ES2017", "DOM", "DOM.Iterable"],
-    "types": ["@dcloudio/types"],
+    "types": [],
     "paths": {
       "@/*": ["./*"]
-    }
+    },
+    "skipLibCheck": true,
+    "noImplicitAny": false
   },
-  "include": ["./**/*.ts", "./**/*.tsx", "./**/*.vue", "./**/*.d.ts"],
+  "include": ["./**/*.ts", "./**/*.tsx", "./**/*.vue", "./**/*.d.ts", "./types/**/*.d.ts"],
   "exclude": ["node_modules", "unpackage", "dist", "uni_modules"]
 }

@@ -1,7 +1,7 @@
 // models/Work.js
 const mongoose = require('mongoose');
 
-const WorkSchema = new mongoose.schema(
+const WorkSchema = new mongoose.Schema(
   {
     // 关联到具体的合集
     collectionId: {

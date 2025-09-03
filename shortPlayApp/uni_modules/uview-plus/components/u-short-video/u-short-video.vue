@@ -80,7 +80,13 @@
               <text class="u-short-video__content__author__desc">{{ item.author.desc }}</text>
             </view>
             <view class="u-short-video__content__author__follow">
-              <up-button type="primary" size="mini">关注</up-button>
+              <up-button
+                :type="item.author.isFollowing ? 'default' : 'primary'"
+                size="mini"
+                @click="handleFollow(item, index)"
+              >
+                {{ item.author.isFollowing ? '已关注' : '关注' }}
+              </up-button>
             </view>
           </view>
 
@@ -201,6 +207,10 @@ export default {
     // 处理tab切换
     handleTabChange(index) {
       this.$emit('tabChange', index);
+    },
+    // 处理关注
+    handleFollow(item, index) {
+      this.$emit('follow', { item, index });
     },
     // 处理swiper切换
     handleSwiperChange(e) {
