@@ -1,10 +1,11 @@
+/* eslint-disable */
 // uni-app 全局类型定义
 declare global {
   const uni: any;
   const wx: any;
   const getApp: () => any;
   const getCurrentPages: () => any[];
-  
+
   interface UniApp {
     navigateTo: (options: any) => void;
     redirectTo: (options: any) => void;

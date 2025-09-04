@@ -19,10 +19,10 @@ async function importUploads() {
     // 获取uploads文件
     const videoDir = path.join(__dirname, '../uploads/video');
     const coverDir = path.join(__dirname, '../uploads/coverImage');
-    
+
     const videoFiles = fs.readdirSync(videoDir).filter(f => f.endsWith('.mp4'));
     const coverFiles = fs.readdirSync(coverDir).filter(f => f.endsWith('.png'));
-    
+
     console.log(`视频文件: ${videoFiles.length}个`);
     console.log(`封面文件: ${coverFiles.length}个`);
 
@@ -35,7 +35,7 @@ async function importUploads() {
         description: '本地上传的短剧作品',
         coverImage: `/uploads/coverImage/${coverFiles[0]}`,
         classifier: new mongoose.Types.ObjectId(),
-        status: 'published'
+        status: 'published',
       });
       await collection.save();
     }
@@ -54,12 +54,11 @@ async function importUploads() {
       status: 'published',
       playCount: Math.floor(Math.random() * 5000),
       likeCount: Math.floor(Math.random() * 500),
-      commentCount: Math.floor(Math.random() * 50)
+      commentCount: Math.floor(Math.random() * 50),
     }));
 
     const result = await Work.insertMany(works);
     console.log(`✅ 成功导入 ${result.length} 个作品`);
-
   } catch (error) {
     console.error('❌ 导入失败:', error);
   } finally {
