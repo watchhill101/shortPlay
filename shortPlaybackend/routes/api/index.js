@@ -2,12 +2,18 @@
 const express = require('express');
 const authRoutes = require('./auth');
 const healthRoutes = require('./health');
-// 以后有其他路由，比如 userRoutes, postRoutes, 都在这里引入
+const aiRoutes = require('./ai');
+const friendRoutes = require('./friends');
+const chatRoutes = require('./chat');
+const userRoutes = require('./users');
 
 const router = express.Router();
 
 router.use('/auth', authRoutes);
 router.use('/health', healthRoutes);
-// router.use('/users', userRoutes);
+router.use('/ai', aiRoutes);
+router.use('/friends', friendRoutes);
+router.use('/chat', chatRoutes);
+router.use('/users', userRoutes);
 
 module.exports = router;

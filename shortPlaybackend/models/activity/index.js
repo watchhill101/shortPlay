@@ -1,11 +1,11 @@
 // models/Activity.js
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const ActivitySchema = new mongoose.Schema(
   {
     title: {
       type: String,
-      required: [true, '活动标题不能为空'],
+      required: [true, "活动标题不能为空"],
     },
     description: {
       type: String,
@@ -22,7 +22,7 @@ const ActivitySchema = new mongoose.Schema(
     // 活动类型
     type: {
       type: String,
-      enum: ['banner', 'popup', 'event'],
+      enum: ["banner", "popup", "event"],
       required: true,
     },
     // 用于排序
@@ -32,8 +32,8 @@ const ActivitySchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['active', 'inactive', 'scheduled'],
-      default: 'scheduled',
+      enum: ["active", "inactive", "scheduled"],
+      default: "scheduled",
       index: true,
     },
     startDate: {
@@ -48,5 +48,5 @@ const ActivitySchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-const Activity = mongoose.model('Activity', ActivitySchema);
+const Activity = mongoose.model("Activity", ActivitySchema);
 module.exports = Activity;

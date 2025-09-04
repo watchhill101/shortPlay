@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const UserSchema = new mongoose.Schema(
   {
@@ -12,7 +12,7 @@ const UserSchema = new mongoose.Schema(
         sparse: true,
       },
       //格式验证
-      match: [/^1[3-9]\d{9}$/, '手机号格式不正确'],
+      match: [/^1[3-9]\d{9}$/, "手机号格式不正确"],
     },
     douyinProfile: {
       openId: {
@@ -42,19 +42,19 @@ const UserSchema = new mongoose.Schema(
     // --- 公共用户信息 ---
     nickname: {
       type: String,
-      required: [true, 'Nickname is required'],
+      required: [true, "Nickname is required"],
       trim: true,
     },
     avatar: {
       type: String,
-      default: 'https://your-default-avatar-url.com/default.png', // 提供一个默认头像
+      default: "/static/img/default-avatar.png", // 提供一个默认头像
     },
 
     // --- 状态与活动记录 ---
     status: {
       type: String,
-      enum: ['active', 'inactive', 'banned'],
-      default: 'active',
+      enum: ["active", "inactive", "banned"],
+      default: "active",
     },
     lastLoginAt: {
       type: Date,
@@ -66,7 +66,7 @@ const UserSchema = new mongoose.Schema(
   }
 );
 // 在创建用户时，自动生成一个默认昵称 (如果未提供)
-UserSchema.pre('validate', function (next) {
+UserSchema.pre("validate", function (next) {
   if (this.isNew && !this.nickname) {
     // 如果是通过抖音登录，使用抖音的昵称
     if (this.douyinProfile && this.douyinProfile.nickname) {
@@ -81,6 +81,6 @@ UserSchema.pre('validate', function (next) {
   next();
 });
 
-const User = mongoose.model('User', UserSchema, 'User');
+const User = mongoose.model("User", UserSchema, "User");
 
 module.exports = User;

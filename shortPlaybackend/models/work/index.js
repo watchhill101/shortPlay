@@ -1,28 +1,29 @@
 // models/Work.js
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const WorkSchema = new mongoose.schema(
   {
     // 关联到具体的合集
     collectionId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Collection',
+      ref: "Collection",
       required: true,
       index: true,
     },
     title: {
       type: String,
-      required: [true, '作品标题不能为空'],
+      required: [true, "作品标题不能为空"],
       trim: true,
     },
     // 剧集编号，用于排序
     episodeNumber: {
       type: Number,
-      required: [true, '剧集编号不能为空'],
+      required: [true, "剧集编号不能为空"],
     },
+    // 视频地址
     videoUrl: {
       type: String,
-      required: [true, '视频地址不能为空'],
+      required: [true, "视频地址不能为空"],
     },
     // 单集封面，如果未提供，前端可使用合集封面
     coverImage: {
@@ -31,13 +32,13 @@ const WorkSchema = new mongoose.schema(
     // 视频时长（秒）
     duration: {
       type: Number,
-      required: [true, '视频时长不能为空'],
+      required: [true, "视频时长不能为空"],
     },
     // 状态：draft（草稿）, published（已发布）
     status: {
       type: String,
-      enum: ['draft', 'published'],
-      default: 'draft',
+      enum: ["draft", "published"],
+      default: "draft",
     },
 
     // --- 计数器缓存 ---
@@ -60,5 +61,5 @@ const WorkSchema = new mongoose.schema(
 // 创建复合索引，确保同一合集下的剧集编号是唯一的
 WorkSchema.index({ collectionId: 1, episodeNumber: 1 }, { unique: true });
 
-const Work = mongoose.model('Work', WorkSchema);
+const Work = mongoose.model("Work", WorkSchema);
 module.exports = Work;

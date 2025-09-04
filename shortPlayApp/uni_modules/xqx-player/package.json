@@ -1,88 +1,88 @@
 {
-  "id": "xqx-player",
-  "name": "xqx-player 仿抖音短视频流播放器",
-  "displayName": "xqx-player 仿抖音短视频流播放器",
-  "version": "1.5.8",
-  "description": "仿抖音短视频上下滑动播放，切换视频效果流畅，大视频列表播放不卡顿，预留扩展定制性高；适合与不同功能视图组合使用，实现丰富的应用功能。",
-  "keywords": [
-    "仿抖音",
-    "仿陌陌",
-    "短视频",
-    "无限滑动播放",
-    "视频流"
-  ],
-  "engines": {
-    "HBuilderX": "^3.7.12"
-  },
-  "dcloudext": {
-    "type": "component-vue",
-    "sale": {
-      "regular": {
-        "price": "139.00"
-      },
-      "sourcecode": {
-        "price": "299.00"
-      }
+	"id": "xqx-player",
+	"name": "xqx-player 仿抖音短视频流播放器",
+	"displayName": "xqx-player 仿抖音短视频流播放器",
+	"version": "1.5.8",
+	"description": "仿抖音短视频上下滑动播放，切换视频效果流畅，大视频列表播放不卡顿，预留扩展定制性高；适合与不同功能视图组合使用，实现丰富的应用功能。",
+	"keywords": [
+        "仿抖音",
+        "仿陌陌",
+        "短视频",
+        "无限滑动播放",
+        "视频流"
+    ],
+	"engines": {
+	  "HBuilderX": "^3.7.12"
+	},
+	"dcloudext": {
+        "type": "component-vue",
+		"sale": {
+			"regular": {
+				"price": "139.00"
+			},
+			"sourcecode": {
+				"price": "299.00"
+			}
+		},
+		"contact": {
+			"qq": ""
+		},
+		"declaration": {
+			"ads": "无",
+			"data": "无",
+			"permissions": "无"
+		},
+		"npmurl": ""
+	},
+	"uni_modules": {
+		"dependencies": [],
+		"encrypt": [],
+		"platforms": {
+			"cloud": {
+				"tcb": "y",
+				"aliyun": "y",
+				"alipay": "y"
+			},
+			"client": {
+				"Vue": {
+					"vue2": "y",
+					"vue3": "y"
+				},
+				"App": {
+					"app-vue": "y",
+					"app-nvue": "u",
+					"app-uvue": "u"
+				},
+				"H5-mobile": {
+					"Safari": "y",
+					"Android Browser": "y",
+					"微信浏览器(Android)": "y",
+					"QQ浏览器(Android)": "y"
+				},
+				"H5-pc": {
+					"Chrome": "y",
+					"IE": "y",
+					"Edge": "y",
+					"Firefox": "y",
+					"Safari": "y"
+				},
+				"小程序": {
+					"微信": "n",
+					"阿里": "n",
+					"百度": "n",
+					"字节跳动": "n",
+					"QQ": "n",
+					"钉钉": "n",
+					"快手": "n",
+					"飞书": "n",
+					"京东": "n"
+				},
+				"快应用": {
+					"华为": "u",
+					"联盟": "u"
+				}
+			}
+		}
     },
-    "contact": {
-      "qq": ""
-    },
-    "declaration": {
-      "ads": "无",
-      "data": "无",
-      "permissions": "无"
-    },
-    "npmurl": ""
-  },
-  "uni_modules": {
-    "dependencies": [],
-    "encrypt": [],
-    "platforms": {
-      "cloud": {
-        "tcb": "y",
-        "aliyun": "y",
-        "alipay": "y"
-      },
-      "client": {
-        "Vue": {
-          "vue2": "y",
-          "vue3": "y"
-        },
-        "App": {
-          "app-vue": "y",
-          "app-nvue": "u",
-          "app-uvue": "u"
-        },
-        "H5-mobile": {
-          "Safari": "y",
-          "Android Browser": "y",
-          "微信浏览器(Android)": "y",
-          "QQ浏览器(Android)": "y"
-        },
-        "H5-pc": {
-          "Chrome": "y",
-          "IE": "y",
-          "Edge": "y",
-          "Firefox": "y",
-          "Safari": "y"
-        },
-        "小程序": {
-          "微信": "n",
-          "阿里": "n",
-          "百度": "n",
-          "字节跳动": "n",
-          "QQ": "n",
-          "钉钉": "n",
-          "快手": "n",
-          "飞书": "n",
-          "京东": "n"
-        },
-        "快应用": {
-          "华为": "u",
-          "联盟": "u"
-        }
-      }
-    }
-  },
-  "repository": ""
+    "repository": ""
 }

@@ -1,17 +1,15 @@
 // models/User/indexApi.js - 用户认证相关API
-const User = require('./index');
-const jwt = require('jsonwebtoken');
-const config = require('../../config');
-const RedisHelper = require('../../utils/redisHelper');
+const User = require("./index");
+const jwt = require("jsonwebtoken");
+const config = require("../../config");
+const RedisHelper = require("../../utils/redisHelper");
 
 const SMS_CODE_EXPIRATION = 300; // 验证码过期时间（秒），例如 5 分钟
 
 // 辅助函数：生成 JWT
-const generateToken = userId => {
+const generateToken = (userId) => {
   const payload = { user: { id: userId } };
-  return jwt.sign(payload, config.jwt.secret, {
-    expiresIn: config.jwt.expiresIn,
-  });
+  return jwt.sign(payload, config.jwt.secret, { expiresIn: config.jwt.expiresIn });
 };
 
 /**
@@ -23,21 +21,23 @@ const register = async (req, res, next) => {
 
   try {
     if (!username || !password) {
-      const err = new Error('Username and password are required');
+      const err = new Error("Username and password are required");
       err.status = 400;
       return next(err);
     }
 
     const existingUser = await User.findOne({ username });
     if (existingUser) {
-      const err = new Error('User already exists');
+      const err = new Error("User already exists");
       err.status = 400;
       return next(err);
     }
 
-    const _user = await User.create({ username, password });
+    const user = await User.create({ username, password });
 
-    res.status(201).json({ success: true, message: 'User registered successfully' });
+    res
+      .status(201)
+      .json({ success: true, message: "User registered successfully" });
   } catch (error) {
     next(error); // 将错误传递给全局错误处理器
   }
@@ -53,28 +53,28 @@ const login = async (req, res, next) => {
   try {
     const user = await User.findOne({ username });
     if (!user) {
-      const err = new Error('Invalid credentials');
+      const err = new Error("Invalid credentials");
       err.status = 401;
       return next(err);
     }
 
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
-      const err = new Error('Invalid credentials');
+      const err = new Error("Invalid credentials");
       err.status = 401;
       return next(err);
     }
 
     const token = generateToken(user._id);
 
-    res.json({
-      success: true,
-      token,
-      user: {
-        id: user._id,
-        nickname: user.nickname,
-        avatar: user.avatar,
-      },
+    res.json({ 
+      success: true, 
+      token, 
+      user: { 
+        id: user._id, 
+        nickname: user.nickname, 
+        avatar: user.avatar 
+      } 
     });
   } catch (error) {
     next(error);
@@ -101,7 +101,7 @@ const sendSmsCode = async (req, res, next) => {
 
     // 将验证码存入 Redis 并设置过期时间
     const success = await RedisHelper.set(redisKey, code, SMS_CODE_EXPIRATION);
-
+    
     if (!success) {
       console.warn('⚠️  Failed to store SMS code in Redis, but continuing...');
       // 在Redis不可用时，我们仍然可以继续，但应该通知开发者
@@ -128,9 +128,9 @@ const loginWithPhone = async (req, res, next) => {
     const storedCode = await RedisHelper.get(redisKey);
 
     if (!storedCode) {
-      return res.status(400).json({
-        success: false,
-        message: 'Code has expired, is invalid, or Redis is unavailable',
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Code has expired, is invalid, or Redis is unavailable' 
       });
     }
 
@@ -154,15 +154,15 @@ const loginWithPhone = async (req, res, next) => {
 
     const token = generateToken(user._id);
 
-    res.status(200).json({
-      success: true,
-      token,
-      user: {
-        id: user._id,
-        nickname: user.nickname,
-        avatar: user.avatar,
-        mobilePhoneNumber: user.mobilePhoneNumber,
-      },
+    res.status(200).json({ 
+      success: true, 
+      token, 
+      user: { 
+        id: user._id, 
+        nickname: user.nickname, 
+        avatar: user.avatar, 
+        mobilePhoneNumber: user.mobilePhoneNumber 
+      } 
     });
   } catch (error) {
     next(error);
@@ -183,11 +183,11 @@ const loginWithDouyin = async (req, res, next) => {
     // --- 步骤 1: 服务器用 authCode 换取 access_token 和 open_id ---
     // TODO: 向抖音服务器发送请求，需要你的 client_key 和 client_secret
     // const douyinResponse = await axios.post(
-    //   'https://open.douyin.com/oauth/access_token/',
+    //   'https://open.douyin.com/oauth/access_token/', 
     //   { client_key, client_secret, code: authCode, grant_type: 'authorization_code' }
     // );
     // const { open_id, access_token, union_id } = douyinResponse.data.data;
-
+    
     // --- 步骤 2: (可选) 用 access_token 获取更详细的用户信息 ---
     // const userInfoResponse = await axios.get('https://open.douyin.com/oauth/userinfo/', { params: { access_token, open_id } });
     // const douyinUserInfo = userInfoResponse.data.data;
@@ -195,17 +195,15 @@ const loginWithDouyin = async (req, res, next) => {
     // --- 开发模拟数据 ---
     // 在真实开发中，请替换为上面的真实 API 调用
     const douyinUserInfo = {
-      open_id: `mock_open_id_${authCode}`,
-      union_id: `mock_union_id_${authCode}`,
-      nickname: '模拟抖音用户',
-      avatar: 'https://p3-pc.douyinpic.com/img/aweme-avatar/tos-cn-avt-0015_123456.jpeg~200x200.jpeg',
-      gender: 1,
+        open_id: `mock_open_id_${authCode}`,
+        union_id: `mock_union_id_${authCode}`,
+        nickname: '模拟抖音用户',
+        avatar: 'https://p3-pc.douyinpic.com/img/aweme-avatar/tos-cn-avt-0015_123456.jpeg~200x200.jpeg',
+        gender: 1,
     };
     // --- 模拟数据结束 ---
 
-    let user = await User.findOne({
-      'douyinProfile.openId': douyinUserInfo.open_id,
-    });
+    let user = await User.findOne({ 'douyinProfile.openId': douyinUserInfo.open_id });
 
     // 如果用户不存在，则创建新用户
     if (!user) {
@@ -228,19 +226,20 @@ const loginWithDouyin = async (req, res, next) => {
       user.lastLoginAt = Date.now();
       await user.save();
     }
-
+    
     const token = generateToken(user._id);
 
-    res.status(200).json({
-      success: true,
-      token,
-      user: {
-        id: user._id,
-        nickname: user.nickname,
-        avatar: user.avatar,
-        douyinProfile: user.douyinProfile,
-      },
+    res.status(200).json({ 
+      success: true, 
+      token, 
+      user: { 
+        id: user._id, 
+        nickname: user.nickname, 
+        avatar: user.avatar, 
+        douyinProfile: user.douyinProfile 
+      } 
     });
+
   } catch (error) {
     // 需要处理抖音API可能返回的错误
     next(error);
@@ -254,5 +253,5 @@ module.exports = {
   sendSmsCode,
   loginWithPhone,
   loginWithDouyin,
-  generateToken, // 导出工具函数，方便其他模块使用
+  generateToken // 导出工具函数，方便其他模块使用
 };

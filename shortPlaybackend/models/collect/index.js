@@ -1,16 +1,17 @@
 // models/Collect.js
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const CollectSchema = new mongoose.Schema(
   {
     user: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
+      ref: "User",
       required: true,
     },
+    // 
     collection: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Collection',
+      ref: "Collection",
       required: true,
     },
   },
@@ -20,5 +21,5 @@ const CollectSchema = new mongoose.Schema(
 // 创建复合唯一索引，防止用户重复收藏同一个合集
 CollectSchema.index({ user: 1, collection: 1 }, { unique: true });
 
-const Collect = mongoose.model('Collect', CollectSchema);
+const Collect = mongoose.model("Collect", CollectSchema);
 module.exports = Collect;

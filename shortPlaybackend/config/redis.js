@@ -1,6 +1,6 @@
 // config/redis.js
-const { createClient } = require('redis');
-const config = require('./index');
+const { createClient } = require("redis");
+const config = require("./index");
 
 class RedisManager {
   constructor() {
@@ -36,11 +36,11 @@ class RedisManager {
       }
 
       console.log('🔄 Connecting to Redis...');
-
-      this.client = createClient({
+      
+      this.client = createClient({ 
         url: config.redis.url,
         socket: {
-          reconnectStrategy: retries => {
+          reconnectStrategy: (retries) => {
             if (retries > 20) {
               console.error('❌ Redis connection failed after 20 retries');
               return new Error('Redis connection failed');
@@ -48,8 +48,8 @@ class RedisManager {
             const delay = Math.min(retries * 50, 500);
             console.log(`🔄 Redis reconnecting in ${delay}ms (attempt ${retries})`);
             return delay;
-          },
-        },
+          }
+        }
       });
 
       // 设置事件监听器
@@ -57,17 +57,17 @@ class RedisManager {
 
       // 连接到Redis
       await this.client.connect();
-
+      
       this.isConnected = true;
       console.log('✅ Redis connected successfully');
-
+      
       return this.client;
     } catch (error) {
       console.error('❌ Redis connection failed:', error.message);
       this.client = null;
       this.isConnected = false;
       this.connectionPromise = null;
-
+      
       // 在Redis不可用时返回null，让应用继续运行
       return null;
     }
@@ -88,7 +88,7 @@ class RedisManager {
       this.isConnected = true;
     });
 
-    this.client.on('error', error => {
+    this.client.on('error', (error) => {
       console.error('❌ Redis client error:', error.message);
       this.isConnected = false;
     });
@@ -111,7 +111,7 @@ class RedisManager {
     try {
       const client = await this.getClient();
       if (!client) return false;
-
+      
       await client.ping();
       return true;
     } catch (error) {
@@ -132,7 +132,7 @@ class RedisManager {
         console.error('❌ Error closing Redis connection:', error.message);
       }
     }
-
+    
     this.client = null;
     this.isConnected = false;
     this.connectionPromise = null;
@@ -148,7 +148,7 @@ class RedisManager {
         console.warn('⚠️  Redis not available, using fallback value');
         return fallbackValue;
       }
-
+      
       return await operation(client);
     } catch (error) {
       console.error('❌ Redis operation failed:', error.message);
@@ -163,16 +163,16 @@ const redisManager = new RedisManager();
 // 导出便捷方法
 module.exports = {
   redisManager,
-
+  
   // 获取Redis客户端
   getRedisClient: () => redisManager.getClient(),
-
+  
   // 检查Redis可用性
   isRedisAvailable: () => redisManager.isAvailable(),
-
+  
   // 安全执行Redis操作
   safeRedisExecute: (operation, fallbackValue) => redisManager.safeExecute(operation, fallbackValue),
-
+  
   // 优雅关闭
-  closeRedis: () => redisManager.disconnect(),
+  closeRedis: () => redisManager.disconnect()
 };
