@@ -5,6 +5,7 @@ const config = require('./config');
 const connectDB = require('./config/database');
 const { closeRedis } = require('./config/redis');
 const initializeSocket = require('./socket');
+const { createWebSocketServer } = require('./routes/websocket');
 const mongoose = require('mongoose');
 
 // 创建 HTTP 服务器
@@ -13,6 +14,10 @@ const server = http.createServer(app);
 // 初始化 Socket.IO 并将其附加到 app 对象，以便在其他地方访问
 const io = initializeSocket(server);
 app.set('io', io);
+
+// 初始化简单的WebSocket服务器（用于uni-app）
+const wss = createWebSocketServer(server);
+app.set('wss', wss);
 
 const startServer = async () => {
   try {

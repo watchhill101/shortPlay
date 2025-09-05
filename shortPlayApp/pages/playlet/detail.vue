@@ -3,7 +3,7 @@
     <image class="back" src="../../static/img/left_jt.png" mode="scaleToFill" @click="toBack"></image>
 
     <view class="text-area">
-      <text class="title">短剧详情</text>
+      <text class="title">{{ pageTitle }}</text>
     </view>
 
     <view class="episodes">
@@ -17,35 +17,23 @@
   </view>
 </template>
 
-<script>
-export default {
-  data() {
-    return {
-      title: '详情',
-    };
-  },
-  onLoad() {},
+<script setup>
+import { ref } from 'vue';
 
-  methods: {
-    toPlayEpisodes(episodesStart) {
-      let me = this;
+// --- state ---
+const pageTitle = ref('短剧详情');
 
-      if (episodesStart) {
-        uni.navigateTo({
-          url: '/pages/playlet/episodes?episodesStart=' + episodesStart,
-        });
-      } else {
-        uni.navigateTo({
-          url: '/pages/playlet/episodes',
-        });
-      }
-    },
+// --- methods ---
+const toPlayEpisodes = episodesStart => {
+  let url = '/pages/playlet/episodes';
+  if (episodesStart) {
+    url += '?episodesStart=' + episodesStart;
+  }
+  uni.navigateTo({ url });
+};
 
-    toBack() {
-      let me = this;
-      uni.navigateBack();
-    },
-  },
+const toBack = () => {
+  uni.navigateBack();
 };
 </script>
 

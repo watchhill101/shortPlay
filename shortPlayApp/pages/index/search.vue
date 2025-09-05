@@ -6,7 +6,7 @@
           class="search-input"
           placeholder="搜索短剧..."
           v-model="searchText"
-          @input="onSearch"
+          @input="onSearchInput"
           confirm-type="search"
           @confirm="handleSearch"
         />
@@ -51,60 +51,58 @@
   </view>
 </template>
 
-<script>
-export default {
-  data() {
-    return {
-      searchText: '',
-      searchResults: [],
-      hasSearched: false,
-      hotTags: ['都市情感', '古装宫廷', '悬疑推理', '青春校园', '职场商战', '科幻奇幻'],
-    };
-  },
-  methods: {
-    onSearch(e) {
-      this.searchText = e.detail.value;
-    },
-    handleSearch() {
-      if (!this.searchText.trim()) {
-        uni.showToast({
-          title: '请输入搜索内容',
-          icon: 'none',
-        });
-        return;
-      }
+<script setup>
+import { ref, reactive } from 'vue';
 
-      // 模拟搜索
-      this.hasSearched = true;
-      this.searchResults = [
-        {
-          id: 1,
-          title: '都市情感短剧《爱的温度》',
-          description: '讲述都市男女在快节奏生活中寻找真爱的温暖故事',
-          cover: '../../static/img/video.png',
-          views: '12.5万',
-          duration: '45分钟',
-        },
-        {
-          id: 2,
-          title: '古装宫廷《凤舞九天》',
-          description: '宫廷权谋与爱情纠葛的精彩古装短剧',
-          cover: '../../static/img/video.png',
-          views: '8.9万',
-          duration: '52分钟',
-        },
-      ];
+// --- state ---
+const searchText = ref('');
+const searchResults = reactive([]);
+const hasSearched = ref(false);
+const hotTags = reactive(['都市情感', '古装宫廷', '悬疑推理', '青春校园', '职场商战', '科幻奇幻']);
+
+// --- methods ---
+const onSearchInput = e => {
+  searchText.value = e.detail.value;
+};
+
+const handleSearch = () => {
+  if (!searchText.value.trim()) {
+    return uni.showToast({ title: '请输入搜索内容', icon: 'none' });
+  }
+
+  // 模拟搜索
+  hasSearched.value = true;
+  const mockData = [
+    {
+      id: 1,
+      title: '都市情感短剧《爱的温度》',
+      description: '讲述都市男女在快节奏生活中寻找真爱的温暖故事',
+      cover: '../../static/img/video.png',
+      views: '12.5万',
+      duration: '45分钟',
     },
-    searchByTag(tag) {
-      this.searchText = tag;
-      this.handleSearch();
+    {
+      id: 2,
+      title: '古装宫廷《凤舞九天》',
+      description: '宫廷权谋与爱情纠葛的精彩古装短剧',
+      cover: '../../static/img/video.png',
+      views: '8.9万',
+      duration: '52分钟',
     },
-    goToDetail(item) {
-      uni.navigateTo({
-        url: `/pages/playlet/detail?id=${item.id}`,
-      });
-    },
-  },
+  ];
+  // 清空旧数据并填充新数据
+  searchResults.splice(0, searchResults.length, ...mockData);
+};
+
+const searchByTag = tag => {
+  searchText.value = tag;
+  handleSearch();
+};
+
+const goToDetail = item => {
+  uni.navigateTo({
+    url: `/pages/playlet/detail?id=${item.id}`,
+  });
 };
 </script>
 

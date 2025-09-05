@@ -12,123 +12,83 @@
   </view>
 </template>
 
-<script>
-// Removed xqx-player import to fix module resolution error
-// import XqxPlayer from 'uni_modules/xqx-player/components/xqx-player/xqx-player.vue';
+<script setup>
+import { ref, reactive } from 'vue';
+import { onLoad, onShow, onHide } from '@dcloudio/uni-app';
 
-export default {
-  components: {
-    // XqxPlayer - removed due to paid plugin dependency
-  },
+// --- state ---
+const title = ref('discover');
+const supplyEpisodes = reactive({
+  episodes: null,
+  url: null,
+});
+const currentEpisodes = reactive({});
+const playletDetail = reactive({});
+const episodesList = reactive([]);
+const episodesStart = ref(0);
 
-  data() {
-    return {
-      title: 'discover',
+// --- methods ---
+const onEpisodesStart = (episodes, episodesItem) => {
+  console.log('onEpisodesStart: episodes=' + episodes + ' ,episodesItem=' + JSON.stringify(episodesItem));
+  Object.assign(currentEpisodes, episodesItem);
 
-      supplyEpisodes: {
-        episodes: null,
-        url: null,
-      },
-
-      //当前播放哪一集的信息，由组件通知获得
-      currentEpisodes: {},
-
-      //短剧详情
-      playletDetail: {},
-
-      // 短剧剧集列表
-      episodesList: [],
-
-      episodesStart: 0,
-    };
-  },
-  onLoad(option) {
-    let me = this;
-
-    if (option.episodesStart) {
-      me.episodesStart = Number(option.episodesStart);
-    }
-
-    me.playletQueryDetail();
-  },
-
-  onShow() {
-    let me = this;
-
-    //页面初始化时，第一次调用me.$refs.playPanelRef 可能为空
-    if (me.$refs.playPanelRef) {
-      // me.$refs.playPanelRef.playVideo(); // Commented out due to removed component
-      console.log('Video play requested');
-    }
-  },
-
-  onHide() {
-    let me = this;
-    // me.$refs.playPanelRef.pauseVideo(); // Commented out due to removed component
-    console.log('Video pause requested');
-  },
-
-  methods: {
-    //只是通知当前播放哪一集，即使当前集的视频需要先购买才能播放也会通知
-    onEpisodesStart(episodes, episodesItem) {
-      let me = this;
-      console.log('onEpisodesStart: episodes=' + episodes + ' ,episodesItem=' + JSON.stringify(episodesItem));
-
-      me.currentEpisodes = episodesItem;
-
-      //触发加载额外的短剧播放列表
-      if (episodes > me.episodesList.length - 10) {
-        //me.episodesList = me.episodesList.concat(extraEpisodesList)
-        console.log('onEpisodesStart: 触发加载额外的短剧播放列表');
-      }
-    },
-
-    //如果当前集不允许播放，回调让使用方决定怎么做，比如弹窗购买提示视图
-    onEpisodesForbit(episodes, episodesItem) {
-      let me = this;
-      console.log('onEpisodesForbit: episodes=' + episodes + ' , episodesItem=' + JSON.stringify(episodesItem));
-    },
-
-    // 模拟获取短剧详情数据
-    playletQueryDetail() {
-      let me = this;
-
-      // 模拟数据
-      me.playletDetail = {
-        id: 1,
-        title: '示例短剧',
-        description: '这是一个示例短剧的描述',
-        totalEpisodes: 10,
-      };
-
-      me.episodesList = [
-        {
-          id: 1,
-          title: '第1集',
-          url: 'https://example.com/episode1.mp4',
-          thumbnail: '/static/img/video.png',
-        },
-        {
-          id: 2,
-          title: '第2集',
-          url: 'https://example.com/episode2.mp4',
-          thumbnail: '/static/img/video.png',
-        },
-        {
-          id: 3,
-          title: '第3集',
-          url: 'https://example.com/episode3.mp4',
-          thumbnail: '/static/img/video.png',
-        },
-      ];
-
-      console.log('加载短剧详情数据完成');
-    },
-  },
+  if (episodes > episodesList.length - 10) {
+    console.log('onEpisodesStart: 触发加载额外的短剧播放列表');
+  }
 };
+
+const onEpisodesForbit = (episodes, episodesItem) => {
+  console.log('onEpisodesForbit: episodes=' + episodes + ' , episodesItem=' + JSON.stringify(episodesItem));
+};
+
+const playletQueryDetail = () => {
+  const mockDetail = {
+    id: 1,
+    title: '示例短剧',
+    description: '这是一个示例短剧的描述',
+    totalEpisodes: 10,
+  };
+  Object.assign(playletDetail, mockDetail);
+
+  const mockEpisodes = [
+    { id: 1, title: '第1集', url: 'https://example.com/episode1.mp4', thumbnail: '/static/img/video.png' },
+    { id: 2, title: '第2集', url: 'https://example.com/episode2.mp4', thumbnail: '/static/img/video.png' },
+    { id: 3, title: '第3集', url: 'https://example.com/episode3.mp4', thumbnail: '/static/img/video.png' },
+  ];
+  episodesList.splice(0, episodesList.length, ...mockEpisodes);
+
+  console.log('加载短剧详情数据完成');
+};
+
+// --- lifecycle hooks ---
+onLoad(option => {
+  if (option.episodesStart) {
+    episodesStart.value = Number(option.episodesStart);
+  }
+  playletQueryDetail();
+});
+
+onShow(() => {
+  // Since the original component ref is removed, we just log the action.
+  // const playPanelRef = ...;
+  // if (playPanelRef) {
+  //   playPanelRef.playVideo();
+  // }
+  console.log('Video play requested');
+});
+
+onHide(() => {
+  // Since the original component ref is removed, we just log the action.
+  // const playPanelRef = ...;
+  // if (playPanelRef) {
+  //   playPanelRef.pauseVideo();
+  // }
+  console.log('Video pause requested');
+});
 </script>
 
 <style scoped>
+/* Styles remain the same */
 .content {
   width: 100%;
   height: 100vh;

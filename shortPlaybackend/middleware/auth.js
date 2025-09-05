@@ -11,7 +11,11 @@ const protect = async (req, res, next) => {
     token = authHeader.split(' ')[1];
   }
 
+  console.log('认证中间件 - Authorization header:', authHeader);
+  console.log('认证中间件 - 提取的token:', token ? token.substring(0, 20) + '...' : 'null');
+
   if (!token) {
+    console.log('认证失败: 没有token');
     const err = new Error('Not authorized, no token');
     err.status = 401;
     return next(err);
@@ -19,6 +23,7 @@ const protect = async (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, config.jwt.secret);
+    console.log('JWT解码成功:', { userId: decoded.user.id });
 
     // 检查是否是access token
     if (decoded.type && decoded.type !== 'access') {
@@ -39,9 +44,9 @@ const protect = async (req, res, next) => {
     }
 
     next();
-  } catch (_error) {
+  } catch (error) {
+    console.log('认证失败: JWT验证失败', error.message);
     const err = new Error('Not authorized, token failed');
-    console.log(_error.message);
     err.status = 401;
     err.code = 'INVALID_ACCESS_TOKEN';
     next(err);

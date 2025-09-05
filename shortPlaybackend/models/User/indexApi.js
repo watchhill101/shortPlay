@@ -67,7 +67,7 @@ const _register = async (req, res, next) => {
       return next(err);
     }
 
-    const _user = await User.create({ username, password });
+    await User.create({ username, password });
 
     res.status(201).json({ success: true, message: 'User registered successfully' });
   } catch (error) {
@@ -247,9 +247,7 @@ const loginWithDouyin = async (req, res, next) => {
     };
     // --- 模拟数据结束 ---
 
-    let user = await User.findOne({
-      'douyinProfile.openId': douyinUserInfo.open_id,
-    });
+    let user = await User.findOne({ 'douyinProfile.openId': douyinUserInfo.open_id });
 
     // 如果用户不存在，则创建新用户
     if (!user) {

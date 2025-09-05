@@ -38,118 +38,63 @@
   </view>
 </template>
 
-<script>
+<script setup>
+import { ref, reactive } from 'vue';
+import { onLoad, onShow, onHide } from '@dcloudio/uni-app';
 import Discor from './discor.vue';
 import Foryou from './foryou.vue';
 
-export default {
-  components: {
-    Discor,
-    Foryou,
-  },
+// --- state ---
+const tabIndex = ref(0);
+const panelTabs = reactive([
+  { index: 0, name: '发现' },
+  { index: 1, name: '推荐' },
+]);
+const foryouShow = ref(false);
+const navBarHeight = ref(0);
 
-  data() {
-    return {
-      meUni: uni,
-
-      tabIndex: 0,
-      panelTabs: [
-        {
-          index: 0,
-          name: '发现',
-        },
-        {
-          index: 1,
-          name: '推荐',
-        },
-      ],
-
-      foryouShow: false,
-      navBarHeight: 0,
-    };
-  },
-
-  onLoad(options) {
-    let me = this;
-
-    me.initViewInfo();
-    me.initPageData();
-  },
-
-  onShow() {
-    let me = this;
-    if (me.tabIndex == 1) {
-      me.foryouShow = true;
-    } else {
-      me.foryouShow = false;
-    }
-  },
-
-  onHide() {
-    let me = this;
-    me.foryouShow = false;
-  },
-
-  onReady() {},
-
-  onReachBottom() {},
-
-  onPullDownRefresh() {},
-
-  beforeUnmount() {
-    let me = this;
-  },
-
-  computed: {},
-
-  methods: {
-    //根据不同运行环境，计算高度适配
-    initViewInfo() {
-      let me = this;
-
-      // pages.json 中tabBar 设置了高度
-      // #ifdef APP-PLUS
-      me.navBarHeight = 0;
-      // #endif
-      // #ifndef APP-PLUS
-      me.navBarHeight = 60;
-      // #endif
-    },
-
-    initPageData() {
-      let me = this;
-    },
-
-    toTabClick(index) {
-      let me = this;
-
-      me.tabIndex = index;
-    },
-
-    onTabChange(e) {
-      let me = this;
-
-      me.tabIndex = e.detail.current;
-      if (me.tabIndex == 1) {
-        me.foryouShow = true;
-      } else {
-        me.foryouShow = false;
-      }
-    },
-
-    toSearchGoods() {
-      let me = this;
-
-      // 跳转到搜索页面
-      uni.navigateTo({
-        url: '/pages/index/search',
-      });
-    },
-  },
+// --- methods ---
+const initViewInfo = () => {
+  // pages.json 中tabBar 设置了高度
+  // #ifdef APP-PLUS
+  navBarHeight.value = 0;
+  // #endif
+  // #ifndef APP-PLUS
+  navBarHeight.value = 60;
+  // #endif
 };
+
+const toTabClick = index => {
+  tabIndex.value = index;
+};
+
+const onTabChange = e => {
+  tabIndex.value = e.detail.current;
+  foryouShow.value = tabIndex.value === 1;
+};
+
+const toSearchGoods = () => {
+  uni.navigateTo({
+    url: '/pages/index/search',
+  });
+};
+
+// --- lifecycle hooks ---
+onLoad(() => {
+  initViewInfo();
+});
+
+onShow(() => {
+  foryouShow.value = tabIndex.value === 1;
+});
+
+onHide(() => {
+  foryouShow.value = false;
+});
 </script>
 
 <style scoped lang="scss">
+/* Styles remain the same */
 .maincontainer {
   width: 100%;
   background-color: #0e0f0f;

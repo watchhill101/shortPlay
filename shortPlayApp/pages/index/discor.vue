@@ -11,7 +11,7 @@
             indicator-active-color="#ba8f40"
             autoplay="true"
           >
-            <swiper-item v-for="(item, index) in bannerList" :key="index" @click="toBannerItem(item)">
+            <swiper-item v-for="item in bannerList" :key="item.id" @click="toBannerItem(item)">
               <view class="swiper-item">
                 <image src="../../static/img/video.png" class="vicon" mode="scaleToFill"></image>
                 <image :src="item.image" class="goods-banner" mode="scaleToFill"></image>
@@ -71,268 +71,206 @@
   </scroll-view>
 </template>
 
-<script>
-export default {
-  components: {},
+<script setup>
+import { reactive, onMounted } from 'vue';
 
-  data() {
-    return {
-      meUni: uni,
+// --- state ---
+const bannerList = reactive([]);
+const playletCollections = reactive([]);
+const playletRecommends = reactive([]);
 
-      //横幅
-      bannerList: [],
+// --- methods ---
+const queryBanner = () => {
+  const mockData = [
+    { id: 1, title: '短剧Demo1', image: 'https://env-00jxhb2rkow0.normal.cloudstatic.cn/xqx-playlet/small_001.jpg' },
+    { id: 2, title: '短剧Demo2', image: 'https://env-00jxhb2rkow0.normal.cloudstatic.cn/xqx-playlet/small_005.jpg' },
+  ];
+  Object.assign(bannerList, mockData);
+};
 
-      //合集
-      playletCollections: [],
-
-      //推荐短剧
-      playletRecommends: [],
-
-      loading: false,
-      loaded: false,
-    };
-  },
-
-  created() {
-    let me = this;
-    me.initPageData();
-  },
-
-  onReady() {},
-
-  toPullDownRefresh() {
-    let me = this;
-
-    if (!me.loading) {
-      me.initPageData();
-    }
-    setTimeout(uni.stopPullDownRefresh, 500);
-  },
-
-  beforeUnmount() {
-    let me = this;
-  },
-
-  mounted: function () {
-    let me = this;
-  },
-
-  computed: {},
-
-  methods: {
-    initPageData() {
-      let me = this;
-
-      me.queryBanner();
-      me.playletQueryCollection();
-      me.playletQueryRecommend();
-    },
-
-    toSearchGoods() {
-      let me = this;
-    },
-
-    toLoadMorePlaylet() {
-      let me = this;
-    },
-
-    //公告
-    queryBanner() {
-      let me = this;
-
-      me.bannerList = [
+const playletQueryCollection = () => {
+  const mockData = [
+    {
+      id: 1,
+      name: '最热短剧',
+      playletList: [
         {
-          id: 1,
-          title: '短剧Demo1',
-          image: 'https://env-00jxhb2rkow0.normal.cloudstatic.cn/xqx-playlet/small_001.jpg',
-        },
-        {
-          id: 2,
-          title: '短剧Demo2',
-          image: 'https://env-00jxhb2rkow0.normal.cloudstatic.cn/xqx-playlet/small_005.jpg',
-        },
-      ];
-    },
-
-    //获取短剧合集
-    playletQueryCollection() {
-      let me = this;
-
-      me.playletCollections = [
-        {
-          id: 1,
-          name: '最热短剧',
-          playletList: [
-            {
-              playletId: 41,
-              title: '短剧Demo',
-              image: 'https://env-00jxhb2rkow0.normal.cloudstatic.cn/xqx-playlet/big_003.jpg',
-              smallImage: 'https://env-00jxhb2rkow0.normal.cloudstatic.cn/xqx-playlet/small_003.jpg',
-            },
-            {
-              playletId: 42,
-              title: '短剧Demo',
-              image: 'https://env-00jxhb2rkow0.normal.cloudstatic.cn/xqx-playlet/big_004.jpg',
-              smallImage: 'https://env-00jxhb2rkow0.normal.cloudstatic.cn/xqx-playlet/small_004.jpg',
-            },
-            {
-              playletId: 43,
-              title: '短剧很好看',
-              image: 'https://env-00jxhb2rkow0.normal.cloudstatic.cn/xqx-playlet/big_007.jpg',
-              smallImage: 'https://env-00jxhb2rkow0.normal.cloudstatic.cn/xqx-playlet/small_007.jpg',
-            },
-            {
-              playletId: 44,
-              title: '短剧很好看',
-              image: 'https://env-00jxhb2rkow0.normal.cloudstatic.cn/xqx-playlet/big_005.jpg',
-              smallImage: 'https://env-00jxhb2rkow0.normal.cloudstatic.cn/xqx-playlet/small_005.jpg',
-            },
-            {
-              playletId: 45,
-              title: '失百仙过海',
-              image: 'https://env-00jxhb2rkow0.normal.cloudstatic.cn/xqx-playlet/big_006.jpg',
-              smallImage: 'https://env-00jxhb2rkow0.normal.cloudstatic.cn/xqx-playlet/small_006.jpg',
-            },
-          ],
-        },
-        {
-          id: 4,
-          name: '热榜短剧',
-          playletList: [
-            {
-              playletId: 46,
-              title: '短剧很好看',
-              image: 'https://env-00jxhb2rkow0.normal.cloudstatic.cn/xqx-playlet/big_006.jpg',
-              smallImage: 'https://env-00jxhb2rkow0.normal.cloudstatic.cn/xqx-playlet/small_006.jpg',
-            },
-            {
-              playletId: 47,
-              title: '短剧Demo',
-              image: 'https://env-00jxhb2rkow0.normal.cloudstatic.cn/xqx-playlet/big_007.jpg',
-              smallImage: 'https://env-00jxhb2rkow0.normal.cloudstatic.cn/xqx-playlet/small_007.jpg',
-            },
-            {
-              playletId: 48,
-              title: '短剧Demo',
-              image: 'https://env-00jxhb2rkow0.normal.cloudstatic.cn/xqx-playlet/big_002.jpg',
-              smallImage: 'https://env-00jxhb2rkow0.normal.cloudstatic.cn/xqx-playlet/small_002.jpg',
-            },
-          ],
-        },
-      ];
-    },
-
-    //获取短剧列表
-    playletQueryRecommend() {
-      let me = this;
-
-      me.playletRecommends = [
-        {
-          playletId: 53,
+          playletId: 41,
           title: '短剧Demo',
-          brief: '短剧Demo短剧Demo短剧Demo短剧Demo短剧Demo短剧Demo',
-          image: 'https://env-00jxhb2rkow0.normal.cloudstatic.cn/xqx-playlet/big_007.jpg',
-          smallImage: 'https://env-00jxhb2rkow0.normal.cloudstatic.cn/xqx-playlet/small_007.jpg',
-        },
-        {
-          playletId: 50,
-          title: '短剧Demo',
-          brief: '短剧Demo短剧Demo短剧Demo短剧Demo短剧Demo短剧Demo',
-          image: 'https://env-00jxhb2rkow0.normal.cloudstatic.cn/xqx-playlet/big_006.jpg',
-          smallImage: 'https://env-00jxhb2rkow0.normal.cloudstatic.cn/xqx-playlet/small_006.jpg',
+          image: 'https://env-00jxhb2rkow0.normal.cloudstatic.cn/xqx-playlet/big_003.jpg',
+          smallImage: 'https://env-00jxhb2rkow0.normal.cloudstatic.cn/xqx-playlet/small_003.jpg',
         },
         {
           playletId: 42,
           title: '短剧Demo',
-          brief: '短剧Demo短剧Demo短剧Demo短剧Demo短剧Demo短剧Demo',
-          image: 'https://env-00jxhb2rkow0.normal.cloudstatic.cn/xqx-playlet/big_003.jpg',
-          smallImage: 'https://env-00jxhb2rkow0.normal.cloudstatic.cn/xqx-playlet/small_003.jpg',
-        },
-        {
-          playletId: 48,
-          title: '短剧Demo',
-          brief: '短剧Demo短剧Demo短剧Demo短剧Demo短剧Demo短剧Demo',
           image: 'https://env-00jxhb2rkow0.normal.cloudstatic.cn/xqx-playlet/big_004.jpg',
           smallImage: 'https://env-00jxhb2rkow0.normal.cloudstatic.cn/xqx-playlet/small_004.jpg',
         },
         {
-          playletId: 47,
-          title: '短剧Demo',
-          brief: '短剧Demo短剧Demo短剧Demo短剧Demo短剧Demo短剧Demo',
-          image: 'https://env-00jxhb2rkow0.normal.cloudstatic.cn/xqx-playlet/big_005.jpg',
-          smallImage: 'https://env-00jxhb2rkow0.normal.cloudstatic.cn/xqx-playlet/small_005.jpg',
-        },
-        {
-          playletId: 46,
+          playletId: 43,
           title: '短剧很好看',
-          brief: '隐居山林的战主沐辰在属下的召唤下出山，得知自己爱人苏雪遭受迫害便投身到拯救爱人和家庭的战斗中。',
-          image: 'https://env-00jxhb2rkow0.normal.cloudstatic.cn/xqx-playlet/big_006.jpg',
-          smallImage: 'https://env-00jxhb2rkow0.normal.cloudstatic.cn/xqx-playlet/small_006.jpg',
+          image: 'https://env-00jxhb2rkow0.normal.cloudstatic.cn/xqx-playlet/big_007.jpg',
+          smallImage: 'https://env-00jxhb2rkow0.normal.cloudstatic.cn/xqx-playlet/small_007.jpg',
         },
         {
           playletId: 44,
           title: '短剧很好看',
-          brief: '一次事故失忆后的黎雾，被四个帅哥团团包围，瞬间成为抢手团宠。',
-          image: 'https://env-00jxhb2rkow0.normal.cloudstatic.cn/xqx-playlet/big_003.jpg',
-          smallImage: 'https://env-00jxhb2rkow0.normal.cloudstatic.cn/xqx-playlet/small_003.jpg',
+          image: 'https://env-00jxhb2rkow0.normal.cloudstatic.cn/xqx-playlet/big_005.jpg',
+          smallImage: 'https://env-00jxhb2rkow0.normal.cloudstatic.cn/xqx-playlet/small_005.jpg',
         },
         {
-          playletId: 43,
+          playletId: 45,
+          title: '失百仙过海',
+          image: 'https://env-00jxhb2rkow0.normal.cloudstatic.cn/xqx-playlet/big_006.jpg',
+          smallImage: 'https://env-00jxhb2rkow0.normal.cloudstatic.cn/xqx-playlet/small_006.jpg',
+        },
+      ],
+    },
+    {
+      id: 4,
+      name: '热榜短剧',
+      playletList: [
+        {
+          playletId: 46,
           title: '短剧很好看',
-          brief: '短剧Demo短剧Demo短剧Demo短剧Demo短剧Demo短剧Demo',
+          image: 'https://env-00jxhb2rkow0.normal.cloudstatic.cn/xqx-playlet/big_006.jpg',
+          smallImage: 'https://env-00jxhb2rkow0.normal.cloudstatic.cn/xqx-playlet/small_006.jpg',
+        },
+        {
+          playletId: 47,
+          title: '短剧Demo',
           image: 'https://env-00jxhb2rkow0.normal.cloudstatic.cn/xqx-playlet/big_007.jpg',
-          smallImage: 'https://env-00jxhb2rkow0.normal.cloudstatic.cn/xqx-playlet/small_003.jpg',
+          smallImage: 'https://env-00jxhb2rkow0.normal.cloudstatic.cn/xqx-playlet/small_007.jpg',
         },
         {
-          playletId: 41,
+          playletId: 48,
           title: '短剧Demo',
-          brief: '短剧Demo短剧Demo短剧Demo短剧Demo短剧Demo短剧Demo',
-          image: 'https://env-00jxhb2rkow0.normal.cloudstatic.cn/xqx-playlet/big_001.jpg',
-          smallImage: 'https://env-00jxhb2rkow0.normal.cloudstatic.cn/xqx-playlet/small_001.jpg',
-        },
-        {
-          playletId: 40,
-          title: '短剧Demo',
-          brief: '却发现发生了许许多多的变故，寻找多年未见的未婚妻叶婉儿，，他决心改变这个现状。',
           image: 'https://env-00jxhb2rkow0.normal.cloudstatic.cn/xqx-playlet/big_002.jpg',
           smallImage: 'https://env-00jxhb2rkow0.normal.cloudstatic.cn/xqx-playlet/small_002.jpg',
         },
-        {
-          playletId: 39,
-          title: '短剧Demo',
-          brief: '逐步揭露能看到万物的价格。在各种挑战中，背后的阴谋，利用自己的智慧和资源',
-          image: 'https://env-00jxhb2rkow0.normal.cloudstatic.cn/xqx-playlet/big_004.jpg',
-          smallImage: 'https://env-00jxhb2rkow0.normal.cloudstatic.cn/xqx-playlet/smal4_001.jpg',
-        },
-      ];
+      ],
     },
-
-    //点击横幅
-    toBannerItem(item) {
-      let me = this;
-
-      uni.navigateTo({
-        url: '/pages/playlet/episodes?episodesStart=' + 1,
-      });
-    },
-
-    toCollectionPlaylet(colls) {
-      let me = this;
-    },
-
-    //点击短剧详情
-    toPalyletDetail(item) {
-      let me = this;
-
-      uni.navigateTo({
-        url: '/pages/playlet/detail?playletId=' + item.playletId,
-      });
-    },
-  },
+  ];
+  Object.assign(playletCollections, mockData);
 };
+
+const playletQueryRecommend = () => {
+  const mockData = [
+    {
+      playletId: 53,
+      title: '短剧Demo',
+      brief: '短剧Demo短剧Demo短剧Demo短剧Demo短剧Demo短剧Demo',
+      image: 'https://env-00jxhb2rkow0.normal.cloudstatic.cn/xqx-playlet/big_007.jpg',
+      smallImage: 'https://env-00jxhb2rkow0.normal.cloudstatic.cn/xqx-playlet/small_007.jpg',
+    },
+    {
+      playletId: 50,
+      title: '短剧Demo',
+      brief: '短剧Demo短剧Demo短剧Demo短剧Demo短剧Demo短剧Demo',
+      image: 'https://env-00jxhb2rkow0.normal.cloudstatic.cn/xqx-playlet/big_006.jpg',
+      smallImage: 'https://env-00jxhb2rkow0.normal.cloudstatic.cn/xqx-playlet/small_006.jpg',
+    },
+    {
+      playletId: 42,
+      title: '短剧Demo',
+      brief: '短剧Demo短剧Demo短剧Demo短剧Demo短剧Demo短剧Demo',
+      image: 'https://env-00jxhb2rkow0.normal.cloudstatic.cn/xqx-playlet/big_003.jpg',
+      smallImage: 'https://env-00jxhb2rkow0.normal.cloudstatic.cn/xqx-playlet/small_003.jpg',
+    },
+    {
+      playletId: 48,
+      title: '短剧Demo',
+      brief: '短剧Demo短剧Demo短剧Demo短剧Demo短剧Demo短剧Demo',
+      image: 'https://env-00jxhb2rkow0.normal.cloudstatic.cn/xqx-playlet/big_004.jpg',
+      smallImage: 'https://env-00jxhb2rkow0.normal.cloudstatic.cn/xqx-playlet/small_004.jpg',
+    },
+    {
+      playletId: 47,
+      title: '短剧Demo',
+      brief: '短剧Demo短剧Demo短剧Demo短剧Demo短剧Demo短剧Demo',
+      image: 'https://env-00jxhb2rkow0.normal.cloudstatic.cn/xqx-playlet/big_005.jpg',
+      smallImage: 'https://env-00jxhb2rkow0.normal.cloudstatic.cn/xqx-playlet/small_005.jpg',
+    },
+    {
+      playletId: 46,
+      title: '短剧很好看',
+      brief: '隐居山林的战主沐辰在属下的召唤下出山，得知自己爱人苏雪遭受迫害便投身到拯救爱人和家庭的战斗中。',
+      image: 'https://env-00jxhb2rkow0.normal.cloudstatic.cn/xqx-playlet/big_006.jpg',
+      smallImage: 'https://env-00jxhb2rkow0.normal.cloudstatic.cn/xqx-playlet/small_006.jpg',
+    },
+    {
+      playletId: 44,
+      title: '短剧很好看',
+      brief: '一次事故失忆后的黎雾，被四个帅哥团团包围，瞬间成为抢手团宠。',
+      image: 'https://env-00jxhb2rkow0.normal.cloudstatic.cn/xqx-playlet/big_003.jpg',
+      smallImage: 'https://env-00jxhb2rkow0.normal.cloudstatic.cn/xqx-playlet/small_003.jpg',
+    },
+    {
+      playletId: 43,
+      title: '短剧很好看',
+      brief: '短剧Demo短剧Demo短剧Demo短剧Demo短剧Demo短剧Demo',
+      image: 'https://env-00jxhb2rkow0.normal.cloudstatic.cn/xqx-playlet/big_007.jpg',
+      smallImage: 'https://env-00jxhb2rkow0.normal.cloudstatic.cn/xqx-playlet/small_003.jpg',
+    },
+    {
+      playletId: 41,
+      title: '短剧Demo',
+      brief: '短剧Demo短剧Demo短剧Demo短剧Demo短剧Demo短剧Demo',
+      image: 'https://env-00jxhb2rkow0.normal.cloudstatic.cn/xqx-playlet/big_001.jpg',
+      smallImage: 'https://env-00jxhb2rkow0.normal.cloudstatic.cn/xqx-playlet/small_001.jpg',
+    },
+    {
+      playletId: 40,
+      title: '短剧Demo',
+      brief: '却发现发生了许许多多的变故，寻找多年未见的未婚妻叶婉儿，，他决心改变这个现状。',
+      image: 'https://env-00jxhb2rkow0.normal.cloudstatic.cn/xqx-playlet/big_002.jpg',
+      smallImage: 'https://env-00jxhb2rkow0.normal.cloudstatic.cn/xqx-playlet/small_002.jpg',
+    },
+    {
+      playletId: 39,
+      title: '短剧Demo',
+      brief: '逐步揭露能看到万物的价格。在各种挑战中，背后的阴谋，利用自己的智慧和资源',
+      image: 'https://env-00jxhb2rkow0.normal.cloudstatic.cn/xqx-playlet/big_004.jpg',
+      smallImage: 'https://env-00jxhb2rkow0.normal.cloudstatic.cn/xqx-playlet/smal4_001.jpg',
+    },
+  ];
+  Object.assign(playletRecommends, mockData);
+};
+
+const toLoadMorePlaylet = () => {
+  // Placeholder for loading more playlets
+};
+
+const toBannerItem = item => {
+  uni.navigateTo({
+    url: '/pages/playlet/episodes?episodesStart=' + 1,
+  });
+};
+
+const toCollectionPlaylet = colls => {
+  // Placeholder for collection click
+};
+
+const toPalyletDetail = item => {
+  uni.navigateTo({
+    url: '/pages/playlet/detail?playletId=' + item.playletId,
+  });
+};
+
+const initPageData = () => {
+  queryBanner();
+  playletQueryCollection();
+  playletQueryRecommend();
+};
+
+// --- lifecycle hooks ---
+onMounted(() => {
+  initPageData();
+});
 </script>
 
 <style scoped lang="scss">
+/* Styles remain the same */
 .maincontainer {
   width: 100%;
   height: 100%;
