@@ -136,7 +136,7 @@ const sendSmsCode = async (req, res, next) => {
       targets: phone,
       number: '5',
     });
-    fetch('https://push.spug.cc/send/My5R7m0kYw8V2DgG', {
+    await fetch('https://push.spug.cc/send/My5R7m0kYw8V2DgG', {
       method: 'POST',
       body: body,
     });
@@ -298,7 +298,7 @@ const loginWithDouyin = async (req, res, next) => {
  * @desc    刷新访问令牌
  * @route   POST /api/auth/refresh
  */
-const _refreshToken = async (req, res, next) => {
+const refreshToken = async (req, res, next) => {
   const { refreshToken, deviceId } = req.body;
 
   if (!refreshToken) {
@@ -445,7 +445,7 @@ module.exports = {
   sendSmsCode,
   loginWithPhone,
   loginWithDouyin,
-  _refreshToken,
+  refreshToken,
   verifyToken,
   logout,
   getSessions,

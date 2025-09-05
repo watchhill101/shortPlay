@@ -39,6 +39,14 @@
       }
     },
     {
+      "path": "pages/G-Settings/index",
+      "style": {
+        "navigationBarTitleText": "设置",
+        "navigationStyle": "custom",
+        "backgroundColor": "#FFFFFF"
+      }
+    },
+    {
       "path": "pages/playlet/episodes",
       "style": {
         "app-plus": {

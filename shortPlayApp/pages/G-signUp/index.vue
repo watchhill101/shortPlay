@@ -28,11 +28,19 @@
           <input class="code-input" type="number" placeholder="请输入验证码" v-model="verificationCode" maxlength="6" />
         </view>
 
-        <!-- 获取验证码按钮 -->
-        <view class="get-code-btn" :class="{ disabled: countdown > 0 || isGettingCode }" @click="handleButtonClick">
-          <text class="get-code-text">
-            {{ getButtonText() }}
-          </text>
+        <!-- 按钮组 -->
+        <view class="button-group">
+          <!-- 获取验证码按钮 -->
+          <view class="get-code-btn" :class="{ disabled: countdown > 0 }" @click="getVerificationCode">
+            <text class="get-code-text">
+              {{ countdown > 0 ? `${countdown}s后重新获取` : '获取验证码' }}
+            </text>
+          </view>
+
+          <!-- 登录按钮，仅在输入验证码时显示 -->
+          <view class="login-action-btn" v-if="showCodeInput" @click="loginWithVerificationCode">
+            <text class="login-action-text">登录</text>
+          </view>
         </view>
       </view>
 
@@ -59,7 +67,6 @@
     </view>
   </view>
 </template>
-//
 
 <script>
 import tokenManager from '../../utils/tokenManager.js';
@@ -83,40 +90,6 @@ export default {
     // 返回上一页
     goBack() {
       uni.navigateBack();
-    },
-
-    // 获取按钮文本
-    getButtonText() {
-      if (!this.codeAlreadySent) {
-        return this.isGettingCode ? '发送中...' : '获取验证码';
-      } else {
-        if (this.countdown > 0) {
-          return `${this.countdown}s后重新获取`;
-        } else if (this.isLoggingIn) {
-          return '登录中...';
-        } else {
-          return '立即登录';
-        }
-      }
-    },
-
-    // 处理按钮点击
-    async handleButtonClick() {
-      if (!this.codeAlreadySent) {
-        // 第一次点击 - 获取验证码
-        await this.getVerificationCode();
-      } else {
-        // 已发送验证码后点击
-        if (this.countdown > 0) {
-          return; // 倒计时中，不处理
-        } else if (this.verificationCode) {
-          // 有验证码，执行登录
-          await this.loginWithVerificationCode();
-        } else {
-          // 重新获取验证码
-          await this.getVerificationCode();
-        }
-      }
     },
 
     // 获取验证码
@@ -491,12 +464,24 @@ export default {
   }
 }
 
-.get-code-btn {
+.button-group {
+  display: flex;
+  flex-direction: column;
+  gap: 40rpx;
+}
+
+.get-code-btn,
+.login-action-btn {
   width: 100%;
   padding: 35rpx 0;
-  background: linear-gradient(90deg, #ff6b47, #ff9529);
   border-radius: 60rpx;
-  box-shadow: 0 8rpx 24rpx rgba(255, 107, 71, 0.3);
+  text-align: center;
+  transition: background 0.3s ease;
+}
+
+.get-code-btn {
+  background: linear-gradient(90deg, #3a7c6a, #4a9a88);
+  box-shadow: 0 8rpx 24rpx rgba(74, 154, 136, 0.2);
 
   &.disabled {
     background: rgba(255, 255, 255, 0.3);
@@ -504,7 +489,13 @@ export default {
   }
 }
 
-.get-code-text {
+.login-action-btn {
+  background: linear-gradient(90deg, #ff6b47, #ff9529);
+  box-shadow: 0 8rpx 24rpx rgba(255, 107, 71, 0.3);
+}
+
+.get-code-text,
+.login-action-text {
   color: #ffffff;
   font-size: 36rpx;
   font-weight: bold;

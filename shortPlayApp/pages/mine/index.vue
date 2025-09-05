@@ -1,8 +1,8 @@
 <template>
   <view class="mine-container">
     <!-- 用户信息区域 -->
-    <view class="user-info-section" @click="!isLoggedIn && goToLogin()">
-      <view class="user-profile">
+    <view class="user-info-section">
+      <view class="user-profile" @click="!isLoggedIn && goToLogin()">
         <image :src="userInfo.avatar" class="user-avatar" mode="aspectFill"></image>
         <view class="user-details">
           <text class="username">{{ userInfo.name }}</text>
@@ -21,6 +21,11 @@
             </view>
           </view>
         </view>
+      </view>
+
+      <!-- 设置图标 -->
+      <view class="settings-icon" @click="goToSettings">
+        <u-icon name="setting" color="#ffffff" size="24"></u-icon>
       </view>
     </view>
 
@@ -177,6 +182,13 @@ export default {
       });
     },
 
+    // 跳转到设置页面
+    goToSettings() {
+      uni.navigateTo({
+        url: '/pages/G-Settings/index',
+      });
+    },
+
     // 菜单点击事件
     onMenuClick(type) {
       switch (type) {
@@ -234,8 +246,15 @@ export default {
 
 // 用户信息区域
 .user-info-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   padding: 80rpx 60rpx 60rpx;
   border-bottom: 1rpx solid rgba(255, 255, 255, 0.1);
+}
+
+.settings-icon {
+  /* No specific styles needed for positioning anymore */
 }
 
 .user-profile {
