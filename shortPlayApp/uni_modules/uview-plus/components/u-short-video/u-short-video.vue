@@ -68,263 +68,249 @@
 							<text class="speed-text">{{ item.playbackRate || 1.0 }}x</text>
 							<up-icon name="arrow-down" size="12" color="#fff"></up-icon>
 						</view> -->
-					</view>
-					
-					<!-- 作者信息 -->
-					<view class="u-short-video__content__author">
-						<view class="u-short-video__content__author__avatar">
-							<u-avatar :src="item.author.avatar" size="50px"></u-avatar>
-						</view>
-						<view class="u-short-video__content__author__info">
-							<text class="u-short-video__content__author__name">{{ item.author.name }}</text>
-							<text class="u-short-video__content__author__desc">{{ item.author.desc }}</text>
-						</view>
-						<view class="u-short-video__content__author__follow">
-							<up-button type="primary" size="mini">关注</up-button>
-						</view>
-					</view>
-					
-					<!-- 右侧操作区域 -->
-					<view class="u-short-video__content__actions">
-						<slot name="actions" :item="item" :index="index">
-							<view class="u-short-video__content__actions__item" @click="handleLike(item, index)">
-								<up-icon color="#eee" :name="item.isLiked ? 'thumb-up-fill' : 'thumb-up'" size="32px"></up-icon>
-								<text class="u-short-video__content__actions__text">{{ item.likeCount }}</text>
-							</view>
-							<view class="u-short-video__content__actions__item" @click="handleComment(item, index)">
-								<up-icon color="#eee" name="chat" size="32px"></up-icon>
-								<text class="u-short-video__content__actions__text">{{ item.commentCount }}</text>
-							</view>
-							<view class="u-short-video__content__actions__item" @click="handleShare(item, index)">
-								<up-icon color="#eee" name="share" size="32px"></up-icon>
-								<text class="u-short-video__content__actions__text">{{ item.shareCount }}</text>
-							</view>
-							<view class="u-short-video__content__actions__item" @click="handleCollect(item, index)">
-								<up-icon color="#eee" :name="item.isCollected ? 'bookmark-fill' : 'bookmark'" size="32px"></up-icon>
-								<text class="u-short-video__content__actions__text">{{ item.collectCount }}</text>
-							</view>
-						</slot>
-					</view>
-				</view>
-			</swiper-item>
-		</swiper>
-		
-		<!-- 倍速选择弹窗 -->
-		<up-action-sheet
-			:show="showSpeedSheet"
-			:actions="speedOptions"
-			title="播放速度"
-			@close="showSpeedSheet = false"
-			@select="selectSpeed"
-		></up-action-sheet>
-		
-		<!-- 底部导航栏 -->
-		<view class="u-short-video__footer">
-			<!-- 进度条 -->
-			<view class="u-short-video__progress" style="z-index: 999;">
-				<up-slider 
-					:value="videoList[currentVideo]?.progress" 
-					:min="0" 
-					:max="100" 
-					:step="1"
-					:show-value="false"
-                    :innerStyle="{padding: 0}"
-                    activeColor="rgba(255,255,255,0.32)"
-					inactive-color="rgba(255,255,255,0.3)"
-					block-size="6px"
-                    block-color="rgba(255,255,255,0.5)"
-					height="1px"
-					@changing="onProgressChanging"
-					@change="onProgressChange"
-				></up-slider>
-			</view>
-			
-			<slot name="tabbar">
-				<up-tabbar
-                    :fixed="true"
-                    :placeholder="true"
-                    :safeAreaInsetBottom="true"
-                    borderColor="rgba(255,255,255,0.25) !important"
-                    backgroundColor="rgba(255,255,255,0.05)"
-                >
-				<up-tabbar-item
-					@click="goNext"
-					text="首页"
-					icon="home"
-				>
-				</up-tabbar-item>
-				<up-tabbar-item
-					text="放映厅"
-					icon="photo"
-				></up-tabbar-item>
-				<up-tabbar-item
-					text="直播"
-					icon="play-right"
-				></up-tabbar-item>
-				<up-tabbar-item
-					text="我的"
-					icon="account"
-				></up-tabbar-item>
-			</up-tabbar>
-			</slot>
-		</view>
-	</view>
+          </view>
+
+          <!-- 作者信息 -->
+          <view class="u-short-video__content__author">
+            <view class="u-short-video__content__author__avatar">
+              <u-avatar :src="item.author.avatar" size="50px"></u-avatar>
+            </view>
+            <view class="u-short-video__content__author__info">
+              <text class="u-short-video__content__author__name">{{ item.author.name }}</text>
+              <text class="u-short-video__content__author__desc">{{ item.author.desc }}</text>
+            </view>
+            <view class="u-short-video__content__author__follow">
+              <up-button
+                :type="item.author.isFollowing ? 'default' : 'primary'"
+                size="mini"
+                @click="handleFollow(item, index)"
+              >
+                {{ item.author.isFollowing ? '已关注' : '关注' }}
+              </up-button>
+            </view>
+          </view>
+
+          <!-- 右侧操作区域 -->
+          <view class="u-short-video__content__actions">
+            <slot name="actions" :item="item" :index="index">
+              <view class="u-short-video__content__actions__item" @click="handleLike(item, index)">
+                <up-icon color="#eee" :name="item.isLiked ? 'thumb-up-fill' : 'thumb-up'" size="32px"></up-icon>
+                <text class="u-short-video__content__actions__text">{{ item.likeCount }}</text>
+              </view>
+              <view class="u-short-video__content__actions__item" @click="handleComment(item, index)">
+                <up-icon color="#eee" name="chat" size="32px"></up-icon>
+                <text class="u-short-video__content__actions__text">{{ item.commentCount }}</text>
+              </view>
+              <view class="u-short-video__content__actions__item" @click="handleShare(item, index)">
+                <up-icon color="#eee" name="share" size="32px"></up-icon>
+                <text class="u-short-video__content__actions__text">{{ item.shareCount }}</text>
+              </view>
+              <view class="u-short-video__content__actions__item" @click="handleCollect(item, index)">
+                <up-icon color="#eee" :name="item.isCollected ? 'bookmark-fill' : 'bookmark'" size="32px"></up-icon>
+                <text class="u-short-video__content__actions__text">{{ item.collectCount }}</text>
+              </view>
+            </slot>
+          </view>
+        </view>
+      </swiper-item>
+    </swiper>
+
+    <!-- 倍速选择弹窗 -->
+    <up-action-sheet
+      :show="showSpeedSheet"
+      :actions="speedOptions"
+      title="播放速度"
+      @close="showSpeedSheet = false"
+      @select="selectSpeed"
+    ></up-action-sheet>
+
+    <!-- 底部导航栏 -->
+    <view class="u-short-video__footer">
+      <!-- 进度条 -->
+      <view class="u-short-video__progress" style="z-index: 999">
+        <up-slider
+          :value="videoList[currentVideo]?.progress"
+          :min="0"
+          :max="100"
+          :step="1"
+          :show-value="false"
+          :innerStyle="{ padding: 0 }"
+          activeColor="rgba(255,255,255,0.32)"
+          inactive-color="rgba(255,255,255,0.3)"
+          block-size="6px"
+          block-color="rgba(255,255,255,0.5)"
+          height="1px"
+          @changing="onProgressChanging"
+          @change="onProgressChange"
+        ></up-slider>
+      </view>
+
+      <slot name="tabbar">
+        <up-tabbar
+          :fixed="true"
+          :placeholder="true"
+          :safeAreaInsetBottom="true"
+          borderColor="rgba(255,255,255,0.25) !important"
+          backgroundColor="rgba(255,255,255,0.05)"
+        >
+          <up-tabbar-item @click="goNext" text="首页" icon="home"> </up-tabbar-item>
+          <up-tabbar-item text="放映厅" icon="photo"></up-tabbar-item>
+          <up-tabbar-item text="直播" icon="play-right"></up-tabbar-item>
+          <up-tabbar-item text="我的" icon="account"></up-tabbar-item>
+        </up-tabbar>
+      </slot>
+    </view>
+  </view>
 </template>
 
 <script>
-	export default {
-		name: 'u-short-video',
-		props: {
-			// tabs标签列表
-			tabsList: {
-				type: Array,
-				default: () => [
-					{ name: '推荐' },
-					{ name: '关注' },
-					{ name: '朋友' },
-					{ name: '本地' }
-				]
-			},
-			// 视频列表数据
-			videoList: {
-				type: Array,
-				default: () => []
-			},
-			// 当前选中的tab索引
-			currentTab: {
-				type: Number,
-				default: 0
-			},
-			// 当前播放的视频索引
-			currentVideo: {
-				type: Number,
-				default: 0
-			}
-		},
-		data() {
-			return {
-				progressValue: 0,
-				showSpeedSheet: false,
-				currentSpeedVideoIndex: 0,
-				speedOptions: [
-					{ name: '0.5x', value: 0.5 },
-					{ name: '0.75x', value: 0.75 },
-					{ name: '1.0x', value: 1.0 },
-					{ name: '1.25x', value: 1.25 },
-					{ name: '1.5x', value: 1.5 },
-					{ name: '2.0x', value: 2.0 }
-				]
-			}
-		},
-		methods: {
-			// 处理tab切换
-			handleTabChange(index) {
-				this.$emit('tabChange', index);
-			},
-			// 处理swiper切换
-			handleSwiperChange(e) {
-				const currentIndex = e.detail.current;
-				// 暂停当前播放的视频
-				this.pauseCurrentVideo();
-				// 播放新切换到的视频
-				this.$nextTick(() => {
-					this.playVideo(currentIndex);
-				});
-				this.$emit('videoChange', currentIndex);
-			},
-			// 处理点赞
-			handleLike(item, index) {
-				this.$emit('like', { item, index });
-			},
-			// 处理评论
-			handleComment(item, index) {
-				this.$emit('comment', { item, index });
-			},
-			// 处理分享
-			handleShare(item, index) {
-				this.$emit('share', { item, index });
-			},
-			// 处理收藏
-			handleCollect(item, index) {
-				this.$emit('collect', { item, index });
-			},
-			// 进度条拖动中
-			onProgressChanging(value) {
-				// 更新当前视频的进度值
-				if (this.videoList[this.currentVideo]) {
-					this.videoList[this.currentVideo]['progressValue'] = value.detail.value
-				}
-				this.$emit('progressChanging', {
-					progress: value.detail.value,
-					index: this.currentVideo
-				});
-			},
-			// 进度条值改变
-		onProgressChange(value) {
-			// 添加空值检查，防止value或value.detail为undefined
-			if (!value || !value.detail) {
-				return;
-			}
-			
-			// 更新当前视频的进度值
-			if (this.videoList[this.currentVideo]) {
-				this.$set(this.videoList[this.currentVideo], 'progressValue', value.detail.value);
-			}
-			this.$emit('progressChange', {
-				progress: value.detail.value,
-				index: this.currentVideo
-			});
-		},
-			// 显示倍速选项
-			showSpeedOptions(index) {
-				this.currentSpeedVideoIndex = index;
-				this.showSpeedSheet = true;
-			},
-			// 选择倍速
-			selectSpeed(action) {
-				const videoContext = uni.createVideoContext('video-' + this.currentSpeedVideoIndex, this);
-				videoContext.playbackRate(action.value);
-				
-				// 更新视频倍速数据
-				this.$set(this.videoList[this.currentSpeedVideoIndex], 'playbackRate', action.value);
-				this.showSpeedSheet = false;
-			},
-			// 播放指定索引的视频
-			playVideo(index) {
-				const videoContext = uni.createVideoContext('video-' + index, this);
-				videoContext.play();
-			},
-			// 暂停当前视频
-			pauseCurrentVideo() {
-				const videoContext = uni.createVideoContext('video-' + this.currentVideo, this);
-				videoContext.pause();
-			},
-			// 视频播放事件
-			onVideoPlay(e) {
-				this.$emit('videoPlay', { index: this.currentVideo, event: e });
-			},
-			// 视频暂停事件
-			onVideoPause(e) {
-				this.$emit('videoPause', { index: this.currentVideo, event: e });
-			},
-			// 视频结束事件
-			onVideoEnded(e) {
-				this.$emit('videoEnded', { index: this.currentVideo, event: e });
-			},
-			// 视频时间更新事件
-			onTimeUpdate(e) {
-				const progress = (e.detail.currentTime / e.detail.duration) * 100;
-				if (this.videoList[this.currentVideo]) {
-					this.$set(this.videoList[this.currentVideo], 'progress', progress);
-				}
-				this.$emit('timeUpdate', { index: this.currentVideo, event: e });
-			},
-			// 视频元数据加载完成事件
-			onLoadedMetadata(e) {
-				this.$emit('loadedMetadata', { index: this.currentVideo, event: e });
-			}
-		}
-	}
+export default {
+  name: 'u-short-video',
+  props: {
+    // tabs标签列表
+    tabsList: {
+      type: Array,
+      default: () => [{ name: '推荐' }, { name: '关注' }, { name: '朋友' }, { name: '本地' }],
+    },
+    // 视频列表数据
+    videoList: {
+      type: Array,
+      default: () => [],
+    },
+    // 当前选中的tab索引
+    currentTab: {
+      type: Number,
+      default: 0,
+    },
+    // 当前播放的视频索引
+    currentVideo: {
+      type: Number,
+      default: 0,
+    },
+  },
+  data() {
+    return {
+      progressValue: 0,
+      showSpeedSheet: false,
+      currentSpeedVideoIndex: 0,
+      speedOptions: [
+        { name: '0.5x', value: 0.5 },
+        { name: '0.75x', value: 0.75 },
+        { name: '1.0x', value: 1.0 },
+        { name: '1.25x', value: 1.25 },
+        { name: '1.5x', value: 1.5 },
+        { name: '2.0x', value: 2.0 },
+      ],
+    };
+  },
+  methods: {
+    // 处理tab切换
+    handleTabChange(index) {
+      this.$emit('tabChange', index);
+    },
+    // 处理关注
+    handleFollow(item, index) {
+      this.$emit('follow', { item, index });
+    },
+    // 处理swiper切换
+    handleSwiperChange(e) {
+      const currentIndex = e.detail.current;
+      // 暂停当前播放的视频
+      this.pauseCurrentVideo();
+      // 播放新切换到的视频
+      this.$nextTick(() => {
+        this.playVideo(currentIndex);
+      });
+      this.$emit('videoChange', currentIndex);
+    },
+    // 处理点赞
+    handleLike(item, index) {
+      this.$emit('like', { item, index });
+    },
+    // 处理评论
+    handleComment(item, index) {
+      this.$emit('comment', { item, index });
+    },
+    // 处理分享
+    handleShare(item, index) {
+      this.$emit('share', { item, index });
+    },
+    // 处理收藏
+    handleCollect(item, index) {
+      this.$emit('collect', { item, index });
+    },
+    // 进度条拖动中
+    onProgressChanging(value) {
+      // 更新当前视频的进度值
+      if (this.videoList[this.currentVideo]) {
+        this.videoList[this.currentVideo]['progressValue'] = value.detail.value;
+      }
+      this.$emit('progressChanging', {
+        progress: value.detail.value,
+        index: this.currentVideo,
+      });
+    },
+    // 进度条值改变
+    onProgressChange(value) {
+      // 更新当前视频的进度值
+      if (this.videoList[this.currentVideo]) {
+        this.$set(this.videoList[this.currentVideo], 'progressValue', value.detail.value);
+      }
+      this.$emit('progressChange', {
+        progress: value.detail.value,
+        index: this.currentVideo,
+      });
+    },
+    // 显示倍速选项
+    showSpeedOptions(index) {
+      this.currentSpeedVideoIndex = index;
+      this.showSpeedSheet = true;
+    },
+    // 选择倍速
+    selectSpeed(action) {
+      const videoContext = uni.createVideoContext('video-' + this.currentSpeedVideoIndex, this);
+      videoContext.playbackRate(action.value);
+
+      // 更新视频倍速数据
+      this.$set(this.videoList[this.currentSpeedVideoIndex], 'playbackRate', action.value);
+      this.showSpeedSheet = false;
+    },
+    // 播放指定索引的视频
+    playVideo(index) {
+      const videoContext = uni.createVideoContext('video-' + index, this);
+      videoContext.play();
+    },
+    // 暂停当前视频
+    pauseCurrentVideo() {
+      const videoContext = uni.createVideoContext('video-' + this.currentVideo, this);
+      videoContext.pause();
+    },
+    // 视频播放事件
+    onVideoPlay(e) {
+      this.$emit('videoPlay', { index: this.currentVideo, event: e });
+    },
+    // 视频暂停事件
+    onVideoPause(e) {
+      this.$emit('videoPause', { index: this.currentVideo, event: e });
+    },
+    // 视频结束事件
+    onVideoEnded(e) {
+      this.$emit('videoEnded', { index: this.currentVideo, event: e });
+    },
+    // 视频时间更新事件
+    onTimeUpdate(e) {
+      const progress = (e.detail.currentTime / e.detail.duration) * 100;
+      if (this.videoList[this.currentVideo]) {
+        this.$set(this.videoList[this.currentVideo], 'progress', progress);
+      }
+      this.$emit('timeUpdate', { index: this.currentVideo, event: e });
+    },
+    // 视频元数据加载完成事件
+    onLoadedMetadata(e) {
+      this.$emit('loadedMetadata', { index: this.currentVideo, event: e });
+    },
+  },
+};
 </script>
 
 <style lang="scss" scoped>

@@ -76,7 +76,7 @@ import util from './util.js'
 import dayjs from '../u-datetime-picker/dayjs.esm.min.js';
 import Calendar from '../../libs/util/calendar.js'
 import { mpMixin } from '../../libs/mixin/mpMixin.js'
-import { mixin } from '../../libs/mixin/mixin.js'
+import { mixin } from '../../libs/mixin/mixin.mjs'
 import { addUnit, getPx, range, error, padZero } from '../../libs/function/index';
 import test from '../../libs/function/test';
 /**
