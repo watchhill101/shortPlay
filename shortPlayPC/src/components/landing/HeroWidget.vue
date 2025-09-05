@@ -4,8 +4,8 @@
     class="flex flex-col pt-6 px-6 lg:px-20 overflow-hidden"
     style="
       background:
-        linear-gradient(0deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.2)),
-        radial-gradient(77.36% 256.97% at 77.36% 57.52%, rgb(238, 239, 175) 0%, rgb(195, 227, 250) 100%);
+        linear-gradient(0deg, rgb(255 255 255 / 20%), rgb(255 255 255 / 20%)),
+        radial-gradient(77.36% 256.97% at 77.36% 57.52%, rgb(238 239 175) 0%, rgb(195 227 250) 100%);
       clip-path: ellipse(150% 87% at 93% 13%);
     "
   >

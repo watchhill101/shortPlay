@@ -39,6 +39,14 @@
       }
     },
     {
+      "path": "pages/G-Settings/index",
+      "style": {
+        "navigationBarTitleText": "设置",
+        "navigationStyle": "custom",
+        "backgroundColor": "#FFFFFF"
+      }
+    },
+    {
       "path": "pages/playlet/episodes",
       "style": {
         "app-plus": {
@@ -56,6 +64,17 @@
         },
         "navigationBarTitleText": "",
         "enablePullDownRefresh": true
+      }
+    },
+    {
+      "path": "pages/G-signUp/index",
+      "style": {
+        "app-plus": {
+          "bounce": "none"
+        },
+        "navigationBarTitleText": "",
+        "navigationStyle": "custom",
+        "enablePullDownRefresh": false
       }
     }
   ],

@@ -1,9 +1,9 @@
 import App from './App';
+import uviewPlus from '@/uni_modules/uview-plus';
 
 // #ifndef VUE3
 import Vue from 'vue';
 import './uni.promisify.adaptor';
-import uviewPlus from '@/uni_modules/uview-plus';
 Vue.config.productionTip = false;
 App.mpType = 'app';
 const app = new Vue({

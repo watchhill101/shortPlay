@@ -7,7 +7,21 @@ import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended'
 export default [
   // 忽略文件配置
   {
-    ignores: ['node_modules/**', 'dist/**', 'build/**', 'coverage/**', '.DS_Store', '*.log'],
+    ignores: [
+      'node_modules/**',
+      'dist/**',
+      'build/**',
+      'coverage/**',
+      '.DS_Store',
+      '*.log',
+      // 忽略样式文件
+      '**/*.css',
+      '**/*.scss',
+      '**/*.sass',
+      '**/*.less',
+      '**/*.styl',
+      '**/*.stylus',
+    ],
   },
 
   // ES Module 文件配置 (如 .mjs 文件)
@@ -70,6 +84,16 @@ export default [
     language: 'json/json',
     rules: {
       'json/no-empty-keys': 'warn', // package-lock.json 问题降级为警告
+    },
+  },
+
+  // package-lock.json 特殊配置 - 忽略空键警告
+  {
+    files: ['**/package-lock.json'],
+    plugins: { json },
+    language: 'json/json',
+    rules: {
+      'json/no-empty-keys': 'off', // package-lock.json 中的空键是正常的
     },
   },
 

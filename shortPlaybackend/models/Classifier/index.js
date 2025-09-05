@@ -28,5 +28,9 @@ const ClassifierSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// 添加索引
+ClassifierSchema.index({ status: 1 });
+ClassifierSchema.index({ order: 1 });
+
 const Classifier = mongoose.model('Classifier', ClassifierSchema);
 module.exports = Classifier;

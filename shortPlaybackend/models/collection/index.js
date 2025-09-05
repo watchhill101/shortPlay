@@ -3,22 +3,28 @@ const mongoose = require('mongoose');
 
 const CollectionSchema = new mongoose.Schema(
   {
-    user: {
+    backgroundUser: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
+      ref: 'BackgroundUser',
       required: true,
       index: true,
     },
+    // 合集标题
+
     title: {
       type: String,
       required: [true, '合集标题不能为空'],
       trim: true,
       index: true, // 为标题添加索引，便于搜索
     },
+    // 合集简介
+
     description: {
       type: String,
       required: [true, '合集简介不能为空'],
     },
+    // 合集封面图
+
     coverImage: {
       type: String,
       required: [true, '合集封面图不能为空'],

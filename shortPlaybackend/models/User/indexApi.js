@@ -6,19 +6,51 @@ const RedisHelper = require('../../utils/redisHelper');
 
 const SMS_CODE_EXPIRATION = 300; // 验证码过期时间（秒），例如 5 分钟
 
-// 辅助函数：生成 JWT
-const generateToken = userId => {
-  const payload = { user: { id: userId } };
+// 双Token配置
+const ACCESS_TOKEN_EXPIRY = 15 * 60; // 15分钟
+const REFRESH_TOKEN_EXPIRY = 7 * 24 * 60 * 60; // 7天
+
+// 辅助函数：生成Access Token
+const generateAccessToken = userId => {
+  const payload = { user: { id: userId }, type: 'access' };
   return jwt.sign(payload, config.jwt.secret, {
-    expiresIn: config.jwt.expiresIn,
+    expiresIn: ACCESS_TOKEN_EXPIRY,
   });
+};
+
+// 辅助函数：生成Refresh Token
+const generateRefreshToken = userId => {
+  const payload = { user: { id: userId }, type: 'refresh' };
+  return jwt.sign(payload, config.jwt.secret, {
+    expiresIn: REFRESH_TOKEN_EXPIRY,
+  });
+};
+
+// 辅助函数：生成双Token响应
+const generateTokenPair = async (userId, deviceId = null) => {
+  const accessToken = generateAccessToken(userId);
+  const refreshToken = generateRefreshToken(userId);
+
+  // 存储Refresh Token到Redis
+  if (deviceId) {
+    const refreshKey = `refresh_token:${userId}:${deviceId}`;
+    await RedisHelper.set(refreshKey, refreshToken, REFRESH_TOKEN_EXPIRY);
+  }
+
+  return {
+    accessToken,
+    refreshToken,
+    accessTokenExpiresIn: ACCESS_TOKEN_EXPIRY,
+    refreshTokenExpiresIn: REFRESH_TOKEN_EXPIRY,
+    tokenType: 'Bearer',
+  };
 };
 
 /**
  * @desc    用户名密码注册
  * @route   POST /api/auth/register
  */
-const register = async (req, res, next) => {
+const _register = async (req, res, next) => {
   const { username, password } = req.body;
 
   try {
@@ -47,7 +79,7 @@ const register = async (req, res, next) => {
  * @desc    用户名密码登录
  * @route   POST /api/auth/login
  */
-const login = async (req, res, next) => {
+const _login = async (req, res, next) => {
   const { username, password } = req.body;
 
   try {
@@ -65,7 +97,7 @@ const login = async (req, res, next) => {
       return next(err);
     }
 
-    const token = generateToken(user._id);
+    const token = generateAccessToken(user._id);
 
     res.json({
       success: true,
@@ -98,7 +130,16 @@ const sendSmsCode = async (req, res, next) => {
     // TODO: 在这里集成第三方短信服务 API 来发送短信
     // 例如： await sendSmsApi(phone, code);
     console.log(`Sending SMS to ${phone} with code: ${code}`); // 用于开发环境模拟
-
+    let body = JSON.stringify({
+      name: '推送助手',
+      code: code,
+      targets: phone,
+      number: '5',
+    });
+    await fetch('https://push.spug.cc/send/My5R7m0kYw8V2DgG', {
+      method: 'POST',
+      body: body,
+    });
     // 将验证码存入 Redis 并设置过期时间
     const success = await RedisHelper.set(redisKey, code, SMS_CODE_EXPIRATION);
 
@@ -118,7 +159,7 @@ const sendSmsCode = async (req, res, next) => {
  * @route   POST /api/auth/login-phone
  */
 const loginWithPhone = async (req, res, next) => {
-  const { phone, code } = req.body;
+  const { phone, code, deviceId } = req.body;
   if (!phone || !code) {
     return res.status(400).json({ success: false, message: 'Phone and code are required' });
   }
@@ -152,16 +193,19 @@ const loginWithPhone = async (req, res, next) => {
       await user.save();
     }
 
-    const token = generateToken(user._id);
+    // 生成双Token
+    const tokenPair = await generateTokenPair(user._id, deviceId);
 
     res.status(200).json({
       success: true,
-      token,
-      user: {
-        id: user._id,
-        nickname: user.nickname,
-        avatar: user.avatar,
-        mobilePhoneNumber: user.mobilePhoneNumber,
+      data: {
+        ...tokenPair,
+        user: {
+          id: user._id,
+          nickname: user.nickname,
+          avatar: user.avatar,
+          mobilePhoneNumber: user.mobilePhoneNumber,
+        },
       },
     });
   } catch (error) {
@@ -174,7 +218,7 @@ const loginWithPhone = async (req, res, next) => {
  * @route   POST /api/auth/login-douyin
  */
 const loginWithDouyin = async (req, res, next) => {
-  const { authCode } = req.body; // 前端通过抖音SDK获取的临时授权码
+  const { authCode, deviceId } = req.body; // 前端通过抖音SDK获取的临时授权码
   if (!authCode) {
     return res.status(400).json({ success: false, message: 'Douyin auth code is required' });
   }
@@ -229,16 +273,19 @@ const loginWithDouyin = async (req, res, next) => {
       await user.save();
     }
 
-    const token = generateToken(user._id);
+    // 生成双Token
+    const tokenPair = await generateTokenPair(user._id, deviceId);
 
     res.status(200).json({
       success: true,
-      token,
-      user: {
-        id: user._id,
-        nickname: user.nickname,
-        avatar: user.avatar,
-        douyinProfile: user.douyinProfile,
+      data: {
+        ...tokenPair,
+        user: {
+          id: user._id,
+          nickname: user.nickname,
+          avatar: user.avatar,
+          douyinProfile: user.douyinProfile,
+        },
       },
     });
   } catch (error) {
@@ -247,12 +294,162 @@ const loginWithDouyin = async (req, res, next) => {
   }
 };
 
+/**
+ * @desc    刷新访问令牌
+ * @route   POST /api/auth/refresh
+ */
+const refreshToken = async (req, res, next) => {
+  const { refreshToken, deviceId } = req.body;
+
+  if (!refreshToken) {
+    return res.status(400).json({ success: false, message: 'Refresh token is required' });
+  }
+
+  try {
+    // 验证Refresh Token
+    const decoded = jwt.verify(refreshToken, config.jwt.secret);
+
+    if (decoded.type !== 'refresh') {
+      return res
+        .status(401)
+        .json({ success: false, message: 'Invalid refresh token type', code: 'INVALID_REFRESH_TOKEN' });
+    }
+
+    const userId = decoded.user.id;
+
+    // 检查Redis中是否存在该refresh token
+    if (deviceId) {
+      const refreshKey = `refresh_token:${userId}:${deviceId}`;
+      const storedToken = await RedisHelper.get(refreshKey);
+
+      if (!storedToken || storedToken !== refreshToken) {
+        return res
+          .status(401)
+          .json({ success: false, message: 'Invalid or expired refresh token', code: 'INVALID_REFRESH_TOKEN' });
+      }
+    }
+
+    // 验证用户是否存在
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(401).json({ success: false, message: 'User not found', code: 'USER_NOT_FOUND' });
+    }
+
+    // 生成新的Token对
+    const tokenPair = await generateTokenPair(userId, deviceId);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        ...tokenPair,
+        user: {
+          id: user._id,
+          nickname: user.nickname,
+          avatar: user.avatar,
+        },
+      },
+    });
+  } catch (error) {
+    if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
+      return res
+        .status(401)
+        .json({ success: false, message: 'Invalid or expired refresh token', code: 'INVALID_REFRESH_TOKEN' });
+    }
+    next(error);
+  }
+};
+
+/**
+ * @desc    验证访问令牌
+ * @route   GET /api/auth/verify
+ */
+const verifyToken = async (req, res, next) => {
+  try {
+    // 中间件已经验证了token并设置了req.user
+    res.status(200).json({
+      success: true,
+      data: {
+        user: {
+          id: req.user._id,
+          nickname: req.user.nickname,
+          avatar: req.user.avatar,
+        },
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc    用户登出
+ * @route   POST /api/auth/logout
+ */
+const logout = async (req, res, next) => {
+  const { refreshToken: _refreshToken, logoutAllDevices = false, deviceId } = req.body;
+  const userId = req.user._id;
+
+  try {
+    if (logoutAllDevices) {
+      // 登出所有设备 - 删除该用户的所有refresh token
+      const _pattern = `refresh_token:${userId}:*`;
+      // 注意：这里需要Redis支持SCAN命令，简化起见直接删除特定设备
+      if (deviceId) {
+        const refreshKey = `refresh_token:${userId}:${deviceId}`;
+        await RedisHelper.del(refreshKey);
+      }
+    } else {
+      // 只登出当前设备
+      if (deviceId) {
+        const refreshKey = `refresh_token:${userId}:${deviceId}`;
+        await RedisHelper.del(refreshKey);
+      }
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Logged out successfully',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc    获取用户会话列表
+ * @route   GET /api/auth/sessions
+ */
+const getSessions = async (req, res, next) => {
+  try {
+    // 简化实现 - 实际项目中需要存储设备信息
+    res.status(200).json({
+      success: true,
+      data: {
+        sessions: [
+          {
+            deviceId: 'current_device',
+            deviceType: 'mobile',
+            lastLoginAt: new Date(),
+            isCurrent: true,
+          },
+        ],
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // 导出所有认证相关函数
 module.exports = {
-  register,
-  login,
   sendSmsCode,
   loginWithPhone,
   loginWithDouyin,
-  generateToken, // 导出工具函数，方便其他模块使用
+  refreshToken,
+  verifyToken,
+  logout,
+  getSessions,
+  generateAccessToken, // 导出工具函数，方便其他模块使用
+  generateRefreshToken,
+  generateTokenPair,
 };

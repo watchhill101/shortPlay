@@ -13,8 +13,8 @@
             padding: 2px;
             border-radius: 10px;
             background:
-              linear-gradient(90deg, rgba(253, 228, 165, 0.2), rgba(187, 199, 205, 0.2)),
-              linear-gradient(180deg, rgba(253, 228, 165, 0.2), rgba(187, 199, 205, 0.2));
+              linear-gradient(90deg, rgb(253 228 165 / 20%), rgb(187 199 205 / 20%)),
+              linear-gradient(180deg, rgb(253 228 165 / 20%), rgb(187 199 205 / 20%));
           "
         >
           <div class="p-4 bg-surface-0 dark:bg-surface-900 h-full" style="border-radius: 8px">
@@ -37,8 +37,8 @@
             padding: 2px;
             border-radius: 10px;
             background:
-              linear-gradient(90deg, rgba(145, 226, 237, 0.2), rgba(251, 199, 145, 0.2)),
-              linear-gradient(180deg, rgba(253, 228, 165, 0.2), rgba(172, 180, 223, 0.2));
+              linear-gradient(90deg, rgb(145 226 237 / 20%), rgb(251 199 145 / 20%)),
+              linear-gradient(180deg, rgb(253 228 165 / 20%), rgb(172 180 223 / 20%));
           "
         >
           <div class="p-4 bg-surface-0 dark:bg-surface-900 h-full" style="border-radius: 8px">
@@ -61,8 +61,8 @@
             padding: 2px;
             border-radius: 10px;
             background:
-              linear-gradient(90deg, rgba(145, 226, 237, 0.2), rgba(172, 180, 223, 0.2)),
-              linear-gradient(180deg, rgba(172, 180, 223, 0.2), rgba(246, 158, 188, 0.2));
+              linear-gradient(90deg, rgb(145 226 237 / 20%), rgb(172 180 223 / 20%)),
+              linear-gradient(180deg, rgb(172 180 223 / 20%), rgb(246 158 188 / 20%));
           "
         >
           <div class="p-4 bg-surface-0 dark:bg-surface-900 h-full" style="border-radius: 8px">
@@ -85,8 +85,8 @@
             padding: 2px;
             border-radius: 10px;
             background:
-              linear-gradient(90deg, rgba(187, 199, 205, 0.2), rgba(251, 199, 145, 0.2)),
-              linear-gradient(180deg, rgba(253, 228, 165, 0.2), rgba(145, 210, 204, 0.2));
+              linear-gradient(90deg, rgb(187 199 205 / 20%), rgb(251 199 145 / 20%)),
+              linear-gradient(180deg, rgb(253 228 165 / 20%), rgb(145 210 204 / 20%));
           "
         >
           <div class="p-4 bg-surface-0 dark:bg-surface-900 h-full" style="border-radius: 8px">
@@ -109,8 +109,8 @@
             padding: 2px;
             border-radius: 10px;
             background:
-              linear-gradient(90deg, rgba(187, 199, 205, 0.2), rgba(246, 158, 188, 0.2)),
-              linear-gradient(180deg, rgba(145, 226, 237, 0.2), rgba(160, 210, 250, 0.2));
+              linear-gradient(90deg, rgb(187 199 205 / 20%), rgb(246 158 188 / 20%)),
+              linear-gradient(180deg, rgb(145 226 237 / 20%), rgb(160 210 250 / 20%));
           "
         >
           <div class="p-4 bg-surface-0 dark:bg-surface-900 h-full" style="border-radius: 8px">
@@ -133,8 +133,8 @@
             padding: 2px;
             border-radius: 10px;
             background:
-              linear-gradient(90deg, rgba(251, 199, 145, 0.2), rgba(246, 158, 188, 0.2)),
-              linear-gradient(180deg, rgba(172, 180, 223, 0.2), rgba(212, 162, 221, 0.2));
+              linear-gradient(90deg, rgb(251 199 145 / 20%), rgb(246 158 188 / 20%)),
+              linear-gradient(180deg, rgb(172 180 223 / 20%), rgb(212 162 221 / 20%));
           "
         >
           <div class="p-4 bg-surface-0 dark:bg-surface-900 h-full" style="border-radius: 8px">
@@ -157,8 +157,8 @@
             padding: 2px;
             border-radius: 10px;
             background:
-              linear-gradient(90deg, rgba(145, 210, 204, 0.2), rgba(160, 210, 250, 0.2)),
-              linear-gradient(180deg, rgba(187, 199, 205, 0.2), rgba(145, 210, 204, 0.2));
+              linear-gradient(90deg, rgb(145 210 204 / 20%), rgb(160 210 250 / 20%)),
+              linear-gradient(180deg, rgb(187 199 205 / 20%), rgb(145 210 204 / 20%));
           "
         >
           <div class="p-4 bg-surface-0 dark:bg-surface-900 h-full" style="border-radius: 8px">
@@ -181,8 +181,8 @@
             padding: 2px;
             border-radius: 10px;
             background:
-              linear-gradient(90deg, rgba(145, 210, 204, 0.2), rgba(212, 162, 221, 0.2)),
-              linear-gradient(180deg, rgba(251, 199, 145, 0.2), rgba(160, 210, 250, 0.2));
+              linear-gradient(90deg, rgb(145 210 204 / 20%), rgb(212 162 221 / 20%)),
+              linear-gradient(180deg, rgb(251 199 145 / 20%), rgb(160 210 250 / 20%));
           "
         >
           <div class="p-4 bg-surface-0 dark:bg-surface-900 h-full" style="border-radius: 8px">
@@ -205,8 +205,8 @@
             padding: 2px;
             border-radius: 10px;
             background:
-              linear-gradient(90deg, rgba(160, 210, 250, 0.2), rgba(212, 162, 221, 0.2)),
-              linear-gradient(180deg, rgba(246, 158, 188, 0.2), rgba(212, 162, 221, 0.2));
+              linear-gradient(90deg, rgb(160 210 250 / 20%), rgb(212 162 221 / 20%)),
+              linear-gradient(180deg, rgb(246 158 188 / 20%), rgb(212 162 221 / 20%));
           "
         >
           <div class="p-4 bg-surface-0 dark:bg-surface-900 h-full" style="border-radius: 8px">
@@ -227,7 +227,7 @@
         style="
           border-radius: 20px;
           background:
-            linear-gradient(0deg, rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.6)),
+            linear-gradient(0deg, rgb(255 255 255 / 60%), rgb(255 255 255 / 60%)),
             radial-gradient(77.36% 256.97% at 77.36% 57.52%, #efe1af 0%, #c3dcfa 100%);
         "
       >

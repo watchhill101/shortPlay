@@ -21,7 +21,7 @@
         </view>
 
         <!--合集列表-->
-        <block v-for="(colls, index) in playletCollections">
+        <block v-for="colls in playletCollections" :key="colls.id">
           <view class="playlet-collections" scroll-x>
             <view class="dfbox" @click="toCollectionPlaylet(colls)">
               <view class="title pt10">{{ colls.name }}</view>
@@ -30,8 +30,8 @@
             <scroll-view class="item" scroll-x="true" show-scrollbar="false">
               <view
                 class="playlet"
-                v-for="(item, index) in colls.playletList"
-                :keys="index"
+                v-for="item in colls.playletList"
+                :key="item.playletId"
                 @tap="toPalyletDetail(item)"
               >
                 <view class="cover">
@@ -51,7 +51,7 @@
             <view class="title pt10">最新短剧</view>
           </view>
           <view class="item">
-            <view class="playlet" v-for="(item, index) in playletRecommends" :keys="index" @tap="toPalyletDetail(item)">
+            <view class="playlet" v-for="item in playletRecommends" :key="item.playletId" @tap="toPalyletDetail(item)">
               <view class="cover">
                 <image :src="item.image" class="goods-img" mode="scaleToFill"></image>
               </view>
@@ -337,7 +337,7 @@ export default {
   width: 100%;
   height: 100%;
   min-height: 100vh;
-  background-color: #0e0f0fS;
+  background-color: #0e0f0f;
 }
 
 .content {
@@ -404,7 +404,7 @@ export default {
   margin-top: 30rpx;
   padding: 10rpx 15rpx 20rpx 15rpx;
   border-radius: 10rpx 10rpx 0 0;
-  background: #1E1E1ES;
+  background: #1e1e1e;
 }
 
 .playlet-recommend .item {

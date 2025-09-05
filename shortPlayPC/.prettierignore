@@ -7,3 +7,11 @@ public/
 !eslint.config.mjs
 .DS_Store
 *.log
+
+# 样式文件忽略规则
+*.css
+*.scss
+*.sass
+*.less
+*.styl
+*.stylus

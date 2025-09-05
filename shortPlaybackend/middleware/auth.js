@@ -20,14 +20,30 @@ const protect = async (req, res, next) => {
   try {
     const decoded = jwt.verify(token, config.jwt.secret);
 
-    // 将用户信息（不含密码）附加到请求对象上
-    req.user = await User.findById(decoded.user.id).select('-password');
+    // 检查是否是access token
+    if (decoded.type && decoded.type !== 'access') {
+      const err = new Error('Invalid access token');
+      err.status = 401;
+      err.code = 'INVALID_ACCESS_TOKEN';
+      return next(err);
+    }
+
+    // 将用户信息附加到请求对象上
+    req.user = await User.findById(decoded.user.id);
+
+    if (!req.user) {
+      const err = new Error('User not found');
+      err.status = 401;
+      err.code = 'USER_NOT_FOUND';
+      return next(err);
+    }
 
     next();
   } catch (_error) {
     const err = new Error('Not authorized, token failed');
     console.log(_error.message);
     err.status = 401;
+    err.code = 'INVALID_ACCESS_TOKEN';
     next(err);
   }
 };

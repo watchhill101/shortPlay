@@ -60,7 +60,7 @@
       "disableHostCheck": true,
       "proxy": {
         "/api": {
-          "target": "https://app.testdemo.com",
+          "target": "http://localhost:3000",
           "changeOrigin": true
         }
       }

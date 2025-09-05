@@ -1,18 +1,94 @@
 {
   "extends": ["stylelint-config-standard", "stylelint-config-standard-vue"],
-  "rules": {
-    "selector-pseudo-class-no-unknown": [
-      true,
-      {
-        "ignorePseudoClasses": ["deep", "global"]
+  "ignoreFiles": ["unpackage/**/*"],
+  "overrides": [
+    {
+      "files": ["**/*.{vue,scss,css}"],
+      "rules": {
+        "selector-pseudo-class-no-unknown": [
+          true,
+          {
+            "ignorePseudoClasses": ["deep", "global", "full-screen"]
+          }
+        ],
+        "selector-pseudo-element-no-unknown": [
+          true,
+          {
+            "ignorePseudoElements": ["v-deep", "v-global", "v-slotted"]
+          }
+        ],
+        "unit-no-unknown": [
+          true,
+          {
+            "ignoreUnits": ["rpx"]
+          }
+        ],
+        "no-invalid-double-slash-comments": null,
+        "property-no-unknown": [
+          true,
+          {
+            "ignoreProperties": ["enable-flex", "/^//.*$/"]
+          }
+        ],
+        "at-rule-no-unknown": [
+          true,
+          {
+            "ignoreAtRules": ["include", "mixin", "if", "else", "each", "for", "function", "return"]
+          }
+        ],
+        "declaration-property-value-no-unknown": null,
+        "selector-class-pattern": null
       }
-    ],
-    "selector-pseudo-element-no-unknown": [
-      true,
-      {
-        "ignorePseudoElements": ["v-deep", "v-global", "v-slotted"]
+    },
+    {
+      "files": ["uni_modules/**/*.{vue,scss,css}"],
+      "rules": {
+        "selector-class-pattern": null,
+        "selector-id-pattern": null,
+        "annotation-no-unknown": null,
+        "no-duplicate-selectors": null,
+        "no-descending-specificity": null,
+        "keyframes-name-pattern": null,
+        "declaration-property-value-no-unknown": null,
+        "selector-class-pattern": null,
+        "no-invalid-double-slash-comments": null,
+        "property-no-unknown": null,
+        "at-rule-no-unknown": null,
+        "selector-pseudo-class-no-unknown": null,
+        "selector-pseudo-element-no-unknown": null,
+        "unit-no-unknown": null,
+        "font-family-no-missing-generic-family-keyword": null,
+        "no-empty-source": null,
+        "comment-no-empty": null,
+        "block-no-empty": null,
+        "rule-empty-line-before": null,
+        "declaration-block-trailing-semicolon": null,
+        "string-no-newline": null,
+        "value-no-vendor-prefix": null,
+        "property-no-vendor-prefix": null,
+        "selector-no-vendor-prefix": null,
+        "media-feature-name-no-vendor-prefix": null,
+        "at-rule-no-vendor-prefix": null,
+        "length-zero-no-unit": null,
+        "shorthand-property-no-redundant-values": null,
+        "declaration-block-no-redundant-longhand-properties": null,
+        "declaration-block-no-shorthand-property-overrides": null,
+        "color-no-invalid-hex": "error",
+        "function-calc-no-invalid": "error",
+        "string-no-newline": null,
+        "max-nesting-depth": null,
+        "no-unknown-animations": null
       }
-    ],
-    "unit-allowed-list": ["px", "rpx", "%", "vh", "vw", "em", "rem", "s", "ms", "deg"]
-  }
+    },
+    {
+      "files": ["uni_modules/**/aliplayer-min.css", "uni_modules/**/**.min.css"],
+      "rules": {
+        "color-no-invalid-hex": "error",
+        "function-calc-no-invalid": "error",
+        "unit-no-unknown": "error",
+        "property-no-unknown": "error",
+        "selector-type-no-unknown": "error"
+      }
+    }
+  ]
 }
