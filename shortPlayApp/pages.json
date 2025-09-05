@@ -196,6 +196,26 @@
         "enablePullDownRefresh": false,
         "navigationStyle": "custom"
       }
+    },
+    {
+      "path": "pages/search/index",
+      "style": {
+        "app-plus": {
+          "bounce": "none"
+        },
+        "navigationBarTitleText": "",
+        "enablePullDownRefresh": false
+      }
+    },
+    {
+      "path": "pages/index/filter",
+      "style": {
+        "app-plus": {
+          "bounce": "none"
+        },
+        "navigationBarTitleText": "",
+        "enablePullDownRefresh": false
+      }
     }
   ],
 

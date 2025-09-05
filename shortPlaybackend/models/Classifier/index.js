@@ -24,6 +24,14 @@ const ClassifierSchema = new mongoose.Schema(
       enum: ['active', 'inactive'],
       default: 'active',
     },
+    // 分类图标（可选）
+    icon: {
+      type: String,
+    },
+    // 分类颜色（可选）
+    color: {
+      type: String,
+    },
   },
   { timestamps: true }
 );

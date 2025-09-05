@@ -44,6 +44,12 @@ const CollectionSchema = new mongoose.Schema(
       index: true,
     },
     tags: [String],
+    // 主演列表
+    actors: {
+      type: [String],
+      default: [],
+      index: true, // 为主演添加索引，便于搜索
+    },
     isFinished: {
       type: Boolean,
       default: false, // 标记该合集是否已完结

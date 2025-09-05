@@ -1254,9 +1254,10 @@ button {
   color: #fff !important;
 }
 
-/* 为scroll-view添加enable-flex属性 */
+/* 为scroll-view添加flex布局 */
 :deep(.u-short-video scroll-view) {
-  enable-flex: true;
+  display: flex;
+  flex-direction: column;
 }
 
 /* 确保视频控件层级正确 */

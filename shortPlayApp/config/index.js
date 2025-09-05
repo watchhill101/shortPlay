@@ -19,6 +19,14 @@ const config = {
     },
   },
 
+  // 资源文件基础URL (用于拼接图片等)
+  assetBaseURL: (config => {
+    const apiConfig = config.api[process.env.NODE_ENV || 'development'] || config.api.development;
+    // 使用正则表达式提取协议和主机，以兼容非浏览器环境
+    const match = apiConfig.baseURL.match(/^(https?:\/\/[^/]+)/);
+    return match ? match[1] : '';
+  })(config),
+
   // 当前环境
   env: process.env.NODE_ENV || 'development',
   // 开发模式配置
@@ -92,6 +100,11 @@ export const getDouyinConfig = () => {
 // 获取应用信息
 export const getAppInfo = () => {
   return config.app;
+};
+
+// 获取资源基础URL
+export const getAssetBaseURL = () => {
+  return config.assetBaseURL;
 };
 
 export default config;

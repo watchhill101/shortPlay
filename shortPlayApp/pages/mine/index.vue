@@ -201,9 +201,7 @@ onShow(() => {
   border-bottom: 1rpx solid rgba(255, 255, 255, 0.1);
 }
 
-.settings-icon {
-  /* No specific styles needed for positioning anymore */
-}
+/* Settings icon styles handled by parent container */
 
 .user-profile {
   display: flex;
