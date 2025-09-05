@@ -8,6 +8,6 @@
 }
 
 @mixin focused-inset() {
-  outline-offset: -1px;
-  box-shadow: inset var(--focus-ring-shadow);
+    outline-offset: -1px;
+    box-shadow: inset var(--focus-ring-shadow);
 }

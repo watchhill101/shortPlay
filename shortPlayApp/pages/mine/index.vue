@@ -32,7 +32,7 @@
     <!-- 功能菜单区域 -->
     <view class="function-menu">
       <view class="menu-grid">
-        <view class="menu-item" v-for="(item, index) in menuItems" :key="index" @click="onMenuClick(item.type)">
+        <view class="menu-item" v-for="item in menuItems" :key="item.type" @click="onMenuClick(item.type)">
           <view class="menu-icon" :class="item.iconClass">
             <text class="icon-text">{{ item.icon }}</text>
           </view>
@@ -47,7 +47,7 @@
         <view
           class="tab-item"
           v-for="(tab, index) in categoryTabs"
-          :key="index"
+          :key="tab.type"
           :class="{ active: activeTab === index }"
           @click="switchTab(index)"
         >
@@ -59,7 +59,7 @@
     <!-- 内容展示区域 -->
     <view class="content-list">
       <view class="drama-grid">
-        <view class="drama-card" v-for="(drama, index) in dramaList" :key="index" @click="onDramaClick(drama)">
+        <view class="drama-card" v-for="drama in dramaList" :key="drama.id" @click="onDramaClick(drama)">
           <image :src="drama.poster" class="drama-poster" mode="aspectFill"></image>
           <view class="drama-info">
             <text class="drama-title">{{ drama.title }}</text>
@@ -71,172 +71,120 @@
   </view>
 </template>
 
-<script>
+<script setup>
+import { ref, reactive } from 'vue';
+import { onShow } from '@dcloudio/uni-app';
 import tokenManager from '../../utils/tokenManager.js';
-export default {
-  data() {
-    return {
-      isLoggedIn: false,
-      // 用户信息
-      userInfo: {
-        avatar: '../../static/img/avatar.png',
-        name: '坚强的南风',
-        following: 0,
-        followers: 0,
-        likes: 0,
-      },
-      // 功能菜单项
-      menuItems: [
-        { type: 'coins', label: '金币', icon: '◯', iconClass: 'icon-coins' },
-        { type: 'orders', label: '订单', icon: '🛍', iconClass: 'icon-orders' },
-        { type: 'messages', label: '消息', icon: '✉', iconClass: 'icon-messages' },
-        { type: 'withdraw', label: '提现', icon: '💰', iconClass: 'icon-withdraw' },
-        { type: 'appointment', label: '预约', icon: '📅', iconClass: 'icon-appointment' },
-      ],
-      // 分类标签
-      categoryTabs: [
-        { name: '历史', type: 'history' },
-        { name: '收藏', type: 'favorites' },
-        { name: '点赞', type: 'likes' },
-        { name: '动态', type: 'dynamics' },
-      ],
-      activeTab: 0,
-      // 短剧列表
-      dramaList: [
-        {
-          id: 1,
-          title: '鉴宝神眼',
-          poster: '../../static/img/drama1.jpg',
-          progress: '17%',
-        },
-        {
-          id: 2,
-          title: '言出法随后我无敌于天下',
-          poster: '../../static/img/drama2.jpg',
-          progress: '13%',
-        },
-        {
-          id: 3,
-          title: '抓娃娃之子承父业',
-          poster: '../../static/img/drama3.jpg',
-          progress: '2%',
-        },
-        {
-          id: 4,
-          title: '我婆妻子红颜如血',
-          poster: '../../static/img/drama4.jpg',
-          progress: '56%',
-        },
-        {
-          id: 5,
-          title: '家里来了奇葩岳母',
-          poster: '../../static/img/drama5.jpg',
-          progress: '23%',
-        },
-        {
-          id: 6,
-          title: '商宇',
-          poster: '../../static/img/drama6.jpg',
-          progress: '89%',
-        },
-      ],
-    };
-  },
 
-  onShow() {
-    this.checkLoginStatus();
-  },
+// --- state ---
+const isLoggedIn = ref(false);
 
-  methods: {
-    checkLoginStatus() {
-      if (tokenManager.isLoggedIn()) {
-        const storedUserInfo = tokenManager.getUserInfo();
-        if (storedUserInfo) {
-          this.userInfo = {
-            ...this.userInfo,
-            name: storedUserInfo.nickname || '用户',
-            avatar: storedUserInfo.avatarUrl || '../../static/img/avatar.png',
-          };
-          this.isLoggedIn = true;
-        } else {
-          this.handleLogoutState();
-        }
-      } else {
-        this.handleLogoutState();
-      }
-    },
-    handleLogoutState() {
-      this.isLoggedIn = false;
-      this.userInfo = {
-        avatar: '../../static/img/avatar.png',
-        name: '点击登录',
-        following: 0,
-        followers: 0,
-        likes: 0,
-      };
-    },
-    // 跳转到登录页面
-    goToLogin() {
-      uni.navigateTo({
-        url: '/pages/G-signUp/index',
-      });
-    },
+const userInfo = reactive({
+  avatar: '../../static/img/avatar.png',
+  name: '坚强的南风',
+  following: 0,
+  followers: 0,
+  likes: 0,
+});
 
-    // 跳转到设置页面
-    goToSettings() {
-      uni.navigateTo({
-        url: '/pages/G-Settings/index',
-      });
-    },
+const menuItems = reactive([
+  { type: 'coins', label: '金币', icon: '◯', iconClass: 'icon-coins' },
+  { type: 'orders', label: '订单', icon: '🛍', iconClass: 'icon-orders' },
+  { type: 'messages', label: '消息', icon: '✉', iconClass: 'icon-messages' },
+  { type: 'withdraw', label: '提现', icon: '💰', iconClass: 'icon-withdraw' },
+  { type: 'appointment', label: '预约', icon: '📅', iconClass: 'icon-appointment' },
+]);
 
-    // 菜单点击事件
-    onMenuClick(type) {
-      switch (type) {
-        case 'coins':
-          uni.showToast({ title: '金币功能开发中', icon: 'none' });
-          break;
-        case 'orders':
-          uni.showToast({ title: '订单功能开发中', icon: 'none' });
-          break;
-        case 'messages':
-          uni.showToast({ title: '消息功能开发中', icon: 'none' });
-          break;
-        case 'withdraw':
-          uni.showToast({ title: '提现功能开发中', icon: 'none' });
-          break;
-        case 'appointment':
-          uni.showToast({ title: '预约功能开发中', icon: 'none' });
-          break;
-        default:
-          break;
-      }
-    },
+const categoryTabs = reactive([
+  { name: '历史', type: 'history' },
+  { name: '收藏', type: 'favorites' },
+  { name: '点赞', type: 'likes' },
+  { name: '动态', type: 'dynamics' },
+]);
 
-    // 切换分类标签
-    switchTab(index) {
-      this.activeTab = index;
-      // 根据不同的tab加载不同的数据
-      this.loadTabData(this.categoryTabs[index].type);
-    },
+const activeTab = ref(0);
 
-    // 加载标签页数据
-    loadTabData(type) {
-      // 根据类型加载不同的短剧列表
-      console.log('加载数据类型:', type);
-      // 这里可以调用接口获取对应类型的数据
-    },
+const dramaList = reactive([
+  { id: 1, title: '鉴宝神眼', poster: '../../static/img/drama1.jpg', progress: '17%' },
+  { id: 2, title: '言出法随后我无敌于天下', poster: '../../static/img/drama2.jpg', progress: '13%' },
+  { id: 3, title: '抓娃娃之子承父业', poster: '../../static/img/drama3.jpg', progress: '2%' },
+  { id: 4, title: '我婆妻子红颜如血', poster: '../../static/img/drama4.jpg', progress: '56%' },
+  { id: 5, title: '家里来了奇葩岳母', poster: '../../static/img/drama5.jpg', progress: '23%' },
+  { id: 6, title: '商宇', poster: '../../static/img/drama6.jpg', progress: '89%' },
+]);
 
-    // 短剧点击事件
-    onDramaClick(drama) {
-      uni.navigateTo({
-        url: `/pages/playlet/detail?id=${drama.id}`,
-      });
-    },
-  },
+// --- methods ---
+const handleLogoutState = () => {
+  isLoggedIn.value = false;
+  Object.assign(userInfo, {
+    avatar: '../../static/img/avatar.png',
+    name: '点击登录',
+    following: 0,
+    followers: 0,
+    likes: 0,
+  });
 };
+
+const checkLoginStatus = () => {
+  if (tokenManager.isLoggedIn()) {
+    const storedUserInfo = tokenManager.getUserInfo();
+    if (storedUserInfo) {
+      userInfo.name = storedUserInfo.nickname || '用户';
+      userInfo.avatar = storedUserInfo.avatarUrl || '../../static/img/avatar.png';
+      // TODO: 获取真实的 following, followers, likes 数据
+      isLoggedIn.value = true;
+    } else {
+      handleLogoutState();
+    }
+  } else {
+    handleLogoutState();
+  }
+};
+
+const goToLogin = () => {
+  uni.navigateTo({ url: '/pages/G-signUp/index' });
+};
+
+const goToSettings = () => {
+  uni.navigateTo({ url: '/pages/G-Settings/index' });
+};
+
+const onMenuClick = type => {
+  const actions = {
+    coins: '金币功能开发中',
+    orders: '订单功能开发中',
+    messages: '消息功能开发中',
+    withdraw: '提现功能开发中',
+    appointment: '预约功能开发中',
+  };
+  const message = actions[type];
+  if (message) {
+    uni.showToast({ title: message, icon: 'none' });
+  }
+};
+
+const switchTab = index => {
+  activeTab.value = index;
+  loadTabData(categoryTabs[index].type);
+};
+
+const loadTabData = type => {
+  console.log('加载数据类型:', type);
+  // 这里可以调用接口获取对应类型的数据
+};
+
+const onDramaClick = drama => {
+  uni.navigateTo({ url: `/pages/playlet/detail?id=${drama.id}` });
+};
+
+// --- lifecycle hooks ---
+onShow(() => {
+  checkLoginStatus();
+});
 </script>
 
 <style scoped lang="scss">
+/* Styles remain the same */
 .mine-container {
   width: 100%;
   min-height: 100vh;

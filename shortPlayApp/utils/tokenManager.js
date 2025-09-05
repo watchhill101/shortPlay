@@ -9,6 +9,11 @@ class TokenManager {
     this.deviceId = this.getDeviceId();
     this.config = getApiConfig();
     this.tokenConfig = getTokenConfig();
+
+    // 多账户管理
+    const prefix = this.tokenConfig.storagePrefix;
+    this.accountsKey = prefix + 'savedAccounts'; // 存储多个用户账号
+    this.currentAccountIdKey = prefix + 'currentAccountId'; // 当前用户标识
   }
 
   // 获取或生成设备ID
@@ -43,6 +48,109 @@ class TokenManager {
     }
   }
 
+  // --- 多账户管理 ---
+
+  // 保存用户到多账户列表
+  saveAccount(tokenData) {
+    try {
+      if (!tokenData.user || !tokenData.user.id) {
+        return false;
+      }
+      const savedAccounts = this.getSavedAccounts();
+      const existingIndex = savedAccounts.findIndex(account => account.user.id === tokenData.user.id);
+
+      const accountData = {
+        ...tokenData,
+        lastLoginTime: new Date().toISOString(),
+      };
+
+      if (existingIndex >= 0) {
+        // 更新已存在的用户
+        savedAccounts[existingIndex] = accountData;
+      } else {
+        // 添加新用户
+        savedAccounts.push(accountData);
+      }
+
+      uni.setStorageSync(this.accountsKey, JSON.stringify(savedAccounts));
+      uni.setStorageSync(this.currentAccountIdKey, tokenData.user.id);
+      return true;
+    } catch (_e) {
+      return false;
+    }
+  }
+
+  // 获取已保存的用户列表
+  getSavedAccounts() {
+    try {
+      const accounts = uni.getStorageSync(this.accountsKey);
+      return accounts ? JSON.parse(accounts) : [];
+    } catch (_e) {
+      return [];
+    }
+  }
+
+  // 切换到指定用户
+  switchToAccount(accountId) {
+    try {
+      const savedAccounts = this.getSavedAccounts();
+      const targetAccount = savedAccounts.find(account => account.user.id === accountId);
+
+      if (!targetAccount) {
+        throw new Error('账户不存在');
+      }
+
+      // 设置为当前用户
+      this.saveTokens(targetAccount);
+      uni.setStorageSync(this.currentAccountIdKey, accountId);
+
+      // 更新最后登录时间
+      targetAccount.lastLoginTime = new Date().toISOString();
+      this.saveAccount(targetAccount); // 这会重新保存整个列表
+
+      return true;
+    } catch (_e) {
+      return false;
+    }
+  }
+
+  // 获取当前用户ID
+  getCurrentAccountId() {
+    try {
+      return uni.getStorageSync(this.currentAccountIdKey);
+    } catch (_e) {
+      return null;
+    }
+  }
+
+  // 从用户列表中删除用户
+  removeAccount(accountId) {
+    try {
+      const savedAccounts = this.getSavedAccounts();
+      const filteredAccounts = savedAccounts.filter(account => account.user.id !== accountId);
+      uni.setStorageSync(this.accountsKey, JSON.stringify(filteredAccounts));
+
+      // 如果删除的是当前用户，需要处理
+      const currentAccountId = this.getCurrentAccountId();
+      if (currentAccountId === accountId) {
+        if (filteredAccounts.length > 0) {
+          // 切换到最近登录的用户
+          const lastAccount = filteredAccounts.sort((a, b) => new Date(b.lastLoginTime) - new Date(a.lastLoginTime))[0];
+          this.switchToAccount(lastAccount.user.id);
+        } else {
+          // 没有其他用户，清除当前用户信息并登出
+          this.logout();
+        }
+      }
+
+      return true;
+    } catch (_e) {
+      return false;
+    }
+  }
+
+  // --- Token 管理 ---
+
   // 获取Access Token
   getAccessToken() {
     if (!this.accessToken) {
@@ -67,9 +175,24 @@ class TokenManager {
       const prefix = this.tokenConfig.storagePrefix;
       const userInfo = uni.getStorageSync(prefix + 'userInfo');
       return userInfo ? JSON.parse(userInfo) : null;
-    } catch (error) {
-      console.error('Failed to parse user info:', error);
+    } catch (_error) {
       return null;
+    }
+  }
+
+  // 更新本地存储的用户信息
+  updateUserInfo(updatedFields) {
+    try {
+      const currentUserInfo = this.getUserInfo();
+      if (currentUserInfo) {
+        const newUserInfo = { ...currentUserInfo, ...updatedFields };
+        const prefix = this.tokenConfig.storagePrefix;
+        uni.setStorageSync(prefix + 'userInfo', JSON.stringify(newUserInfo));
+        return true;
+      }
+      return false;
+    } catch (_error) {
+      return false;
     }
   }
 
@@ -116,7 +239,7 @@ class TokenManager {
   async performRefresh(refreshToken) {
     try {
       const response = await uni.request({
-        url: `${this.config.baseURL}/api/auth/refresh`,
+        url: `${this.config.baseURL}/auth/refresh`,
         method: 'POST',
         data: {
           refreshToken,
@@ -135,7 +258,6 @@ class TokenManager {
         throw new Error('Token refresh failed');
       }
     } catch (error) {
-      console.error('Token refresh error:', error);
       // 刷新失败，清除所有token，跳转到登录页
       this.clearTokens();
       uni.reLaunch({
@@ -155,6 +277,13 @@ class TokenManager {
     uni.removeStorageSync(prefix + 'refreshToken');
     uni.removeStorageSync(prefix + 'tokenExpiry');
     uni.removeStorageSync(prefix + 'userInfo');
+    uni.removeStorageSync(this.currentAccountIdKey);
+  }
+
+  // 清除所有账户信息
+  clearAllAccounts() {
+    this.clearTokens();
+    uni.removeStorageSync(this.accountsKey);
   }
 
   // 登出
@@ -165,7 +294,7 @@ class TokenManager {
     if (accessToken) {
       try {
         await uni.request({
-          url: `${this.config.baseURL}/api/auth/logout`,
+          url: `${this.config.baseURL}/auth/logout`,
           method: 'POST',
           header: {
             Authorization: `Bearer ${accessToken}`,
@@ -178,9 +307,7 @@ class TokenManager {
           },
           timeout: this.config.timeout,
         });
-      } catch (error) {
-        console.error('Logout API failed:', error);
-      }
+      } catch (_error) {}
     }
 
     this.clearTokens();
@@ -193,7 +320,7 @@ class TokenManager {
   async sendSmsCode(phone) {
     try {
       const response = await uni.request({
-        url: `${this.config.baseURL}/api/auth/send-sms`,
+        url: `${this.config.baseURL}/auth/send-sms`,
         method: 'POST',
         data: { phone },
         header: {
@@ -204,7 +331,6 @@ class TokenManager {
 
       return response.data;
     } catch (error) {
-      console.error('Send SMS failed:', error);
       throw error;
     }
   }
@@ -213,7 +339,7 @@ class TokenManager {
   async loginWithPhone(phone, code) {
     try {
       const response = await uni.request({
-        url: `${this.config.baseURL}/api/auth/login-phone`,
+        url: `${this.config.baseURL}/auth/login-phone`,
         method: 'POST',
         data: {
           phone,
@@ -228,12 +354,12 @@ class TokenManager {
 
       if (response.statusCode === 200 && response.data.success) {
         this.saveTokens(response.data.data);
+        this.saveAccount(response.data.data); // 添加到多账户列表
         return response.data;
       } else {
         throw new Error(response.data.message || 'Login failed');
       }
     } catch (error) {
-      console.error('Phone login failed:', error);
       throw error;
     }
   }
@@ -242,7 +368,7 @@ class TokenManager {
   async loginWithDouyin(authCode) {
     try {
       const response = await uni.request({
-        url: `${this.config.baseURL}/api/auth/login-douyin`,
+        url: `${this.config.baseURL}/auth/login-douyin`,
         method: 'POST',
         data: {
           authCode,
@@ -256,12 +382,12 @@ class TokenManager {
 
       if (response.statusCode === 200 && response.data.success) {
         this.saveTokens(response.data.data);
+        this.saveAccount(response.data.data); // 添加到多账户列表
         return response.data;
       } else {
         throw new Error(response.data.message || 'Douyin login failed');
       }
     } catch (error) {
-      console.error('Douyin login failed:', error);
       throw error;
     }
   }
@@ -275,7 +401,7 @@ class TokenManager {
 
     try {
       const response = await uni.request({
-        url: `${this.config.baseURL}/api/auth/verify`,
+        url: `${this.config.baseURL}/auth/verify`,
         method: 'GET',
         header: {
           Authorization: `Bearer ${accessToken}`,
@@ -284,8 +410,7 @@ class TokenManager {
       });
 
       return response.statusCode === 200 && response.data.success;
-    } catch (error) {
-      console.error('Token verification failed:', error);
+    } catch (_error) {
       return false;
     }
   }

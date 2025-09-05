@@ -47,7 +47,7 @@ const UserSchema = new mongoose.Schema(
     },
     avatar: {
       type: String,
-      default: 'https://your-default-avatar-url.com/default.png', // 提供一个默认头像
+      default: '/static/img/default-avatar.png', // 提供一个默认头像
     },
 
     // --- 状态与活动记录 ---

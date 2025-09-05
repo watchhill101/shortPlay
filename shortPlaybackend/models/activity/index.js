@@ -52,5 +52,9 @@ const ActivitySchema = new mongoose.Schema(
 ActivitySchema.index({ status: 1 });
 ActivitySchema.index({ startDate: 1, endDate: 1 });
 
+// 添加索引
+ActivitySchema.index({ status: 1 });
+ActivitySchema.index({ startDate: 1, endDate: 1 });
+
 const Activity = mongoose.model('Activity', ActivitySchema);
 module.exports = Activity;

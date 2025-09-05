@@ -68,291 +68,166 @@
   </view>
 </template>
 
-<script>
+<script setup>
+import { ref, onUnmounted } from 'vue';
 import tokenManager from '../../utils/tokenManager.js';
-import { sendSmsCode, loginWithPhone } from '../../api/auth.js';
+import { sendSmsCode, loginWithPhone, loginWithDouyin } from '../../api/auth.js';
 
-export default {
-  data() {
-    return {
-      agreedToTerms: false,
-      phoneNumber: '',
-      verificationCode: '',
-      countdown: 0,
-      isGettingCode: false,
-      isLoggingIn: false,
-      showCodeInput: false,
-      codeAlreadySent: false,
-    };
-  },
+// --- state ---
+const agreedToTerms = ref(false);
+const phoneNumber = ref('');
+const verificationCode = ref('');
+const countdown = ref(0);
+const isGettingCode = ref(false);
+const isLoggingIn = ref(false);
+const showCodeInput = ref(false);
+let countdownTimer = null;
 
-  methods: {
-    // 返回上一页
-    goBack() {
-      uni.navigateBack();
-    },
-
-    // 获取验证码
-    async getVerificationCode() {
-      if (!this.phoneNumber) {
-        uni.showToast({
-          title: '请输入手机号',
-          icon: 'none',
-          duration: 2000,
-        });
-        return;
-      }
-
-      if (!/^1[3-9]\d{9}$/.test(this.phoneNumber)) {
-        uni.showToast({
-          title: '请输入正确的手机号',
-          icon: 'none',
-          duration: 2000,
-        });
-        return;
-      }
-
-      if (!this.agreedToTerms) {
-        uni.showToast({
-          title: '请先同意用户协议',
-          icon: 'none',
-          duration: 2000,
-        });
-        return;
-      }
-
-      if (this.isGettingCode || this.countdown > 0) {
-        return;
-      }
-
-      try {
-        this.isGettingCode = true;
-        uni.showLoading({ title: '发送中...' });
-
-        // 调用真实的发送验证码API
-        const response = await sendSmsCode(this.phoneNumber);
-
-        if (response.data.success) {
-          uni.showToast({
-            title: '验证码已发送',
-            icon: 'success',
-            duration: 1500,
-          });
-
-          // 开始倒计时
-          this.startCountdown();
-
-          // 显示验证码输入框
-          this.showCodeInput = true;
-          this.codeAlreadySent = true;
-
-          // 显示验证码提示（开发环境）
-          if (process.env.NODE_ENV === 'development') {
-            setTimeout(() => {
-              uni.showModal({
-                title: '开发提示',
-                content: '开发环境下，验证码将通过控制台输出或推送服务发送',
-                showCancel: false,
-              });
-            }, 2000);
-          }
-        } else {
-          throw new Error(response.data.message || '发送失败');
-        }
-      } catch (error) {
-        console.error('获取验证码失败:', error);
-
-        let errorMessage = '获取验证码失败，请重试';
-        if (error.isNetworkError) {
-          errorMessage = '网络连接失败，请检查网络连接';
-        } else if (error.data?.message) {
-          errorMessage = error.data.message;
-        } else if (error.message) {
-          errorMessage = error.message;
-        }
-
-        uni.showToast({
-          title: errorMessage,
-          icon: 'none',
-          duration: 3000,
-        });
-      } finally {
-        uni.hideLoading();
-        this.isGettingCode = false;
-      }
-    },
-
-    // 开始倒计时
-    startCountdown() {
-      this.countdown = 60;
-      const timer = setInterval(() => {
-        this.countdown--;
-        if (this.countdown <= 0) {
-          clearInterval(timer);
-        }
-      }, 1000);
-    },
-
-    // 验证码登录
-    async loginWithVerificationCode() {
-      if (!this.verificationCode) {
-        uni.showToast({
-          title: '请输入验证码',
-          icon: 'none',
-          duration: 2000,
-        });
-        return;
-      }
-
-      if (this.verificationCode.length !== 6) {
-        uni.showToast({
-          title: '请输入6位验证码',
-          icon: 'none',
-          duration: 2000,
-        });
-        return;
-      }
-
-      try {
-        this.isLoggingIn = true;
-        uni.showLoading({ title: '登录中...' });
-
-        // 调用真实的登录API
-        const response = await loginWithPhone(this.phoneNumber, this.verificationCode, tokenManager.getDeviceId());
-
-        if (response.data.success) {
-          // 保存Token和用户信息
-          tokenManager.saveTokens(response.data.data);
-
-          uni.showToast({
-            title: '登录成功',
-            icon: 'success',
-            duration: 1500,
-          });
-
-          // 延迟跳转到首页
-          setTimeout(() => {
-            uni.switchTab({
-              url: '/pages/index/index',
-            });
-          }, 1500);
-        } else {
-          throw new Error(response.data.message || '登录失败');
-        }
-      } catch (error) {
-        console.error('登录失败:', error);
-
-        let errorMessage = '登录失败，请重试';
-        if (error.isNetworkError) {
-          errorMessage = '网络连接失败，请检查网络连接';
-        } else if (error.data?.message) {
-          errorMessage = error.data.message;
-        } else if (error.message) {
-          errorMessage = error.message;
-        }
-
-        uni.showToast({
-          title: errorMessage,
-          icon: 'none',
-          duration: 3000,
-        });
-      } finally {
-        uni.hideLoading();
-        this.isLoggingIn = false;
-      }
-    },
-
-    // 抖音登录
-    async handleDouyinLogin() {
-      if (!this.agreedToTerms) {
-        uni.showToast({
-          title: '请先同意用户协议',
-          icon: 'none',
-          duration: 2000,
-        });
-        return;
-      }
-
-      uni.showLoading({ title: '正在拉起抖音...' });
-
-      try {
-        // 1. 调用 uni.login 获取抖音授权码
-        const loginRes = await uni.login({
-          provider: 'douyin',
-        });
-
-        const authCode = loginRes.code;
-        if (!authCode) {
-          throw new Error('未能获取到抖音授权码');
-        }
-
-        uni.showLoading({ title: '登录中...' });
-
-        // 2. 将授权码发送到后端进行登录
-        const response = await loginWithDouyin(authCode, tokenManager.getDeviceId());
-
-        if (response.data.success) {
-          // 3. 保存Token和用户信息
-          tokenManager.saveTokens(response.data.data);
-
-          uni.showToast({
-            title: '登录成功',
-            icon: 'success',
-            duration: 1500,
-          });
-
-          // 4. 延迟跳转到首页
-          setTimeout(() => {
-            uni.switchTab({
-              url: '/pages/index/index',
-            });
-          }, 1500);
-        } else {
-          throw new Error(response.data.message || '抖音登录失败');
-        }
-      } catch (error) {
-        console.error('抖音登录失败:', error);
-        let errorMessage = '抖音登录失败，请重试';
-
-        // uniapp 授权失败的错误处理
-        if (typeof error.errMsg === 'string' && error.errMsg.includes('login:fail')) {
-          errorMessage = '您取消了抖音授权';
-        } else if (error.isNetworkError) {
-          errorMessage = '网络连接失败，请检查网络连接';
-        } else if (error.data?.message) {
-          errorMessage = error.data.message;
-        } else if (error.message) {
-          errorMessage = error.message;
-        }
-
-        uni.showToast({
-          title: errorMessage,
-          icon: 'none',
-          duration: 3000,
-        });
-      } finally {
-        uni.hideLoading();
-      }
-    },
-
-    // 切换协议同意状态
-    toggleAgreement() {
-      this.agreedToTerms = !this.agreedToTerms;
-    },
-
-    // 打开用户协议
-    openUserAgreement() {
-      // 这里可以跳转到用户协议页面
-      console.log('打开用户协议');
-    },
-
-    // 打开隐私政策
-    openPrivacyPolicy() {
-      // 这里可以跳转到隐私政策页面
-      console.log('打开隐私政策');
-    },
-  },
+// --- methods ---
+const goBack = () => {
+  uni.navigateBack();
 };
+
+const startCountdown = () => {
+  countdown.value = 60;
+  if (countdownTimer) clearInterval(countdownTimer);
+  countdownTimer = setInterval(() => {
+    countdown.value--;
+    if (countdown.value <= 0) {
+      clearInterval(countdownTimer);
+      countdownTimer = null;
+    }
+  }, 1000);
+};
+
+const getVerificationCode = async () => {
+  if (!phoneNumber.value) {
+    return uni.showToast({ title: '请输入手机号', icon: 'none' });
+  }
+  if (!/^1[3-9]\d{9}$/.test(phoneNumber.value)) {
+    return uni.showToast({ title: '请输入正确的手机号', icon: 'none' });
+  }
+  if (!agreedToTerms.value) {
+    return uni.showToast({ title: '请先同意用户协议', icon: 'none' });
+  }
+  if (isGettingCode.value || countdown.value > 0) {
+    return;
+  }
+
+  try {
+    isGettingCode.value = true;
+    uni.showLoading({ title: '发送中...' });
+    const response = await tokenManager.sendSmsCode(phoneNumber.value);
+
+    if (response.success) {
+      uni.showToast({ title: '验证码已发送', icon: 'success', duration: 1500 });
+      startCountdown();
+      showCodeInput.value = true;
+      if (process.env.NODE_ENV === 'development') {
+        setTimeout(() => {
+          uni.showModal({
+            title: '开发提示',
+            content: '开发环境下，验证码将通过控制台输出',
+            showCancel: false,
+          });
+        }, 2000);
+      }
+    } else {
+      throw new Error(response.message || '发送失败');
+    }
+  } catch (error) {
+    console.error('获取验证码失败:', error);
+    const errorMessage = error.isNetworkError || error.data?.message || error.message || '获取验证码失败，请重试';
+    uni.showToast({ title: errorMessage, icon: 'none', duration: 3000 });
+  } finally {
+    uni.hideLoading();
+    isGettingCode.value = false;
+  }
+};
+
+const loginWithVerificationCode = async () => {
+  if (!verificationCode.value) {
+    return uni.showToast({ title: '请输入验证码', icon: 'none' });
+  }
+  if (verificationCode.value.length !== 6) {
+    return uni.showToast({ title: '请输入6位验证码', icon: 'none' });
+  }
+
+  try {
+    isLoggingIn.value = true;
+    uni.showLoading({ title: '登录中...' });
+    const response = await tokenManager.loginWithPhone(phoneNumber.value, verificationCode.value);
+
+    if (response.success) {
+      tokenManager.saveTokens(response.data);
+      uni.showToast({ title: '登录成功', icon: 'success', duration: 1500 });
+      setTimeout(() => uni.switchTab({ url: '/pages/index/index' }), 1500);
+    } else {
+      throw new Error(response.message || '登录失败');
+    }
+  } catch (error) {
+    console.error('登录失败:', error);
+    const errorMessage = error.isNetworkError || error.data?.message || error.message || '登录失败，请重试';
+    uni.showToast({ title: errorMessage, icon: 'none', duration: 3000 });
+  } finally {
+    uni.hideLoading();
+    isLoggingIn.value = false;
+  }
+};
+
+const handleDouyinLogin = async () => {
+  if (!agreedToTerms.value) {
+    return uni.showToast({ title: '请先同意用户协议', icon: 'none' });
+  }
+
+  uni.showLoading({ title: '正在拉起抖音...' });
+  try {
+    const loginRes = await uni.login({ provider: 'douyin' });
+    const authCode = loginRes.code;
+    if (!authCode) throw new Error('未能获取到抖音授权码');
+
+    uni.showLoading({ title: '登录中...' });
+    const response = await loginWithDouyin(authCode, tokenManager.getDeviceId());
+
+    if (response.success) {
+      tokenManager.saveTokens(response.data);
+      uni.showToast({ title: '登录成功', icon: 'success', duration: 1500 });
+      setTimeout(() => uni.switchTab({ url: '/pages/index/index' }), 1500);
+    } else {
+      throw new Error(response.message || '抖音登录失败');
+    }
+  } catch (error) {
+    console.error('抖音登录失败:', error);
+    let errorMessage = '抖音登录失败，请重试';
+    if (typeof error.errMsg === 'string' && error.errMsg.includes('login:fail')) {
+      errorMessage = '您取消了抖音授权';
+    } else if (error.isNetworkError || error.data?.message || error.message) {
+      errorMessage = error.isNetworkError || error.data?.message || error.message;
+    }
+    uni.showToast({ title: errorMessage, icon: 'none', duration: 3000 });
+  } finally {
+    uni.hideLoading();
+  }
+};
+
+const toggleAgreement = () => {
+  agreedToTerms.value = !agreedToTerms.value;
+};
+
+const openUserAgreement = () => {
+  console.log('打开用户协议');
+};
+
+const openPrivacyPolicy = () => {
+  console.log('打开隐私政策');
+};
+
+// --- lifecycle hooks ---
+onUnmounted(() => {
+  if (countdownTimer) {
+    clearInterval(countdownTimer);
+  }
+});
 </script>
 
 <style scoped lang="scss">

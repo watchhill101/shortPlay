@@ -76,6 +76,126 @@
         "navigationStyle": "custom",
         "enablePullDownRefresh": false
       }
+    },
+    {
+      "path": "pages/chat/chatAi",
+      "style": {
+        "navigationBarTitleText": "AI客服",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/chat/messages",
+      "style": {
+        "navigationBarTitleText": "我的消息",
+        "navigationStyle": "custom",
+        "enablePullDownRefresh": true,
+        "backgroundTextStyle": "dark",
+        "app-plus": {
+          "bounce": "none"
+        }
+      }
+    },
+    {
+      "path": "pages/profile/info",
+      "style": {
+        "navigationBarTitleText": "我的信息",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/profile/userSwitch",
+      "style": {
+        "navigationBarTitleText": "切换用户",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/friends/friendList",
+      "style": {
+        "navigationBarTitleText": "好友列表",
+        "navigationStyle": "custom",
+        "enablePullDownRefresh": true
+      }
+    },
+    {
+      "path": "pages/friends/addFriend",
+      "style": {
+        "navigationBarTitleText": "添加好友",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/friends/friendRequests",
+      "style": {
+        "navigationBarTitleText": "好友申请",
+        "navigationStyle": "custom",
+        "enablePullDownRefresh": true
+      }
+    },
+    {
+      "path": "pages/test/testApi",
+      "style": {
+        "navigationBarTitleText": "API测试",
+        "navigationStyle": "default"
+      }
+    },
+    {
+      "path": "pages/test/connectionTest",
+      "style": {
+        "navigationBarTitleText": "连接测试",
+        "navigationStyle": "default"
+      }
+    },
+    {
+      "path": "pages/test/quickTest",
+      "style": {
+        "navigationBarTitleText": "快速测试",
+        "navigationStyle": "default"
+      }
+    },
+    {
+      "path": "pages/chat/friendChatClean",
+      "style": {
+        "navigationBarTitleText": "好友聊天",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/chat/chatDatabase",
+      "style": {
+        "navigationBarTitleText": "聊天数据库",
+        "navigationStyle": "default"
+      }
+    },
+    {
+      "path": "pages/test/systemStatus",
+      "style": {
+        "navigationBarTitleText": "系统状态",
+        "navigationStyle": "default"
+      }
+    },
+    {
+      "path": "pages/test/chatTest",
+      "style": {
+        "navigationBarTitleText": "聊天测试",
+        "navigationStyle": "default"
+      }
+    },
+    {
+      "path": "pages/test/websocketTest",
+      "style": {
+        "navigationBarTitleText": "WebSocket测试",
+        "navigationStyle": "default"
+      }
+    },
+    {
+      "path": "pages/messages/index",
+      "style": {
+        "navigationBarTitleText": "消息中心",
+        "enablePullDownRefresh": false,
+        "navigationStyle": "custom"
+      }
     }
   ],
 
@@ -110,6 +230,12 @@
         "iconPath": "static/tabbar/subs.png",
         "selectedIconPath": "static/tabbar/subs-cur.png",
         "text": "在追"
+      },
+      {
+        "pagePath": "pages/messages/index",
+        "iconPath": "static/tabbar/message.png",
+        "selectedIconPath": "static/tabbar/message-cur.png",
+        "text": "消息"
       },
       {
         "pagePath": "pages/mine/index",

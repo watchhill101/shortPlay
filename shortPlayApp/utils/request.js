@@ -43,7 +43,6 @@ class HttpClient {
       try {
         await tokenManager.refreshAccessToken();
       } catch (error) {
-        console.error('Token refresh failed:', error);
         // 刷新失败会自动跳转到登录页
         return Promise.reject(error);
       }
@@ -64,7 +63,6 @@ class HttpClient {
             const retryResponse = await uni.request(options);
             return retryResponse;
           } catch (refreshError) {
-            console.error('Token refresh failed during retry:', refreshError);
             // 刷新失败，跳转登录
             return Promise.reject(refreshError);
           }
@@ -78,11 +76,8 @@ class HttpClient {
 
       return response;
     } catch (error) {
-      console.error('Request failed:', error);
-
       // 网络错误处理 - 避免页面卡死
       if (error.errMsg && error.errMsg.includes('request:fail')) {
-        console.warn('网络请求失败，可能是后端服务未启动:', error.errMsg);
         // 不跳转登录页面，只是记录错误
         return Promise.reject({
           ...error,
