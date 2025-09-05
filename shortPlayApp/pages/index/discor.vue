@@ -21,7 +21,7 @@
         </view>
 
         <!--合集列表-->
-        <block v-for="(colls, index) in playletCollections">
+        <block v-for="colls in playletCollections" :key="colls.id">
           <view class="playlet-collections" scroll-x>
             <view class="dfbox" @click="toCollectionPlaylet(colls)">
               <view class="title pt10">{{ colls.name }}</view>
@@ -30,8 +30,8 @@
             <scroll-view class="item" scroll-x="true" show-scrollbar="false">
               <view
                 class="playlet"
-                v-for="(item, index) in colls.playletList"
-                :keys="index"
+                v-for="item in colls.playletList"
+                :key="item.playletId"
                 @tap="toPalyletDetail(item)"
               >
                 <view class="cover">
@@ -51,7 +51,7 @@
             <view class="title pt10">最新短剧</view>
           </view>
           <view class="item">
-            <view class="playlet" v-for="(item, index) in playletRecommends" :keys="index" @tap="toPalyletDetail(item)">
+            <view class="playlet" v-for="item in playletRecommends" :key="item.playletId" @tap="toPalyletDetail(item)">
               <view class="cover">
                 <image :src="item.image" class="goods-img" mode="scaleToFill"></image>
               </view>
