@@ -6,6 +6,7 @@ export default {
     console.log('App Launch');
 
     // 检查登录状态
+    /*
     if (!tokenManager.isLoggedIn()) {
       // 检查是否有保存的用户，如果有则尝试切换到最后一个用户
       const savedAccounts = tokenManager.getSavedAccounts();
@@ -27,6 +28,7 @@ export default {
         });
       }, 100);
     }
+    */
   },
   onShow: function () {
     console.log('App Show');

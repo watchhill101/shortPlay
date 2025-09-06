@@ -100,6 +100,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted, onUnmounted } from 'vue';
+import { onHide, onShow } from '@dcloudio/uni-app';
 
 // 当前播放视频索引
 const currentVideo = ref(0);
@@ -113,6 +114,8 @@ let videoContext: any = null;
 let lastMediaOperationTime = 0;
 // 防抖动时间阈值（毫秒）
 const DEBOUNCE_THRESHOLD = 300;
+// 新增一个状态，用于标记视频是否因页面切换而暂停
+let pausedBySystem = false;
 
 // 视频列表数据
 const videoList = reactive([]);
@@ -1161,6 +1164,32 @@ onMounted(() => {
   console.log('watch页面组件已挂载');
   // 获取视频数据
   fetchVideos();
+});
+
+// 页面隐藏时的处理
+onHide(() => {
+  if (videoContext && playingState.value) {
+    try {
+      pausedBySystem = true;
+      videoContext.pause();
+      console.log('页面已隐藏，视频已暂停');
+    } catch (error) {
+      console.error('页面隐藏时暂停视频出错:', error);
+    }
+  }
+});
+
+// 页面显示时的处理
+onShow(() => {
+  if (videoContext && pausedBySystem) {
+    try {
+      videoContext.play();
+      pausedBySystem = false;
+      console.log('页面已显示，视频已恢复播放');
+    } catch (error) {
+      console.error('页面显示时恢复播放视频出错:', error);
+    }
+  }
 });
 
 // 组件卸载时的清理

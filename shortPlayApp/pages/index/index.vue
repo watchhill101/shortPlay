@@ -1,23 +1,6 @@
 <template>
   <view id="containerId">
     <view class="maincontainer" :style="'height: calc(100vh - ' + navBarHeight + 'px)'">
-      <view class="fixhdr">
-        <view class="item">
-          <block v-for="(tab, index) in panelTabs" :key="index">
-            <view class="tabs" @click.stop="toTabClick(index)">
-              <view class="nav" :class="tabIndex == index ? 'cur' : ''">
-                {{ tab.name }}
-              </view>
-              <view :class="tabIndex == index ? 'cur-line' : ''"></view>
-            </view>
-          </block>
-        </view>
-
-        <view class="search-box" @click="toSearchGoods">
-          <image class="search-icon" src="../../static/img/search-icon.png"></image>
-        </view>
-      </view>
-
       <view class="panel">
         <swiper
           :indicator-dots="false"

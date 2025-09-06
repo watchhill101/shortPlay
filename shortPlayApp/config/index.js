@@ -20,12 +20,7 @@ const config = {
   },
 
   // 资源文件基础URL (用于拼接图片等)
-  assetBaseURL: (config => {
-    const apiConfig = config.api[process.env.NODE_ENV || 'development'] || config.api.development;
-    // 使用正则表达式提取协议和主机，以兼容非浏览器环境
-    const match = apiConfig.baseURL.match(/^(https?:\/\/[^/]+)/);
-    return match ? match[1] : '';
-  })(config),
+  assetBaseURL: '',
 
   // 当前环境
   env: process.env.NODE_ENV || 'development',
@@ -76,6 +71,11 @@ const config = {
     description: '精彩短剧，随时观看',
   },
 };
+
+// 修正 assetBaseURL 的定义，避免在对象初始化时引用自身
+const currentApiConfig = config.api[config.env] || config.api.development;
+const match = currentApiConfig.baseURL.match(/^(https?:\/\/[^/]+)/);
+config.assetBaseURL = match ? match[1] : '';
 
 // 获取当前环境的API配置
 export const getApiConfig = () => {
