@@ -924,109 +924,85 @@ export default {
 }
 
 .playlet-recommend .item {
-  display: flex;
-
-  flex-direction: row;
-
-  flex-wrap: wrap;
-
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 30rpx;
 }
 
 .playlet-recommend .item .playlet-empty {
-  width: 49%;
+  display: none;
 }
 
 .playlet-recommend .item .playlet {
   display: flex;
-
   flex-direction: column;
-
   justify-content: flex-start;
-
-  align-items: center;
-
-  width: 49%;
-
-  margin-bottom: 30rpx;
-
-  border-radius: 12rpx;
-
+  width: 100%;
+  margin-bottom: 0;
+  border-radius: 20rpx;
   background: #2a2a2a;
-
-  padding: 15rpx;
-
-  min-height: 550rpx;
+  padding: 0;
+  overflow: hidden;
+  box-shadow: 0 8rpx 20rpx rgba(0, 0, 0, 0.2);
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
 
   .cover {
     width: 100%;
-
-    height: 380rpx;
-
+    padding-top: 140%;
     position: relative;
+    overflow: hidden;
 
     .goods-img {
+      position: absolute;
+      top: 0;
+      left: 0;
       width: 100%;
-
       height: 100%;
-
-      border-radius: 8rpx;
+      border-radius: 0;
+      object-fit: cover;
     }
   }
 
   .goods-info {
     display: flex;
-
     flex-direction: column;
-
-    margin-top: 15rpx;
-
+    padding: 20rpx;
+    margin-top: 0;
     width: 100%;
-
     flex: 1;
-
     justify-content: space-between;
 
     .title {
       width: 100%;
-
       font-size: 28rpx;
-
       font-weight: 600;
-
       text-align: left;
-
       overflow: hidden;
-
       text-overflow: ellipsis;
-
       white-space: nowrap;
-
       color: #ffffff;
-
       margin-bottom: 10rpx;
     }
 
     .brief {
       width: 100%;
-
       font-size: 24rpx;
-
       text-align: left;
-
       color: #b0b0b0;
-
       overflow: hidden;
-
       text-overflow: ellipsis;
-
       white-space: nowrap;
-
       line-height: 1.5;
-
       flex: 1;
     }
   }
+}
+
+.playlet-recommend .item .playlet:active {
+  transform: translateY(-5rpx);
+  box-shadow: 0 12rpx 25rpx rgba(0, 0, 0, 0.3);
 }
 
 .dfbox {

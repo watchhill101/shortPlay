@@ -138,269 +138,202 @@
   </view>
 </template>
 
-<script>
-export default {
-  data() {
-    return {
-      baseUrl: '',
-      isBaseUrlReady: false,
-      filterOptions: {
-        classifiers: [],
-        tags: [],
-        timeOptions: [],
-      },
-      // 用户选择的筛选条件
-      selectedClassifier: 'all',
-      selectedTags: [],
-      selectedDateRange: 'all',
-      sortBy: 'default',
-      // 筛选结果相关
-      collections: [],
-      isLoading: true,
-      page: 1,
-      pageSize: 10,
-      hasMore: true,
-      searchResultCount: 0,
-    };
-  },
-  async onLoad() {
-    await this.initializeBaseUrl();
-    if (this.isBaseUrlReady) {
-      this.fetchFilterOptions();
-      this.fetchCollections(true); // 初始加载第一页数据
+<script setup>
+import { ref, reactive } from 'vue';
+import { onLoad } from '@dcloudio/uni-app';
+import http from '../../utils/request.js';
+import { getAssetBaseURL } from '../../config/index.js';
+
+const assetBaseURL = getAssetBaseURL();
+
+const filterOptions = reactive({
+  classifiers: [],
+  tags: [],
+  timeOptions: [],
+});
+
+// 用户选择的筛选条件
+const selectedClassifier = ref('all');
+const selectedTags = ref([]);
+const selectedDateRange = ref('all');
+const sortBy = ref('default');
+
+// 筛选结果相关
+const collections = ref([]);
+const isLoading = ref(true);
+const page = ref(1);
+const pageSize = 10;
+const hasMore = ref(true);
+const searchResultCount = ref(0);
+
+onLoad(() => {
+  fetchFilterOptions();
+  fetchCollections(true); // 初始加载第一页数据
+});
+
+const buildQueryParams = (currentPage, limit) => {
+  const params = {
+    classifier: selectedClassifier.value,
+    tags: selectedTags.value.join(','),
+    dateRange: selectedDateRange.value,
+    sortBy: sortBy.value === 'default' ? 'createdAt' : sortBy.value,
+    page: currentPage,
+    pageSize: limit,
+  };
+  // 清理空参数
+  Object.keys(params).forEach(key => {
+    if (params[key] === 'all' || params[key] === '' || params[key] === undefined) {
+      delete params[key];
     }
-  },
-  methods: {
-    async initializeBaseUrl() {
-      try {
-        this.baseUrl = await this.getCurrentUrl();
-        this.isBaseUrlReady = true;
-      } catch (error) {
-        console.error('Failed to initialize base URL:', error);
-        uni.showToast({
-          title: '网络连接失败，请检查',
-          icon: 'none',
-        });
-      }
-    },
+  });
+  return params;
+};
 
-    async getCurrentUrl() {
-      const testUrls = [
-        'http://localhost:3000',
-        'http://127.0.0.1:3000',
-        'http://192.168.204.1:3000',
-        'http://192.168.149.1:3000',
-        'http://172.20.10.4:3000',
-      ];
+const fetchCollections = async (reset = false) => {
+  if (reset) {
+    page.value = 1;
+    collections.value = [];
+    hasMore.value = true;
+  }
 
-      for (let url of testUrls) {
-        try {
-          const response = await uni.request({
-            url: `${url}/api/health`,
-            method: 'GET',
-            timeout: 2000,
-          });
-          if (response.statusCode === 200) {
-            console.log(`✅ Found available API server: ${url}`);
-            return url;
-          }
-        } catch (error) {
-          // Fail silently for individual URLs
-        }
-      }
-      throw new Error('Could not connect to any API server');
-    },
+  isLoading.value = true;
 
-    async fetchCollections(reset = false) {
-      if (!this.isBaseUrlReady) return;
+  const params = buildQueryParams(page.value, pageSize);
+  console.log('🔄 开始获取合集数据，参数:', params);
+
+  try {
+    const response = await http.get('/collection', params);
+    console.log('📡 合集数据响应:', response);
+
+    if (response.statusCode === 200 && response.data.success) {
+      const newCollections = response.data.data;
+      searchResultCount.value = response.data.pagination.total;
+
+      console.log(`✅ 成功获取 ${newCollections.length} 个合集，总数：${searchResultCount.value}`);
+
+      const processedCollections = newCollections.map(item => processCollectionItem(item));
 
       if (reset) {
-        this.page = 1;
-        this.collections = [];
-        this.hasMore = true;
-      }
-
-      this.isLoading = true;
-
-      const params = this.buildQueryParams(this.page, this.pageSize);
-      console.log('🔄 开始获取合集数据，参数:', params);
-
-      try {
-        const response = await uni.request({
-          url: `${this.baseUrl}/api/collections`,
-          method: 'GET',
-          data: params,
-        });
-
-        console.log('📡 合集数据响应:', response);
-
-        if (response.statusCode === 200 && response.data.success) {
-          const newCollections = response.data.data;
-          this.searchResultCount = response.data.pagination.total;
-
-          console.log(`✅ 成功获取 ${newCollections.length} 个合集，总数：${this.searchResultCount}`);
-
-          if (reset) {
-            this.collections = newCollections.map(item => this.processCollectionItem(item));
-          } else {
-            this.collections = [...this.collections, ...newCollections.map(item => this.processCollectionItem(item))];
-          }
-
-          if (newCollections.length < this.pageSize) {
-            this.hasMore = false;
-          }
-
-          this.page++;
-          console.log('📊 处理后的合集数量:', this.collections.length);
-        } else {
-          console.error('❌ 合集数据响应异常:', response);
-        }
-      } catch (error) {
-        console.error('❌ 获取合集数据失败:', error);
-        this.hasMore = false;
-      } finally {
-        this.isLoading = false;
-      }
-    },
-
-    processCollectionItem(item) {
-      // 这个方法可以统一处理从后端拿到的数据，转换成前端需要的格式
-      return {
-        ...item,
-        brief: this.generateBrief(item),
-        image: item.coverImage ? `${this.baseUrl}${item.coverImage}` : '',
-      };
-    },
-
-    generateBrief(item) {
-      const type = item.classifier && item.classifier.name ? item.classifier.name : '其他';
-      const playCount = this.formatNumber(item.totalPlayCount || 0);
-      const collectCount = this.formatNumber(item.collectCount || 0);
-      return `${type} · ${playCount}播放 · ${collectCount}收藏`;
-    },
-
-    formatNumber(num) {
-      if (num >= 100000000) return (num / 100000000).toFixed(1) + '亿';
-      if (num >= 10000) return (num / 10000).toFixed(1) + '万';
-      return num.toString();
-    },
-
-    loadMoreCollections() {
-      if (this.hasMore) {
-        this.fetchCollections();
-      }
-    },
-
-    async fetchFilterOptions() {
-      if (!this.isBaseUrlReady) return;
-      try {
-        console.log('Fetching filter options...');
-        const response = await uni.request({
-          url: `${this.baseUrl}/api/filters/options`,
-          method: 'GET',
-        });
-        if (response.statusCode === 200 && response.data.success) {
-          this.filterOptions = response.data.data;
-          console.log('Filter options loaded:', this.filterOptions);
-        }
-      } catch (error) {
-        console.error('Failed to fetch filter options:', error);
-      }
-    },
-    // 获取当前筛选条件下的结果总数
-    async fetchResultsCount() {
-      if (!this.isBaseUrlReady) return;
-      const params = this.buildQueryParams();
-      try {
-        const response = await uni.request({
-          url: `${this.baseUrl}/api/collections`,
-          method: 'GET',
-          data: params,
-        });
-        if (response.statusCode === 200 && response.data.success) {
-          this.searchResultCount = response.data.pagination.total;
-        }
-      } catch (error) {
-        console.error('Failed to fetch results count:', error);
-        this.searchResultCount = 0;
-      }
-    },
-    goBack() {
-      uni.navigateBack();
-    },
-    resetFilters() {
-      this.selectedClassifier = 'all';
-      this.selectedTags = [];
-      this.selectedDateRange = 'all';
-      this.sortBy = 'default';
-      this.fetchCollections(true);
-      uni.showToast({ title: '已重置', icon: 'none' });
-    },
-    selectClassifier(id) {
-      this.selectedClassifier = id;
-      this.fetchCollections(true);
-    },
-    resetSelectedTags() {
-      this.selectedTags = [];
-      this.fetchCollections(true);
-    },
-    toggleTag(tag) {
-      const index = this.selectedTags.indexOf(tag);
-      if (index > -1) {
-        this.selectedTags.splice(index, 1);
+        collections.value = processedCollections;
       } else {
-        this.selectedTags.push(tag);
+        collections.value = [...collections.value, ...processedCollections];
       }
-      this.fetchCollections(true);
-    },
-    selectDateRange(value) {
-      this.selectedDateRange = value;
-      this.fetchCollections(true);
-    },
-    selectSortBy(value) {
-      this.sortBy = value;
-      this.fetchCollections(true);
-    },
-    buildQueryParams(page, pageSize) {
-      const params = {
-        classifier: this.selectedClassifier,
-        tags: this.selectedTags.join(','),
-        dateRange: this.selectedDateRange,
-        sortBy: this.sortBy === 'default' ? 'createdAt' : this.sortBy,
-        page: page,
-        pageSize: pageSize,
-      };
-      // 清理空参数
-      Object.keys(params).forEach(key => {
-        if (params[key] === 'all' || params[key] === '') {
-          delete params[key];
-        }
-      });
-      return params;
-    },
-    applyFilters() {
-      // 点击确认按钮，可以返回上一页并把筛选条件传递回去
-      const params = this.buildQueryParams();
-      // uni.$emit('filters-applied', params); // 使用事件总线
-      // uni.navigateBack();
 
-      // 当前需求是在本页显示，所以这个按钮可以暂时只做提示
-      uni.showToast({
-        title: `已应用筛选`,
-        icon: 'none',
-      });
-    },
+      if (newCollections.length < pageSize) {
+        hasMore.value = false;
+      }
 
-    toPlayletDetail(item) {
-      uni.navigateTo({
-        url: '/pages/playlet/detail?playletId=' + item._id,
-      });
-    },
+      page.value++;
+      console.log('📊 处理后的合集数量:', collections.value.length);
+    } else {
+      console.error('❌ 合集数据响应异常:', response);
+    }
+  } catch (error) {
+    console.error('❌ 获取合集数据失败:', error);
+    hasMore.value = false;
+  } finally {
+    isLoading.value = false;
+  }
+};
 
-    onImageError(e) {
-      console.log('图片加载失败:', e);
-    },
-  },
+const processCollectionItem = item => {
+  return {
+    ...item,
+    brief: generateBrief(item),
+    image: item.coverImage ? `${assetBaseURL}${item.coverImage}` : '',
+  };
+};
+
+const generateBrief = item => {
+  const type = item.classifier && item.classifier.name ? item.classifier.name : '其他';
+  const playCount = formatNumber(item.totalPlayCount || 0);
+  const collectCount = formatNumber(item.collectCount || 0);
+  return `${type} · ${playCount}播放 · ${collectCount}收藏`;
+};
+
+const formatNumber = num => {
+  if (num >= 100000000) return (num / 100000000).toFixed(1) + '亿';
+  if (num >= 10000) return (num / 10000).toFixed(1) + '万';
+  return num.toString();
+};
+
+const loadMoreCollections = () => {
+  if (hasMore.value && !isLoading.value) {
+    fetchCollections();
+  }
+};
+
+const fetchFilterOptions = async () => {
+  try {
+    console.log('Fetching filter options...');
+    const response = await http.get('/filter/options');
+    if (response.statusCode === 200 && response.data.success) {
+      Object.assign(filterOptions, response.data.data);
+      console.log('Filter options loaded:', filterOptions);
+    }
+  } catch (error) {
+    console.error('Failed to fetch filter options:', error);
+  }
+};
+
+const goBack = () => {
+  uni.navigateBack();
+};
+
+const resetFilters = () => {
+  selectedClassifier.value = 'all';
+  selectedTags.value = [];
+  selectedDateRange.value = 'all';
+  sortBy.value = 'default';
+  fetchCollections(true);
+  uni.showToast({ title: '已重置', icon: 'none' });
+};
+
+const selectClassifier = id => {
+  selectedClassifier.value = id;
+  fetchCollections(true);
+};
+
+const resetSelectedTags = () => {
+  selectedTags.value = [];
+  fetchCollections(true);
+};
+
+const toggleTag = tag => {
+  const index = selectedTags.value.indexOf(tag);
+  if (index > -1) {
+    selectedTags.value.splice(index, 1);
+  } else {
+    selectedTags.value.push(tag);
+  }
+  fetchCollections(true);
+};
+
+const selectDateRange = value => {
+  selectedDateRange.value = value;
+  fetchCollections(true);
+};
+
+const selectSortBy = value => {
+  sortBy.value = value;
+  fetchCollections(true);
+};
+
+const applyFilters = () => {
+  uni.showToast({
+    title: `已应用筛选`,
+    icon: 'none',
+  });
+};
+
+const toPlayletDetail = item => {
+  uni.navigateTo({
+    url: '/pages/playlet/detail?playletId=' + item._id,
+  });
+};
+
+const onImageError = e => {
+  console.log('图片加载失败:', e);
 };
 </script>
 

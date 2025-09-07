@@ -4,17 +4,17 @@ const config = {
   api: {
     // 开发环境
     development: {
-      baseURL: 'http://192.168.0.223:3000/api',
+      baseURL: 'http://192.168.0.155:3000/api',
       timeout: 10000,
     },
     // 测试环境
     test: {
-      baseURL: 'http://test-api.shortplay.com',
+      baseURL: 'http://test-api.shortplay.com/api',
       timeout: 10000,
     },
     // 生产环境
     production: {
-      baseURL: 'https://api.shortplay.com',
+      baseURL: 'https://api.shortplay.com/api',
       timeout: 10000,
     },
   },

@@ -141,6 +141,7 @@
 <script setup>
 import { ref, onMounted, nextTick } from 'vue';
 import tokenManager from '@/utils/tokenManager';
+import http from '@/utils/request.js';
 
 const friendInfo = ref(null);
 const currentUser = ref(null);
@@ -269,11 +270,10 @@ const isOwnMessage = message => {
 const loadChatHistory = async () => {
   if (!currentUser.value || !friendInfo.value.id) return;
   try {
-    const response = await uni.request({
-      url: `http://localhost:3000/api/chat/history/${friendInfo.value.id}`,
-      method: 'GET',
-      data: { userId: currentUser.value.id, page: page.value, limit: 50 },
-      header: { Authorization: `Bearer ${tokenManager.getAccessToken()}` },
+    const response = await http.get(`/chat/history/${friendInfo.value.id}`, {
+      userId: currentUser.value.id,
+      page: page.value,
+      limit: 50,
     });
 
     if (response.data && response.data.success) {
@@ -325,19 +325,11 @@ const sendMessage = async () => {
   nextTick(() => scrollToBottom());
 
   try {
-    const response = await uni.request({
-      url: 'http://localhost:3000/api/chat/send',
-      method: 'POST',
-      data: {
-        fromUserId: currentUser.value.id,
-        toUserId: friendInfo.value.id,
-        content: message,
-        messageType: 'text',
-      },
-      header: {
-        Authorization: `Bearer ${tokenManager.getAccessToken()}`,
-        'Content-Type': 'application/json',
-      },
+    const response = await http.post('/chat/send', {
+      fromUserId: currentUser.value.id,
+      toUserId: friendInfo.value.id,
+      content: message,
+      messageType: 'text',
     });
 
     const msgIndex = messageList.value.findIndex(msg => msg.id === messageData.id);
@@ -437,14 +429,8 @@ const clearChatHistory = () => {
 const performClearChatHistory = async () => {
   try {
     uni.showLoading({ title: '正在删除聊天记录...' });
-    const response = await uni.request({
-      url: `http://localhost:3000/api/chat/conversation/${friendInfo.value.id}`,
-      method: 'DELETE',
-      data: { userId: currentUser.value.id },
-      header: {
-        Authorization: `Bearer ${tokenManager.getAccessToken()}`,
-        'Content-Type': 'application/json',
-      },
+    const response = await http.delete(`/chat/conversation/${friendInfo.value.id}`, {
+      userId: currentUser.value.id,
     });
 
     if (response.data && response.data.success) {

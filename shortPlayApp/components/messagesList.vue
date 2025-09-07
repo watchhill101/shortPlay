@@ -39,6 +39,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import io from 'socket.io-client';
 import tokenManager from '@/utils/tokenManager';
+import http from '@/utils/request.js';
 
 let socket = null;
 const messageList = ref([]);
@@ -82,13 +83,8 @@ const loadMessages = async () => {
   if (loading.value || !currentUser.value) return;
   loading.value = true;
   try {
-    const res = await uni.request({
-      url: `http://localhost:3000/api/chat/conversations/${currentUser.value.id}`,
-      method: 'GET',
-      header: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${tokenManager.getAccessToken()}`,
-      },
+    const res = await http.get(`/chat/conversations`, {
+      userId: currentUser.value.id,
     });
     if (res.statusCode === 200) {
       messageList.value = res.data.data.conversations;

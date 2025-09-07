@@ -77,6 +77,8 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import tokenManager from '@/utils/tokenManager.js';
+import http from '@/utils/request.js';
+import { getApiConfig } from '@/config/index.js';
 
 const userInfo = ref({
   avatar: '/static/img/avatar.png',
@@ -100,13 +102,7 @@ const loadUserInfo = async () => {
   try {
     const user = tokenManager.getUserInfo();
     if (user && user.id) {
-      const response = await uni.request({
-        url: `http://localhost:3000/api/users/profile/${user.id}`,
-        method: 'GET',
-        header: {
-          Authorization: `Bearer ${tokenManager.getAccessToken()}`,
-        },
-      });
+      const response = await http.get(`/users/${user.id}`);
       if (response.data.success) {
         userInfo.value = { ...userInfo.value, ...response.data.data };
       } else {
@@ -136,8 +132,9 @@ const changeAvatar = () => {
       const tempFilePath = res.tempFilePaths[0];
       try {
         uni.showLoading({ title: '上传中...' });
+        const apiConfig = getApiConfig();
         const uploadTask = uni.uploadFile({
-          url: 'http://localhost:3000/api/users/upload-avatar',
+          url: `${apiConfig.baseURL}/users/upload/avatar`,
           filePath: tempFilePath,
           name: 'avatar',
           header: {

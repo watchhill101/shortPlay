@@ -101,6 +101,8 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted, onUnmounted } from 'vue';
 import { onHide, onShow } from '@dcloudio/uni-app';
+import http from '@/utils/request.js';
+import tokenManager from '@/utils/tokenManager';
 
 // 当前播放视频索引
 const currentVideo = ref(0);
@@ -136,10 +138,7 @@ async function fetchVideos() {
     console.log('开始从后端获取视频数据...');
 
     // 调用后端API获取视频数据
-    const response = await uni.request({
-      url: 'http://localhost:3000/api/work/videos',
-      method: 'GET',
-    });
+    const response = await http.get('/work/videos');
 
     // 处理响应数据
     // 200表示成功，201表示资源已创建，都视为评论成功
@@ -555,12 +554,8 @@ function onLike(e: any) {
 // 调用API更新视频点赞状态
 async function updateVideoLikeStatus(videoId: string, isLiked: boolean) {
   try {
-    const response = await uni.request({
-      url: `http://localhost:3000/api/work/like/${videoId}`,
-      method: 'POST',
-      data: {
-        isLiked: isLiked,
-      },
+    const response = await http.post(`/work/like/${videoId}`, {
+      isLiked: isLiked,
     });
 
     // 200表示成功，201表示资源已创建，都视为评论成功
@@ -630,10 +625,7 @@ async function fetchComments(workId: string) {
       return;
     }
 
-    const response = await uni.request({
-      url: `http://localhost:3000/api/comment/work/${workId}`,
-      method: 'GET',
-    });
+    const response = await http.get(`/comment/work/${workId}`);
 
     if (response.statusCode === 200) {
       comments.value = response.data || [];
@@ -743,15 +735,10 @@ async function submitComment() {
   try {
     isLoading.value = true;
 
-    const response = await uni.request({
-      url: 'http://localhost:3000/api/comment',
-      method: 'POST',
-      data: {
-        targetType: 'work',
-        targetId: currentCommentVideoId,
-        content: commentContent.value.trim(),
-        parentComment: replyToComment?._id || null,
-      },
+    const response = await http.post(`/comment/work/${currentCommentVideoId}`, {
+      userId: tokenManager.getUserId(),
+      text: commentContent.value.trim(),
+      parentComment: replyToComment?._id || null,
     });
 
     // 200表示成功，201表示资源已创建，都视为评论成功
@@ -808,10 +795,7 @@ async function likeComment(commentId: string) {
     comment.likeCount = comment.isLiked ? comment.likeCount + 1 : Math.max(0, comment.likeCount - 1);
 
     // 调用API更新评论点赞状态
-    const response = await uni.request({
-      url: `http://localhost:3000/api/comment/like/${commentId}`,
-      method: 'POST',
-    });
+    const response = await http.post(`/comment/like/${commentId}`);
 
     if (response.statusCode !== 200) {
       console.error('评论点赞失败:', response.statusCode);
@@ -955,12 +939,8 @@ function onCollect(e: any) {
 // 调用API更新视频收藏状态
 async function updateVideoCollectStatus(videoId: string, isCollected: boolean) {
   try {
-    const response = await uni.request({
-      url: `http://localhost:3000/api/work/collect/${videoId}`,
-      method: 'POST',
-      data: {
-        isCollected: isCollected,
-      },
+    const response = await http.post(`/collect`, {
+      workId: videoId,
     });
 
     if (response.statusCode === 200) {
@@ -1071,12 +1051,8 @@ async function updateCollectionFollowStatus(collectionId: string, isFollowing: b
 
     console.log('最终使用的collectionId:', safeCollectionId);
 
-    const response = await uni.request({
-      url: `http://localhost:3000/api/collection/follow/${encodeURIComponent(safeCollectionId)}`,
-      method: 'POST',
-      data: {
-        isFollowing: isFollowing,
-      },
+    const response = await http.post(`/collection/follow/${encodeURIComponent(safeCollectionId)}`, {
+      isFollowing: isFollowing,
     });
 
     // 200表示成功，201表示资源已创建，都视为关注成功

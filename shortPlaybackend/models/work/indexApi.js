@@ -2,6 +2,7 @@
 const express = require('express');
 const Work = require('./index');
 const router = express.Router();
+const auth = require('../../middleware/auth'); // Added auth middleware
 
 /**
  * @route GET /api/work/videos
@@ -255,6 +256,44 @@ router.get('/:id/works', async (req, res) => {
     res.status(500).json({
       success: false,
       message: '获取合集剧集失败',
+      error: error.message,
+    });
+  }
+});
+
+// POST /api/work/like/:workId - 点赞或取消点赞作品
+router.post('/like/:workId', auth, async (req, res) => {
+  try {
+    const { workId } = req.params;
+    const userId = req.user.id;
+
+    // 检查作品是否存在
+    const work = await Work.findById(workId);
+    if (!work) {
+      return res.status(404).json({ success: false, message: '作品不存在' });
+    }
+
+    // 检查用户是否已经点赞
+    const isLiked = work.likes.includes(userId);
+
+    if (isLiked) {
+      // 如果已点赞，则取消点赞
+      work.likes.pull(userId);
+      work.likeCount = Math.max(0, work.likeCount - 1);
+      await work.save();
+      res.json({ success: true, message: '已取消点赞', liked: false, likeCount: work.likeCount });
+    } else {
+      // 如果未点赞，则添加点赞
+      work.likes.push(userId);
+      work.likeCount += 1;
+      await work.save();
+      res.json({ success: true, message: '已点赞', liked: true, likeCount: work.likeCount });
+    }
+  } catch (error) {
+    console.error('❌ 点赞操作失败:', error);
+    res.status(500).json({
+      success: false,
+      message: '服务器错误',
       error: error.message,
     });
   }

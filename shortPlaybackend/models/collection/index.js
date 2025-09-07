@@ -71,6 +71,17 @@ const CollectionSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    // 关注者列表
+    followers: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+      },
+    ],
+    followerCount: {
+      type: Number,
+      default: 0,
+    },
   },
   { timestamps: true }
 );

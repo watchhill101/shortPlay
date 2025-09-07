@@ -1,7 +1,7 @@
 <template>
   <view class="add-friend-page">
     <!-- 自定义导航栏 -->
-    <view class="custom-navbar">
+    <view class="custom-navbar" :style="{ paddingTop: statusBarHeight + 'px' }">
       <view class="navbar-left" @click="goBack">
         <text class="back-icon">←</text>
       </view>
@@ -21,6 +21,7 @@
           @confirm="searchUsers"
           @input="onInputChange"
           confirm-type="search"
+          placeholder-style="color: #666;"
         />
         <view class="search-icon">🔍</view>
       </view>
@@ -151,6 +152,7 @@
 import { ref, reactive, onMounted } from 'vue';
 import tokenManager from '@/utils/tokenManager';
 import friendService from '@/utils/friendService';
+import http from '@/utils/request.js';
 
 // --- state ---
 const searchKeyword = ref('');
@@ -163,6 +165,7 @@ const hasMoreResults = ref(false);
 const totalResults = ref(0);
 const currentUser = ref(null);
 const recommendedUsers = reactive([]);
+const statusBarHeight = ref(20);
 
 // --- methods ---
 const handleSearchClick = () => {
@@ -188,13 +191,11 @@ const searchUsers = async (isLoadMore = false) => {
   }
 
   try {
-    const response = await uni.request({
-      url: `http://localhost:3000/api/users/search?query=${keyword}`,
-      method: 'GET',
-      header: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${tokenManager.getAccessToken()}`,
-      },
+    const response = await http.get(`/friends/search/users`, {
+      keyword: keyword,
+      currentUserId: currentUser.value?.id || '',
+      page: currentPage.value,
+      limit: pageSize,
     });
 
     if (response.data && response.data.success) {
@@ -250,18 +251,10 @@ const sendFriendRequest = user => {
 const doSendFriendRequest = async (recipientId, message, user) => {
   try {
     uni.showLoading({ title: '发送中...' });
-    const response = await uni.request({
-      url: 'http://localhost:3000/api/friends/request',
-      method: 'POST',
-      data: {
-        requesterId: currentUser.value.id,
-        recipientId,
-        message,
-      },
-      header: {
-        Authorization: `Bearer ${tokenManager.getAccessToken()}`,
-        'Content-Type': 'application/json',
-      },
+    const response = await http.post('/friends/request', {
+      requesterId: currentUser.value.id,
+      recipientId,
+      message,
     });
 
     if (response.data && response.data.success) {
@@ -291,18 +284,10 @@ const sendQuickFriendRequest = async user => {
   }
   try {
     uni.showLoading({ title: '添加中...' });
-    const response = await uni.request({
-      url: 'http://localhost:3000/api/friends/request',
-      method: 'POST',
-      data: {
-        requesterId: currentUser.value.id,
-        recipientId: user.id,
-        message: '通过推荐添加你为好友',
-      },
-      header: {
-        Authorization: `Bearer ${tokenManager.getAccessToken()}`,
-        'Content-Type': 'application/json',
-      },
+    const response = await http.post('/friends/request', {
+      requesterId: currentUser.value.id,
+      recipientId: user.id,
+      message: '通过推荐添加你为好友',
     });
 
     if (response.data && response.data.success) {
@@ -328,18 +313,11 @@ const sendQuickFriendRequest = async user => {
 
 const loadRecommendedUsers = async () => {
   try {
-    const response = await uni.request({
-      url: 'http://localhost:3000/api/friends/search/users',
-      method: 'GET',
-      data: {
-        keyword: '',
-        currentUserId: currentUser.value?.id || '',
-        page: 1,
-        limit: 3,
-      },
-      header: {
-        Authorization: `Bearer ${tokenManager.getAccessToken()}`,
-      },
+    const response = await http.get('/friends/search/users', {
+      keyword: '',
+      currentUserId: currentUser.value?.id || '',
+      page: 1,
+      limit: 3,
     });
 
     if (response.data && response.data.success) {
@@ -374,7 +352,14 @@ const goToApiTest = () => {
 const goBack = () => {
   const pages = getCurrentPages();
   if (pages.length <= 1) {
-    uni.reLaunch({ url: '/pages/friends/friendList' });
+    uni.switchTab({
+      url: '/pages/messages/index',
+      success: () => {
+        setTimeout(() => {
+          uni.$emit('switch-to-friends-tab');
+        }, 100);
+      },
+    });
   } else {
     uni.navigateBack({ delta: 1 });
   }
@@ -397,14 +382,17 @@ const formatLastSeen = lastLoginAt => {
 onMounted(() => {
   currentUser.value = tokenManager.getUserInfo();
   loadRecommendedUsers();
+  const systemInfo = uni.getSystemInfoSync();
+  statusBarHeight.value = systemInfo.statusBarHeight || 20;
 });
 </script>
 
 <style scoped>
-/* Styles remain the same */
+/* 整体页面样式 */
 .add-friend-page {
   min-height: 100vh;
-  background-color: #f5f5f5;
+  background-color: #0e0f0f;
+  color: #e5e5e5;
 }
 
 /* 自定义导航栏 */
@@ -414,11 +402,13 @@ onMounted(() => {
   justify-content: space-between;
   height: 88rpx;
   padding: 0 30rpx;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: rgba(28, 28, 30, 0.85);
+  backdrop-filter: blur(10px);
   color: white;
   position: sticky;
   top: 0;
   z-index: 100;
+  border-bottom: 1rpx solid rgba(255, 255, 255, 0.1);
 }
 
 .navbar-left,
@@ -446,18 +436,15 @@ onMounted(() => {
   display: flex;
   align-items: center;
   padding: 30rpx 20rpx;
-  background: white;
-  margin: 20rpx;
-  border-radius: 20rpx;
+  background: transparent;
   gap: 20rpx;
 }
 
 .search-input-wrapper {
   flex: 1;
   position: relative;
-  background: #f8f9fa;
-  border-radius: 25rpx;
-  border: 2rpx solid #e9ecef;
+  background: #1c1c1e;
+  border-radius: 20rpx;
 }
 
 .search-input {
@@ -465,13 +452,10 @@ onMounted(() => {
   height: 80rpx;
   padding: 0 50rpx 0 80rpx;
   border: none;
-  border-radius: 25rpx;
+  border-radius: 20rpx;
   font-size: 28rpx;
+  color: #fff;
   background: transparent;
-}
-
-.search-input::placeholder {
-  color: #999;
 }
 
 .search-icon {
@@ -485,9 +469,9 @@ onMounted(() => {
 
 .search-btn {
   padding: 20rpx 30rpx;
-  background: linear-gradient(45deg, #667eea, #764ba2);
+  background: linear-gradient(45deg, #007aff, #5856d6);
   color: white;
-  border-radius: 25rpx;
+  border-radius: 20rpx;
   transition: all 0.3s ease;
   user-select: none;
 }
@@ -498,8 +482,8 @@ onMounted(() => {
 }
 
 .search-btn.disabled {
-  background: #ccc !important;
-  color: #999 !important;
+  background: #333 !important;
+  color: #666 !important;
   pointer-events: none;
   opacity: 0.6;
 }
@@ -518,18 +502,18 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20rpx 0;
+  padding: 20rpx 10rpx;
 }
 
 .results-title {
   font-size: 28rpx;
   font-weight: bold;
-  color: #333;
+  color: #e5e5e5;
 }
 
 .results-count {
   font-size: 24rpx;
-  color: #666;
+  color: #888;
 }
 
 .user-item {
@@ -537,9 +521,9 @@ onMounted(() => {
   align-items: center;
   padding: 30rpx;
   margin-bottom: 20rpx;
-  background: white;
+  background: #1c1c1e;
   border-radius: 20rpx;
-  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4rpx 15rpx rgba(0, 0, 0, 0.2);
 }
 
 .user-avatar {
@@ -560,8 +544,8 @@ onMounted(() => {
   right: 5rpx;
   width: 20rpx;
   height: 20rpx;
-  background: #52c41a;
-  border: 3rpx solid white;
+  background: #34c759;
+  border: 3rpx solid #1c1c1e;
   border-radius: 50%;
 }
 
@@ -572,31 +556,31 @@ onMounted(() => {
 .user-name {
   font-size: 32rpx;
   font-weight: bold;
-  color: #333;
+  color: #f2f2f7;
   margin-bottom: 8rpx;
 }
 
 .user-douyin {
   font-size: 24rpx;
-  color: #1890ff;
+  color: #007aff;
   margin-bottom: 5rpx;
 }
 
 .user-phone {
   font-size: 26rpx;
-  color: #666;
+  color: #8e8e93;
   margin-bottom: 5rpx;
 }
 
 .user-location {
   font-size: 24rpx;
-  color: #52c41a;
+  color: #34c759;
   margin-bottom: 5rpx;
 }
 
 .user-status {
   font-size: 24rpx;
-  color: #999;
+  color: #8e8e93;
 }
 
 .user-actions {
@@ -609,7 +593,7 @@ onMounted(() => {
   flex-direction: column;
   align-items: center;
   padding: 100rpx 40rpx;
-  color: #999;
+  color: #888;
   gap: 20rpx;
 }
 
@@ -620,17 +604,19 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   padding: 100rpx 40rpx;
-  color: #999;
+  color: #888;
 }
 
 .empty-icon {
   font-size: 120rpx;
   margin-bottom: 30rpx;
+  opacity: 0.5;
 }
 
 .empty-text {
   font-size: 32rpx;
   margin-bottom: 15rpx;
+  color: #ccc;
 }
 
 .empty-desc {
@@ -639,18 +625,20 @@ onMounted(() => {
   line-height: 1.5;
 }
 
-/* 使用提示 */
-.tips-section {
-  background: white;
+/* 使用提示和推荐区域 */
+.tips-section,
+.recommendations-section {
+  background: #1c1c1e;
   margin: 20rpx;
   border-radius: 20rpx;
   padding: 30rpx;
 }
 
-.tips-title {
+.tips-title,
+.section-title {
   font-size: 28rpx;
   font-weight: bold;
-  color: #333;
+  color: #e5e5e5;
   margin-bottom: 20rpx;
 }
 
@@ -660,23 +648,8 @@ onMounted(() => {
 
 .tip-item {
   font-size: 26rpx;
-  color: #666;
+  color: #8e8e93;
   line-height: 2;
-}
-
-/* 推荐用户区域 */
-.recommendations-section {
-  background: white;
-  margin: 20rpx;
-  border-radius: 20rpx;
-  padding: 30rpx;
-}
-
-.section-title {
-  font-size: 28rpx;
-  font-weight: bold;
-  color: #333;
-  margin-bottom: 20rpx;
 }
 
 .recommendation-list {
@@ -689,13 +662,13 @@ onMounted(() => {
   display: flex;
   align-items: center;
   padding: 20rpx;
-  background: #f8f9fa;
+  background: #2c2c2e;
   border-radius: 15rpx;
   transition: all 0.3s ease;
 }
 
 .recommendation-item:active {
-  background: #e9ecef;
+  background: #3a3a3c;
 }
 
 .rec-avatar {
@@ -716,13 +689,13 @@ onMounted(() => {
 .rec-name {
   font-size: 28rpx;
   font-weight: bold;
-  color: #333;
+  color: #f2f2f7;
   margin-bottom: 5rpx;
 }
 
 .rec-desc {
   font-size: 24rpx;
-  color: #666;
+  color: #8e8e93;
 }
 
 .rec-action {
@@ -735,9 +708,9 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   padding: 40rpx;
-  color: #666;
+  color: #888;
   font-size: 28rpx;
-  background: white;
+  background: #1c1c1e;
   margin: 20rpx;
   border-radius: 20rpx;
 }

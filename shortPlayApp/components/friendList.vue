@@ -4,6 +4,21 @@
     <view class="search-section">
       <u-search placeholder="搜索好友" v-model="searchKeyword" @custom="onSearch" @clear="onSearchClear"></u-search>
     </view>
+    <!-- 功能入口 -->
+    <view class="action-list">
+      <view class="action-item" @click="goToFriendRequests">
+        <view class="action-icon-wrapper requests">
+          <u-icon name="account-add" color="#fff" size="22"></u-icon>
+        </view>
+        <view class="action-label">好友申请</view>
+      </view>
+      <view class="action-item" @click="goToAddFriend">
+        <view class="action-icon-wrapper add">
+          <u-icon name="plus-circle" color="#fff" size="22"></u-icon>
+        </view>
+        <view class="action-label">添加好友</view>
+      </view>
+    </view>
     <!-- 虚拟列表容器 -->
     <scroll-view class="virtual-list-container" scroll-y @scroll="onScroll" :scroll-top="scrollTop">
       <view v-if="loading" class="loading-state">
@@ -132,6 +147,14 @@ const goToFriendChat = friend => {
     url: `/pages/chat/friendChatClean?friendId=${friend.friendInfo._id}&friendName=${friend.friendInfo.nickname}`,
   });
 };
+
+const goToAddFriend = () => {
+  uni.navigateTo({ url: '/pages/friends/addFriend' });
+};
+
+const goToFriendRequests = () => {
+  uni.navigateTo({ url: '/pages/friends/friendRequests' });
+};
 </script>
 
 <style scoped>
@@ -143,6 +166,36 @@ const goToFriendChat = friend => {
 .search-section {
   padding: 10px;
   background-color: #fff;
+}
+.action-list {
+  display: flex;
+  flex-direction: column;
+  background-color: #fff;
+}
+.action-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 10px;
+  border-bottom: 1px solid #f5f5f5;
+}
+.action-icon-wrapper {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+}
+.action-icon-wrapper.requests {
+  background-color: #fa9d3b;
+}
+.action-icon-wrapper.add {
+  background-color: #5ac725;
+}
+.action-label {
+  font-size: 16px;
+  color: #333;
 }
 .virtual-list-container {
   flex: 1;

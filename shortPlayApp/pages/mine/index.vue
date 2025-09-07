@@ -90,7 +90,7 @@ const userInfo = reactive({
 const menuItems = reactive([
   { type: 'coins', label: '金币', icon: '◯', iconClass: 'icon-coins' },
   { type: 'orders', label: '订单', icon: '🛍', iconClass: 'icon-orders' },
-  { type: 'messages', label: '消息', icon: '✉', iconClass: 'icon-messages' },
+  { type: 'customer-service', label: '客服', icon: '✉', iconClass: 'icon-messages' },
   { type: 'withdraw', label: '提现', icon: '💰', iconClass: 'icon-withdraw' },
   { type: 'appointment', label: '预约', icon: '📅', iconClass: 'icon-appointment' },
 ]);
@@ -150,10 +150,13 @@ const goToSettings = () => {
 };
 
 const onMenuClick = type => {
+  if (type === 'customer-service') {
+    uni.navigateTo({ url: '/pages/chat/chatAi' });
+    return;
+  }
   const actions = {
     coins: '金币功能开发中',
     orders: '订单功能开发中',
-    messages: '消息功能开发中',
     withdraw: '提现功能开发中',
     appointment: '预约功能开发中',
   };

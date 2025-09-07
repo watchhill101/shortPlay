@@ -85,18 +85,6 @@
       }
     },
     {
-      "path": "pages/chat/messages",
-      "style": {
-        "navigationBarTitleText": "我的消息",
-        "navigationStyle": "custom",
-        "enablePullDownRefresh": true,
-        "backgroundTextStyle": "dark",
-        "app-plus": {
-          "bounce": "none"
-        }
-      }
-    },
-    {
       "path": "pages/profile/info",
       "style": {
         "navigationBarTitleText": "我的信息",
@@ -108,14 +96,6 @@
       "style": {
         "navigationBarTitleText": "切换用户",
         "navigationStyle": "custom"
-      }
-    },
-    {
-      "path": "pages/friends/friendList",
-      "style": {
-        "navigationBarTitleText": "好友列表",
-        "navigationStyle": "custom",
-        "enablePullDownRefresh": true
       }
     },
     {
@@ -159,13 +139,6 @@
       "style": {
         "navigationBarTitleText": "好友聊天",
         "navigationStyle": "custom"
-      }
-    },
-    {
-      "path": "pages/chat/chatDatabase",
-      "style": {
-        "navigationBarTitleText": "聊天数据库",
-        "navigationStyle": "default"
       }
     },
     {

@@ -4,11 +4,12 @@ const mongoose = require('mongoose');
 const router = express.Router();
 const Collection = require('../../models/collection/index');
 const Work = require('../../models/work/index');
+const auth = require('../../middleware/auth'); // Added auth middleware
 
 // GET /api/collections - 获取所有合集（支持分页）
 router.get('/', async (req, res) => {
   try {
-    console.log('📚 获取合集列表');
+    console.log('📚 获取合集列表, 原始查询:', req.query);
 
     const {
       page = 1,
@@ -22,10 +23,16 @@ router.get('/', async (req, res) => {
 
     // 构建查询条件
     const query = { status };
+    console.log('🔍 初始化查询:', JSON.stringify(query));
 
     // 如果指定了分类，添加分类筛选
-    if (classifier && classifier !== 'all' && mongoose.Types.ObjectId.isValid(classifier)) {
-      query.classifier = classifier;
+    if (classifier && classifier !== 'all') {
+      const isValid = mongoose.Types.ObjectId.isValid(classifier);
+      console.log(`- 检查分类ID '${classifier}', 是否有效: ${isValid}`);
+      if (isValid) {
+        query.classifier = new mongoose.Types.ObjectId(classifier);
+        console.log(`- 添加分类筛选条件`);
+      }
     }
 
     // 新增：处理标签筛选 (假设 tags 是以逗号分隔的字符串)
@@ -33,16 +40,35 @@ router.get('/', async (req, res) => {
       const tagArray = tags.split(',').filter(tag => tag.trim() !== '');
       if (tagArray.length > 0) {
         query.tags = { $all: tagArray }; // 使用 $all 来确保所有标签都匹配
+        console.log(`- 添加标签筛选条件: ${tagArray.join(', ')}`);
       }
     }
 
     // 新增：处理时间范围筛选
-    if (dateRange && !isNaN(parseInt(dateRange))) {
-      const days = parseInt(dateRange);
+    if (dateRange) {
+      let days = 0;
+      switch (dateRange) {
+        case 'seven_days':
+          days = 7;
+          break;
+        case 'thirty_days':
+          days = 30;
+          break;
+        case 'half_year':
+          days = 182;
+          break;
+        case 'one_year':
+          days = 365;
+          break;
+        default:
+          days = 0;
+      }
+
       if (days > 0) {
         const date = new Date();
         date.setDate(date.getDate() - days);
         query.createdAt = { $gte: date };
+        console.log(`- 添加时间筛选条件: >= ${date.toISOString()}`);
       }
     }
 
@@ -56,6 +82,8 @@ router.get('/', async (req, res) => {
     } else {
       sortOptions.createdAt = -1; // 默认按创建时间降序
     }
+    console.log(`- 添加排序条件: ${JSON.stringify(sortOptions)}`);
+    console.log('🔍 构建完成的查询条件:', JSON.stringify(query));
 
     // 获取合集列表（现在使用 populate 来获取分类名称）
     const collections = await Collection.find(query)
@@ -67,7 +95,7 @@ router.get('/', async (req, res) => {
     // 获取总数
     const total = await Collection.countDocuments(query);
 
-    console.log(`✅ 成功获取 ${collections.length} 个合集`);
+    console.log(`✅ 查询到 ${collections.length} 个合集, 总数: ${total}`);
 
     res.json({
       success: true,
@@ -255,6 +283,38 @@ router.get('/:id/works', async (req, res) => {
       message: '获取合集剧集失败',
       error: error.message,
     });
+  }
+});
+
+// POST /api/collection/follow/:id - 关注或取消关注合集
+router.post('/follow/:id', auth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.id;
+
+    const collection = await Collection.findById(id);
+    if (!collection) {
+      return res.status(404).json({ success: false, message: '合集不存在' });
+    }
+
+    const isFollowing = collection.followers.includes(userId);
+
+    if (isFollowing) {
+      // 取消关注
+      collection.followers.pull(userId);
+      collection.followerCount = Math.max(0, collection.followerCount - 1);
+      await collection.save();
+      res.json({ success: true, message: '已取消关注', following: false, followerCount: collection.followerCount });
+    } else {
+      // 关注
+      collection.followers.push(userId);
+      collection.followerCount += 1;
+      await collection.save();
+      res.json({ success: true, message: '已关注', following: true, followerCount: collection.followerCount });
+    }
+  } catch (error) {
+    console.error('❌ 关注操作失败:', error);
+    res.status(500).json({ success: false, message: '服务器错误', error: error.message });
   }
 });
 

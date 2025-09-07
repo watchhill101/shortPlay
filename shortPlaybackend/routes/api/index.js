@@ -14,6 +14,7 @@ const walletRoutes = require('../../models/Wallet/indexApi');
 const activityRoutes = require('../../models/activity/indexApi');
 const playDataRoutes = require('../../models/playData/indexApi');
 const collectRoutes = require('../../models/collect/indexApi');
+const filterRoutes = require('./filters');
 
 const router = express.Router();
 
@@ -31,5 +32,6 @@ router.use('/wallet', walletRoutes);
 router.use('/activity', activityRoutes);
 router.use('/playdata', playDataRoutes);
 router.use('/collect', collectRoutes);
+router.use('/filter', filterRoutes);
 
 module.exports = router;
