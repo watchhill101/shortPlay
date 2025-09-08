@@ -26,7 +26,13 @@
 
       "ios": {},
 
-      "sdkConfigs": {}
+      "sdkConfigs": {
+        "oauth": {
+          "douyin": {
+            "client_key": "请替换为在抖音开放平台申请的ClientKey"
+          }
+        }
+      }
     }
   },
 

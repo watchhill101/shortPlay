@@ -1,6 +1,26 @@
 // utils/tokenManager.js - UniApp版本双Token管理器
 import { getApiConfig, getTokenConfig } from '@/config/index.js';
 
+/**
+ * 将相对头像路径解析为完整的URL
+ * @param {string} avatarPath - 数据库中存储的头像路径
+ * @returns {string|null} - 可直接显示的完整URL，或在没有路径时返回null
+ */
+const resolveAvatarUrl = avatarPath => {
+  if (!avatarPath) {
+    return null;
+  }
+  // 如果已经是完整的URL，则直接返回
+  if (avatarPath.startsWith('http')) {
+    return avatarPath;
+  }
+  // 否则，拼接基础URL
+  const apiConfig = getApiConfig();
+  // 移除baseURL末尾的/api，以获得服务器根地址
+  const baseURL = apiConfig.baseURL.replace(/\/api$/, '');
+  return baseURL + avatarPath;
+};
+
 class TokenManager {
   constructor() {
     this.accessToken = null;
@@ -173,9 +193,24 @@ class TokenManager {
   getUserInfo() {
     try {
       const prefix = this.tokenConfig.storagePrefix;
-      const userInfo = uni.getStorageSync(prefix + 'userInfo');
-      return userInfo ? JSON.parse(userInfo) : null;
+      const userInfoStr = uni.getStorageSync(prefix + 'userInfo');
+      console.log('[DEBUG] tokenManager: Raw user info from storage:', userInfoStr);
+
+      if (!userInfoStr) return null;
+
+      const userInfo = JSON.parse(userInfoStr);
+
+      // 动态解析头像的完整URL
+      if (userInfo.avatar) {
+        userInfo.avatarUrl = resolveAvatarUrl(userInfo.avatar);
+      } else {
+        // 如果用户没有头像，提供一个本地的默认头像
+        userInfo.avatarUrl = '../../static/img/avatar.png';
+      }
+      console.log('[DEBUG] tokenManager: Resolved user info returned:', JSON.stringify(userInfo));
+      return userInfo;
     } catch (_error) {
+      console.error('[DEBUG] tokenManager: Error parsing user info:', _error);
       return null;
     }
   }
@@ -183,14 +218,14 @@ class TokenManager {
   // 更新本地存储的用户信息
   updateUserInfo(updatedFields) {
     try {
-      const currentUserInfo = this.getUserInfo();
-      if (currentUserInfo) {
-        const newUserInfo = { ...currentUserInfo, ...updatedFields };
-        const prefix = this.tokenConfig.storagePrefix;
-        uni.setStorageSync(prefix + 'userInfo', JSON.stringify(newUserInfo));
-        return true;
-      }
-      return false;
+      const storedUserInfo = uni.getStorageSync(this.tokenConfig.storagePrefix + 'userInfo');
+      const currentUserInfo = storedUserInfo ? JSON.parse(storedUserInfo) : {};
+
+      const newUserInfo = { ...currentUserInfo, ...updatedFields };
+
+      const prefix = this.tokenConfig.storagePrefix;
+      uni.setStorageSync(prefix + 'userInfo', JSON.stringify(newUserInfo));
+      return true;
     } catch (_error) {
       return false;
     }
