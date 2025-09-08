@@ -100,6 +100,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 // 🔴 新增：静态资源托管 —— 让 /uploads 目录可通过 HTTP 访问
 app.use('/upload', express.static(path.join(__dirname, 'upload')));
+// Serve static files from the 'uploads' directory
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // 5. Session 管理 (使用 Redis 存储)
 const setupSession = async () => {
   try {
