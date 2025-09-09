@@ -2,6 +2,8 @@
 const Permission = require('./permission');
 const Role = require('./role');
 const BackgroundUser = require('./backgroundUser');
+const PrimaryNavigation = require('./primaryNavigation');
+const SecondaryNavigation = require('./secondaryNavigation');
 
 /**
  * 初始化权限数据
@@ -168,6 +170,125 @@ async function initPermissions() {
 }
 
 /**
+ * 初始化导航菜单
+ */
+async function initNavigations() {
+  // 清空现有导航数据，避免重复创建
+  await PrimaryNavigation.deleteMany({});
+  await SecondaryNavigation.deleteMany({});
+
+  const navPermissions = await Permission.find({
+    group: { $in: ['system', 'user', 'navigation', 'content', 'data'] },
+    type: 'menu',
+  });
+
+  const findPermId = code => {
+    const perm = navPermissions.find(p => p.code === code);
+    if (!perm) throw new Error(`权限 ${code} 未找到，请检查initPermissions`);
+    return perm._id;
+  };
+
+  // 创建一级导航
+  const primaryNavs = [
+    {
+      title: '系统管理',
+      link: '/system',
+      icon: 'Setting',
+      order: 100,
+      permission: findPermId('SYSTEM_SETTING'),
+    },
+    {
+      title: '内容管理',
+      link: '/content',
+      icon: 'Document',
+      order: 200,
+      permission: findPermId('CONTENT_MANAGEMENT'),
+    },
+    {
+      title: '数据统计',
+      link: '/statistics',
+      icon: 'DataLine',
+      order: 300,
+      permission: findPermId('DATA_STATISTICS'),
+    },
+  ];
+
+  const createdPrimaryNavs = await PrimaryNavigation.insertMany(primaryNavs);
+  const getPrimaryNavId = title => {
+    const nav = createdPrimaryNavs.find(n => n.title === title);
+    if (!nav) throw new Error(`一级导航 ${title} 未找到`);
+    return nav._id;
+  };
+
+  // 创建二级导航
+  const secondaryNavs = [
+    // 系统管理
+    {
+      title: '用户管理',
+      link: '/users',
+      parentNavigation: getPrimaryNavId('系统管理'),
+      permission: findPermId('USER_MANAGEMENT'),
+      order: 101,
+    },
+    {
+      title: '角色管理',
+      link: '/roles',
+      parentNavigation: getPrimaryNavId('系统管理'),
+      permission: findPermId('ROLE_MANAGEMENT'),
+      order: 102,
+    },
+    {
+      title: '权限管理',
+      link: '/permissions',
+      parentNavigation: getPrimaryNavId('系统管理'),
+      permission: findPermId('PERMISSION_MANAGEMENT'),
+      order: 103,
+    },
+    // 内容管理
+    {
+      title: '分类管理',
+      link: '/content/classifiers',
+      parentNavigation: getPrimaryNavId('内容管理'),
+      permission: findPermId('CLASSIFIER_MANAGEMENT'),
+      order: 201,
+    },
+    {
+      title: '合集管理',
+      link: '/content/collections',
+      parentNavigation: getPrimaryNavId('内容管理'),
+      permission: findPermId('COLLECTION_MANAGEMENT'),
+      order: 202,
+    },
+    {
+      title: '作品管理',
+      link: '/content/works',
+      parentNavigation: getPrimaryNavId('内容管理'),
+      permission: findPermId('WORK_MANAGEMENT'),
+      order: 203,
+    },
+    // 数据统计
+    {
+      title: '用户数据',
+      link: '/statistics/users',
+      parentNavigation: getPrimaryNavId('数据统计'),
+      permission: findPermId('USER_DATA'),
+      order: 301,
+    },
+    {
+      title: '播放数据',
+      link: '/statistics/plays',
+      parentNavigation: getPrimaryNavId('数据统计'),
+      permission: findPermId('PLAY_DATA'),
+      order: 302,
+    },
+  ];
+
+  await SecondaryNavigation.insertMany(secondaryNavs);
+
+  console.log('导航菜单初始化完成');
+}
+
+/**
  * 初始化角色数据
  */
 async function initRoles() {
@@ -256,6 +377,7 @@ async function initRBACSystem() {
     console.log('开始初始化RBAC权限系统...');
 
     await initPermissions();
+    await initNavigations(); // 添加导航初始化
     await initRoles();
     await createSuperAdmin();
 
@@ -271,4 +393,5 @@ module.exports = {
   initRoles,
   createSuperAdmin,
   initRBACSystem,
+  initNavigations, // 导出新函数
 };
