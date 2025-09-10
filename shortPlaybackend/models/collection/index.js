@@ -6,7 +6,7 @@ const CollectionSchema = new mongoose.Schema(
     backgroundUser: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'BackgroundUser',
-      required: true,
+      required: false, // 暂时设为可选，因为没有认证
       index: true,
     },
     // 合集标题
@@ -27,13 +27,13 @@ const CollectionSchema = new mongoose.Schema(
 
     coverImage: {
       type: String,
-      required: [true, '合集封面图不能为空'],
+      required: false, // 暂时设为可选，允许没有封面图
     },
     // 关联分类
     classifier: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Classifier',
-      required: true,
+      required: false, // 暂时设为可选
       index: true,
     },
     // 状态：draft（草稿）, published（已发布）, archived（已归档）

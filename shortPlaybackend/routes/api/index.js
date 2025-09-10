@@ -3,6 +3,7 @@ const express = require('express');
 const authRoutes = require('./auth');
 const healthRoutes = require('./health');
 const workRoutes = require('../../models/work/indexApi');
+const workApiRoutes = require('../../models/work/workApi');
 const commentRoutes = require('../../models/comment/indexApi');
 const collectionRoutes = require('../../models/collection/indexApi');
 const aiRoutes = require('./ai');
@@ -15,12 +16,15 @@ const activityRoutes = require('../../models/activity/indexApi');
 const playDataRoutes = require('../../models/playData/indexApi');
 const collectRoutes = require('../../models/collect/indexApi');
 const filterRoutes = require('./filters');
+const contentRoutes = require('./content');
+const adminRoutes = require('./admin');
 
 const router = express.Router();
 
 router.use('/auth', authRoutes);
 router.use('/health', healthRoutes);
 router.use('/work', workRoutes);
+router.use('/works', workApiRoutes);
 router.use('/comment', commentRoutes);
 router.use('/collection', collectionRoutes);
 router.use('/ai', aiRoutes);
@@ -33,5 +37,7 @@ router.use('/activity', activityRoutes);
 router.use('/playdata', playDataRoutes);
 router.use('/collect', collectRoutes);
 router.use('/filter', filterRoutes);
+router.use('/content', contentRoutes);
+router.use('/admin', adminRoutes);
 
 module.exports = router;

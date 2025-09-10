@@ -16,6 +16,7 @@ router.get('/', async (req, res) => {
       pageSize = 10,
       status = 'published',
       classifier = null,
+      search = null, // 新增：搜索关键词
       tags = null, // 新增：按标签筛选
       dateRange = null, // 新增：按时间范围筛选 (天数)
       sortBy = 'createdAt', // 新增：排序字段
@@ -33,6 +34,17 @@ router.get('/', async (req, res) => {
         query.classifier = new mongoose.Types.ObjectId(classifier);
         console.log(`- 添加分类筛选条件`);
       }
+    }
+
+    // 新增：处理搜索关键词
+    if (search && search.trim() !== '') {
+      query.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } },
+        { tags: { $in: [new RegExp(search, 'i')] } },
+        { actors: { $in: [new RegExp(search, 'i')] } }
+      ];
+      console.log(`- 添加搜索条件: ${search}`);
     }
 
     // 新增：处理标签筛选 (假设 tags 是以逗号分隔的字符串)
@@ -87,7 +99,11 @@ router.get('/', async (req, res) => {
 
     // 获取合集列表（现在使用 populate 来获取分类名称）
     const collections = await Collection.find(query)
-      .populate('classifier', 'name') // 关联查询分类的名称
+      .populate({
+        path: 'classifier',
+        select: 'name sortOrder',
+        model: 'Classifier'
+      }) // 关联查询分类的名称
       .sort(sortOptions) // 应用排序
       .skip(skip)
       .limit(parseInt(pageSize));

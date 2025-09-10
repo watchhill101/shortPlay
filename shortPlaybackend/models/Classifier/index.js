@@ -14,7 +14,7 @@ const ClassifierSchema = new mongoose.Schema(
       trim: true,
     },
     // 用于排序，数字越小越靠前
-    order: {
+    sortOrder: {
       type: Number,
       default: 0,
     },
@@ -38,11 +38,11 @@ const ClassifierSchema = new mongoose.Schema(
 
 // 添加索引
 ClassifierSchema.index({ status: 1 });
-ClassifierSchema.index({ order: 1 });
+ClassifierSchema.index({ sortOrder: 1 });
 
 // 添加索引
 ClassifierSchema.index({ status: 1 });
-ClassifierSchema.index({ order: 1 });
+ClassifierSchema.index({ sortOrder: 1 });
 
-const Classifier = mongoose.model('Classifier', ClassifierSchema);
+const Classifier = mongoose.model('Classifier', ClassifierSchema, 'Classifier');
 module.exports = Classifier;
