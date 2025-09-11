@@ -94,8 +94,10 @@ router.post('/notify', async (req, res, next) => {
       if (wallet) {
         const trx = wallet.transactions.find(t => t.orderId === out_trade_no);
         if (trx && parseFloat(trx.amount.toString()) !== parseFloat(total_amount)) {
-            console.error(`严重警告: 订单 ${out_trade_no} 金额不匹配! 系统记录: ${trx.amount}, 支付宝回调: ${total_amount}`);
-            // TODO: 这里应该有一个监控和报警机制
+          console.error(
+            `严重警告: 订单 ${out_trade_no} 金额不匹配! 系统记录: ${trx.amount}, 支付宝回调: ${total_amount}`
+          );
+          // TODO: 这里应该有一个监控和报警机制
         }
         console.log(`订单 ${out_trade_no} 支付成功，用户 ${wallet.user} 余额已更新。`);
       } else {

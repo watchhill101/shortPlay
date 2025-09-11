@@ -8,11 +8,11 @@ const config = require('../config');
  */
 const verifyUniIdToken = (req, res, next) => {
   const authHeader = req.headers.authorization;
-  
+
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({
       success: false,
-      message: 'No token provided or invalid format'
+      message: 'No token provided or invalid format',
     });
   }
 
@@ -21,12 +21,12 @@ const verifyUniIdToken = (req, res, next) => {
   try {
     // 验证Token（uni-id-co使用的是标准JWT格式）
     const decoded = jwt.verify(token, config.jwt.secret);
-    
+
     // uni-id-co Token的标准结构
     if (!decoded.uid) {
       return res.status(401).json({
         success: false,
-        message: 'Invalid token structure'
+        message: 'Invalid token structure',
       });
     }
 
@@ -34,7 +34,7 @@ const verifyUniIdToken = (req, res, next) => {
     req.user = {
       id: decoded.uid,
       role: decoded.role || 'user',
-      permissions: decoded.permission || []
+      permissions: decoded.permission || [],
     };
 
     next();
@@ -43,21 +43,21 @@ const verifyUniIdToken = (req, res, next) => {
       return res.status(401).json({
         success: false,
         message: 'Token expired',
-        code: 'TOKEN_EXPIRED'
+        code: 'TOKEN_EXPIRED',
       });
     }
-    
+
     if (error.name === 'JsonWebTokenError') {
       return res.status(401).json({
         success: false,
         message: 'Invalid token',
-        code: 'INVALID_TOKEN'
+        code: 'INVALID_TOKEN',
       });
     }
 
     return res.status(500).json({
       success: false,
-      message: 'Token verification failed'
+      message: 'Token verification failed',
     });
   }
 };
@@ -68,11 +68,11 @@ const verifyUniIdToken = (req, res, next) => {
  */
 const hybridAuth = async (req, res, next) => {
   const authHeader = req.headers.authorization;
-  
+
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({
       success: false,
-      message: 'No token provided or invalid format'
+      message: 'No token provided or invalid format',
     });
   }
 
@@ -80,7 +80,7 @@ const hybridAuth = async (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, config.jwt.secret);
-    
+
     // 判断Token类型
     if (decoded.uid) {
       // uni-id-co Token
@@ -88,18 +88,18 @@ const hybridAuth = async (req, res, next) => {
         id: decoded.uid,
         role: decoded.role || 'user',
         permissions: decoded.permission || [],
-        tokenType: 'uniId'
+        tokenType: 'uniId',
       };
     } else if (decoded.user && decoded.user.id) {
       // 传统双Token
       req.user = {
         id: decoded.user.id,
-        tokenType: 'traditional'
+        tokenType: 'traditional',
       };
     } else {
       return res.status(401).json({
         success: false,
-        message: 'Invalid token structure'
+        message: 'Invalid token structure',
       });
     }
 
@@ -109,26 +109,26 @@ const hybridAuth = async (req, res, next) => {
       return res.status(401).json({
         success: false,
         message: 'Token expired',
-        code: 'TOKEN_EXPIRED'
+        code: 'TOKEN_EXPIRED',
       });
     }
-    
+
     if (error.name === 'JsonWebTokenError') {
       return res.status(401).json({
         success: false,
         message: 'Invalid token',
-        code: 'INVALID_TOKEN'
+        code: 'INVALID_TOKEN',
       });
     }
 
     return res.status(500).json({
       success: false,
-      message: 'Token verification failed'
+      message: 'Token verification failed',
     });
   }
 };
 
 module.exports = {
   verifyUniIdToken,
-  hybridAuth
+  hybridAuth,
 };

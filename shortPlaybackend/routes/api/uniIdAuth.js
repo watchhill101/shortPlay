@@ -14,11 +14,11 @@ router.get('/verify', verifyUniIdToken, async (req, res, next) => {
   try {
     // 从数据库获取用户详细信息
     const user = await User.findById(req.user.id).select('-__v');
-    
+
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: 'User not found'
+        message: 'User not found',
       });
     }
 
@@ -32,15 +32,15 @@ router.get('/verify', verifyUniIdToken, async (req, res, next) => {
           mobilePhoneNumber: user.mobilePhoneNumber,
           douyinProfile: user.douyinProfile,
           createdAt: user.createdAt,
-          lastLoginAt: user.lastLoginAt
+          lastLoginAt: user.lastLoginAt,
         },
         tokenInfo: {
           type: 'uniId',
           userId: req.user.id,
           role: req.user.role,
-          permissions: req.user.permissions
-        }
-      }
+          permissions: req.user.permissions,
+        },
+      },
     });
   } catch (error) {
     next(error);
@@ -55,21 +55,17 @@ router.get('/verify', verifyUniIdToken, async (req, res, next) => {
 router.put('/profile', verifyUniIdToken, async (req, res, next) => {
   try {
     const { nickname, avatar } = req.body;
-    
+
     const updateData = {};
     if (nickname) updateData.nickname = nickname;
     if (avatar) updateData.avatar = avatar;
-    
-    const user = await User.findByIdAndUpdate(
-      req.user.id,
-      updateData,
-      { new: true, select: '-__v' }
-    );
+
+    const user = await User.findByIdAndUpdate(req.user.id, updateData, { new: true, select: '-__v' });
 
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: 'User not found'
+        message: 'User not found',
       });
     }
 
@@ -81,9 +77,9 @@ router.put('/profile', verifyUniIdToken, async (req, res, next) => {
           id: user._id,
           nickname: user.nickname,
           avatar: user.avatar,
-          mobilePhoneNumber: user.mobilePhoneNumber
-        }
-      }
+          mobilePhoneNumber: user.mobilePhoneNumber,
+        },
+      },
     });
   } catch (error) {
     next(error);
@@ -98,11 +94,11 @@ router.put('/profile', verifyUniIdToken, async (req, res, next) => {
 router.get('/sessions', hybridAuth, async (req, res, next) => {
   try {
     const user = await User.findById(req.user.id).select('nickname avatar lastLoginAt');
-    
+
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: 'User not found'
+        message: 'User not found',
       });
     }
 
@@ -114,9 +110,9 @@ router.get('/sessions', hybridAuth, async (req, res, next) => {
           tokenType: req.user.tokenType,
           lastLoginAt: user.lastLoginAt,
           nickname: user.nickname,
-          avatar: user.avatar
-        }
-      }
+          avatar: user.avatar,
+        },
+      },
     });
   } catch (error) {
     next(error);
@@ -131,10 +127,10 @@ router.get('/sessions', hybridAuth, async (req, res, next) => {
 router.post('/sync-user', verifyUniIdToken, async (req, res, next) => {
   try {
     const { mobile, nickname, avatar } = req.body;
-    
+
     // 查找或创建用户
     let user = await User.findById(req.user.id);
-    
+
     if (!user) {
       // 创建新用户
       user = new User({
@@ -142,7 +138,7 @@ router.post('/sync-user', verifyUniIdToken, async (req, res, next) => {
         mobilePhoneNumber: mobile,
         nickname: nickname || `用户${mobile ? mobile.slice(-4) : req.user.id.slice(-4)}`,
         avatar: avatar || '/static/img/default-avatar.png',
-        lastLoginAt: new Date()
+        lastLoginAt: new Date(),
       });
     } else {
       // 更新现有用户
@@ -153,7 +149,7 @@ router.post('/sync-user', verifyUniIdToken, async (req, res, next) => {
       if (avatar) user.avatar = avatar;
       user.lastLoginAt = new Date();
     }
-    
+
     await user.save();
 
     res.json({
@@ -164,9 +160,9 @@ router.post('/sync-user', verifyUniIdToken, async (req, res, next) => {
           id: user._id,
           nickname: user.nickname,
           avatar: user.avatar,
-          mobilePhoneNumber: user.mobilePhoneNumber
-        }
-      }
+          mobilePhoneNumber: user.mobilePhoneNumber,
+        },
+      },
     });
   } catch (error) {
     next(error);

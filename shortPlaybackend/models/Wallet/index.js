@@ -3,11 +3,13 @@ const mongoose = require('mongoose');
 
 // 定义交易记录的子文档 Schema
 const TransactionSchema = new mongoose.Schema({
-  orderId: { // 用于关联支付宝订单
+  orderId: {
+    // 用于关联支付宝订单
     type: String,
     index: true,
   },
-  status: { // 交易状态
+  status: {
+    // 交易状态
     type: String,
     enum: ['pending', 'completed', 'failed'],
     default: 'pending',

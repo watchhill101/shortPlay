@@ -9,6 +9,7 @@ export default [
   {
     ignores: [
       'node_modules/**',
+      'uniCloud-aliyun/**',
       'unpackage/**',
       'dist/**',
       'build/**',
