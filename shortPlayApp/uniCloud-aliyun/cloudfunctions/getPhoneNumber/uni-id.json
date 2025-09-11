@@ -1,0 +1,18 @@
+{
+  "passwordSecret": "shortplay-password-secret-key-2024",
+  "tokenSecret": "shortplay-token-secret-key-2024",
+  "tokenExpiresIn": 7200,
+  "passwordErrorLimit": 6,
+  "bindTokenToDevice": false,
+  "removePermissionAndRoleFromToken": false,
+  "app": {
+    "__UNI__B171A13": {
+      "tokenExpiresIn": 7200
+    }
+  },
+  "oauth": {
+    "univerify": {
+      "tokenExpiresIn": 7200
+    }
+  }
+}

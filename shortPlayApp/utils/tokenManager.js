@@ -427,7 +427,7 @@ class TokenManager {
     }
   }
 
-  // 验证Token
+  // 验证Token（支持传统Token和uni-id-co Token）
   async verifyToken() {
     const accessToken = this.getAccessToken();
     if (!accessToken) {
@@ -435,6 +435,21 @@ class TokenManager {
     }
 
     try {
+      // 首先尝试uni-id-co Token验证
+      const uniIdResponse = await uni.request({
+        url: `${this.config.baseURL}/uniid-auth/verify`,
+        method: 'GET',
+        header: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+        timeout: this.config.timeout,
+      });
+
+      if (uniIdResponse.statusCode === 200 && uniIdResponse.data.success) {
+        return { success: true, type: 'uniId', data: uniIdResponse.data };
+      }
+
+      // 如果uni-id-co验证失败，尝试传统Token验证
       const response = await uni.request({
         url: `${this.config.baseURL}/auth/verify`,
         method: 'GET',
@@ -444,9 +459,38 @@ class TokenManager {
         timeout: this.config.timeout,
       });
 
-      return response.statusCode === 200 && response.data.success;
+      if (response.statusCode === 200 && response.data.success) {
+        return { success: true, type: 'traditional', data: response.data };
+      }
+
+      return { success: false };
     } catch (_error) {
-      return false;
+      return { success: false };
+    }
+  }
+
+  // 同步用户数据到后端（仅用于uni-id-co Token）
+  async syncUserData(userData) {
+    const accessToken = this.getAccessToken();
+    if (!accessToken) {
+      throw new Error('No access token available');
+    }
+
+    try {
+      const response = await uni.request({
+        url: `${this.config.baseURL}/uniid-auth/sync-user`,
+        method: 'POST',
+        data: userData,
+        header: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        timeout: this.config.timeout,
+      });
+
+      return response.data;
+    } catch (error) {
+      throw error;
     }
   }
 }

@@ -5,6 +5,7 @@
       :safeAreaInsetTop="true"
       :placeholder="true"
       bgColor="#ffffff"
+      leftIconSize="0px"
     ></u-navbar>
     <u-tabs :list="tabList" @click="handleTabClick" :current="currentTab"></u-tabs>
     <swiper class="swiper-box" :current="currentTab" @change="handleSwiperChange">

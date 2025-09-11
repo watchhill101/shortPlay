@@ -79,3 +79,43 @@ export const verifyToken = () => {
 export const getUserSessions = () => {
   return http.get('/auth/sessions');
 };
+
+/**
+ * 手机号一键登录（传统方式，已弃用）
+ * @param {string} phone - 手机号
+ * @param {string} deviceId - 设备ID
+ * @returns {Promise}
+ * @deprecated 推荐使用云函数方式
+ */
+export const loginWithOneClick = (phone, deviceId) => {
+  return http.post('/auth/login-one-click', {
+    phone,
+    deviceId,
+  });
+};
+
+/**
+ * 验证uni-id-co Token并获取用户信息
+ * @returns {Promise}
+ */
+export const verifyUniIdToken = () => {
+  return http.get('/uniid-auth/verify');
+};
+
+/**
+ * 更新用户信息（uni-id-co方式）
+ * @param {Object} profileData - 用户信息
+ * @returns {Promise}
+ */
+export const updateUniIdProfile = profileData => {
+  return http.put('/uniid-auth/profile', profileData);
+};
+
+/**
+ * 同步用户数据到后端
+ * @param {Object} userData - 用户数据
+ * @returns {Promise}
+ */
+export const syncUserData = userData => {
+  return http.post('/uniid-auth/sync-user', userData);
+};

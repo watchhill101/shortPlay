@@ -30,6 +30,9 @@
 
         <!-- 按钮组 -->
         <view class="button-group">
+          <view class="one-click-login-btn" @click="handleUniversalLogin">
+            <text class="login-action-text">手机号一键登录</text>
+          </view>
           <!-- 获取验证码按钮 -->
           <view class="get-code-btn" :class="{ disabled: countdown > 0 }" @click="getVerificationCode">
             <text class="get-code-text">
@@ -71,7 +74,7 @@
 <script setup>
 import { ref, onUnmounted } from 'vue';
 import tokenManager from '../../utils/tokenManager.js';
-import { sendSmsCode, loginWithPhone, loginWithDouyin } from '../../api/auth.js';
+import { sendSmsCode, loginWithPhone, loginWithDouyin, loginWithOneClick } from '../../api/auth.js';
 
 // --- state ---
 const agreedToTerms = ref(false);
@@ -175,6 +178,151 @@ const loginWithVerificationCode = async () => {
   }
 };
 
+// 一键登录主函数
+const handleUniversalLogin = async () => {
+  if (!agreedToTerms.value) {
+    return uni.showToast({ title: '请先同意用户协议', icon: 'none' });
+  }
+
+  uni.showLoading({ title: '正在拉起授权...' });
+
+  try {
+    // 第一步：调用uni.login获取运营商临时凭证
+    const loginRes = await uni.login({
+      provider: 'univerify',
+    });
+
+    if (!loginRes.authResult || !loginRes.authResult.access_token) {
+      throw new Error('获取授权凭证失败');
+    }
+
+    uni.showLoading({ title: '正在验证手机号...' });
+
+    // 第二步：调用云函数，获取手机号
+    const res = await uniCloud.callFunction({
+      name: 'getPhoneNumber',
+      data: {
+        access_token: loginRes.authResult.access_token,
+        openid: loginRes.authResult.openid,
+      },
+    });
+
+    console.log('云函数返回结果:', res);
+
+    // 检查云函数是否成功返回手机号
+    if (res.result && res.result.errCode === 0 && res.result.phoneNumber) {
+      const phoneNumber = res.result.phoneNumber;
+      console.log('✅ 成功获取手机号:', phoneNumber);
+
+      // 第三步：使用手机号调用后端登录接口
+      uni.showLoading({ title: '正在登录...' });
+
+      const loginResponse = await loginWithOneClick(phoneNumber, tokenManager.getDeviceId());
+      console.log('一键登录后端响应:', loginResponse);
+
+      if (loginResponse.data.success) {
+        tokenManager.saveTokens(loginResponse.data.data);
+        tokenManager.saveAccount(loginResponse.data.data); // 添加到多账户列表
+
+        // 关闭授权页面
+        uni.closeAuthView();
+
+        uni.showToast({ title: '登录成功', icon: 'success', duration: 1500 });
+        setTimeout(() => uni.switchTab({ url: '/pages/index/index' }), 1500);
+      } else {
+        throw new Error(loginResponse.data.message || '后端登录失败');
+      }
+    } else {
+      throw new Error(res.result?.message || res.result?.errMsg || '获取手机号失败');
+    }
+  } catch (error) {
+    console.error('一键登录失败:', error);
+    let errorMessage = '一键登录失败，请重试';
+
+    // 处理不同类型的错误
+    if (typeof error.errMsg === 'string') {
+      if (error.errMsg.includes('login:fail cancel')) {
+        errorMessage = '您取消了授权';
+      } else if (error.errMsg.includes('login:fail')) {
+        errorMessage = '授权失败，请重试';
+      }
+    } else if (error.result?.msg) {
+      errorMessage = error.result.msg;
+    } else if (error.message) {
+      errorMessage = error.message;
+    }
+
+    // 关闭授权页面
+    uni.closeAuthView();
+
+    uni.showToast({ title: errorMessage, icon: 'none', duration: 3000 });
+  } finally {
+    uni.hideLoading();
+  }
+};
+
+// 保留原有的getPhoneNumber处理函数（用于兼容）
+const handleGetPhoneNumber = async e => {
+  if (!agreedToTerms.value) {
+    return uni.showToast({ title: '请先同意用户协议', icon: 'none' });
+  }
+
+  if (!e.detail.code) {
+    // 用户拒绝授权
+    return;
+  }
+
+  uni.showLoading({ title: '正在获取手机号...' });
+
+  try {
+    // 调用云函数获取手机号
+    const res = await uniCloud.callFunction({
+      name: 'getPhoneNumber',
+      data: {
+        access_token: e.detail.access_token,
+        openid: e.detail.openid,
+      },
+    });
+
+    console.log('云函数返回结果:', res);
+
+    // 检查云函数是否成功返回手机号
+    if (res.result && res.result.errCode === 0 && res.result.phoneNumber) {
+      const phoneNumber = res.result.phoneNumber;
+      console.log('✅ 成功获取手机号:', phoneNumber);
+
+      // 使用手机号调用后端登录接口
+      const loginResponse = await loginWithOneClick(phoneNumber, tokenManager.getDeviceId());
+      console.log('获取手机号后端响应:', loginResponse);
+
+      if (loginResponse.data.success) {
+        tokenManager.saveTokens(loginResponse.data.data);
+        tokenManager.saveAccount(loginResponse.data.data); // 添加到多账户列表
+
+        // 关闭授权页面
+        uni.closeAuthView();
+
+        uni.showToast({ title: '登录成功', icon: 'success', duration: 1500 });
+        setTimeout(() => uni.switchTab({ url: '/pages/index/index' }), 1500);
+      } else {
+        throw new Error(loginResponse.data.message || '后端登录失败');
+      }
+    } else {
+      throw new Error(res.result?.message || res.result?.errMsg || '获取手机号失败');
+    }
+  } catch (error) {
+    console.error('一键登录失败:', error);
+    const errorMessage = error.result?.msg || error.message || '一键登录失败，请重试';
+
+    // 关闭授权页面
+    uni.closeAuthView();
+
+    uni.showToast({ title: errorMessage, icon: 'none', duration: 3000 });
+  } finally {
+    uni.hideLoading();
+  }
+};
+
 const handleDouyinLogin = async () => {
   if (!agreedToTerms.value) {
     return uni.showToast({ title: '请先同意用户协议', icon: 'none' });
@@ -239,6 +387,22 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.one-click-login-btn {
+  width: 100%;
+  padding: 35rpx 0;
+  border-radius: 60rpx;
+  text-align: center;
+  transition: background 0.3s ease;
+  background: linear-gradient(90deg, #ff6b47, #ff9529);
+  box-shadow: 0 8rpx 24rpx rgba(255, 107, 71, 0.3);
+  border: none;
+  line-height: normal; /* button style reset */
+}
+
+.one-click-login-btn::after {
+  border: none; /* button style reset */
 }
 
 .close-btn {

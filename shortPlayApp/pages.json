@@ -189,6 +189,16 @@
         "navigationBarTitleText": "",
         "enablePullDownRefresh": false
       }
+    },
+    {
+      "path": "pages/balance/index",
+      "style": {
+        "app-plus": {
+          "bounce": "none"
+        },
+        "navigationBarTitleText": "余额",
+        "navigationStyle": "custom"
+      }
     }
   ],
 

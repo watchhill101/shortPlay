@@ -88,7 +88,7 @@ const userInfo = reactive({
 });
 
 const menuItems = reactive([
-  { type: 'coins', label: '金币', icon: '◯', iconClass: 'icon-coins' },
+  { type: 'balance', label: '钱包', icon: '◯', iconClass: 'icon-coins' },
   { type: 'orders', label: '订单', icon: '🛍', iconClass: 'icon-orders' },
   { type: 'customer-service', label: '客服', icon: '✉', iconClass: 'icon-messages' },
   { type: 'withdraw', label: '提现', icon: '💰', iconClass: 'icon-withdraw' },
@@ -156,8 +156,11 @@ const onMenuClick = type => {
     uni.navigateTo({ url: '/pages/chat/chatAi' });
     return;
   }
+  if (type === 'balance') {
+    uni.navigateTo({ url: '/pages/balance/index' });
+    return;
+  }
   const actions = {
-    coins: '金币功能开发中',
     orders: '订单功能开发中',
     withdraw: '提现功能开发中',
     appointment: '预约功能开发中',
