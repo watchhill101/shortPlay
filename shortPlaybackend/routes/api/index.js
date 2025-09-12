@@ -18,6 +18,7 @@ const filterRoutes = require('./filters');
 const paymentRoutes = require('./payment'); // 引入支付路由
 const walletApiRoutes = require('./wallet'); // 引入钱包路由
 const uniIdAuthRoutes = require('./uniIdAuth'); // 引入uni-id-co认证路由
+const trtcRoutes = require('./trtc'); // 引入TRTC视频通话路由
 
 const router = express.Router();
 
@@ -39,5 +40,6 @@ router.use('/filter', filterRoutes);
 router.use('/payment', paymentRoutes); // 注册支付路由
 router.use('/wallet', walletApiRoutes); // 注册钱包路由
 router.use('/uniid-auth', uniIdAuthRoutes); // 注册uni-id-co认证路由
+router.use('/trtc', trtcRoutes); // 注册TRTC视频通话路由
 
 module.exports = router;

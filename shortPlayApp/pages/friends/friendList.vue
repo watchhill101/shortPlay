@@ -5,7 +5,7 @@
 </template>
 
 <script setup>
-import FriendListComponent from '@/components/friendList.vue';
+import FriendListComponent from '@/pages/messages/friendList.vue';
 </script>
 
 <style scoped>

@@ -1,7 +1,7 @@
 <template>
   <view class="friend-requests-page">
     <!-- 自定义导航栏 -->
-    <view class="custom-navbar" :style="{ paddingTop: statusBarHeight + 'px' }">
+    <view class="custom-navbar">
       <view class="navbar-left" @click="goBack">
         <text class="back-icon">←</text>
       </view>
@@ -103,7 +103,9 @@
 import { ref, computed, onMounted } from 'vue';
 import tokenManager from '@/utils/tokenManager';
 import friendService from '@/utils/friendService';
-import http from '@/utils/request.js';
+import { getApiConfig } from '@/config/index.js';
+
+const apiConfig = getApiConfig();
 
 const activeTab = ref('received');
 const requestList = ref([]);
@@ -111,7 +113,6 @@ const loading = ref(false);
 const receivedCount = ref(0);
 const sentCount = ref(0);
 const currentUser = ref(null);
-const statusBarHeight = ref(20);
 
 const receivedRequests = computed(() => requestList.value.filter(req => req.status === 'pending'));
 const sentRequests = computed(() => requestList.value.filter(req => req.status === 'pending'));
@@ -122,8 +123,9 @@ onMounted(async () => {
     loadRequests();
     uni.$on('friendRequestsChanged', loadRequests);
   }
+  // 获取状态栏高度 - uni-app中直接使用固定值
   const systemInfo = uni.getSystemInfoSync();
-  statusBarHeight.value = systemInfo.statusBarHeight || 20;
+  console.log('状态栏高度:', systemInfo.statusBarHeight);
 });
 
 const switchTab = tab => {
@@ -137,8 +139,13 @@ const loadRequests = async () => {
   if (loading.value || !currentUser.value) return;
   loading.value = true;
   try {
-    const response = await http.get(`/friends/requests/${currentUser.value.id}`, {
-      type: activeTab.value,
+    const response = await uni.request({
+      url: `${apiConfig.baseURL}/friends/requests/${currentUser.value.id}`,
+      method: 'GET',
+      data: { type: activeTab.value },
+      header: {
+        Authorization: `Bearer ${tokenManager.getAccessToken()}`,
+      },
     });
     if (response.data && response.data.success) {
       requestList.value = response.data.data.requests;
@@ -174,9 +181,14 @@ const handleRequest = (requestId, action) => {
 const doHandleRequest = async (requestId, action) => {
   try {
     uni.showLoading({ title: '处理中...' });
-    const response = await http.put(`/friends/request/${requestId}`, {
-      action,
-      userId: currentUser.value.id,
+    const response = await uni.request({
+      url: `${apiConfig.baseURL}/friends/request/${requestId}`,
+      method: 'PUT',
+      data: { action, userId: currentUser.value.id },
+      header: {
+        Authorization: `Bearer ${tokenManager.getAccessToken()}`,
+        'Content-Type': 'application/json',
+      },
     });
     uni.hideLoading();
     if (response.data && response.data.success) {
@@ -226,18 +238,13 @@ const goToAddFriend = () => {
 };
 
 const goBack = () => {
+  // 检查页面栈，返回上一页
   const pages = getCurrentPages();
-  if (pages.length <= 1) {
-    uni.switchTab({
-      url: '/pages/messages/index',
-      success: () => {
-        setTimeout(() => {
-          uni.$emit('switch-to-friends-tab');
-        }, 100);
-      },
-    });
-  } else {
+  if (pages.length > 1) {
     uni.navigateBack({ delta: 1 });
+  } else {
+    // 如果没有上一页，跳转到消息中心
+    uni.reLaunch({ url: '/pages/messages/index' });
   }
 };
 
@@ -259,11 +266,9 @@ const formatTime = timeStr => {
 </script>
 
 <style scoped>
-/* 整体页面样式 */
 .friend-requests-page {
   min-height: 100vh;
-  background-color: #0e0f0f;
-  color: #e5e5e5;
+  background-color: #ffffff;
 }
 
 /* 自定义导航栏 */
@@ -273,13 +278,12 @@ const formatTime = timeStr => {
   justify-content: space-between;
   height: 88rpx;
   padding: 0 30rpx;
-  background: rgba(28, 28, 30, 0.85);
-  backdrop-filter: blur(10px);
+  padding-top: 108rpx;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   position: sticky;
   top: 0;
   z-index: 100;
-  border-bottom: 1rpx solid rgba(255, 255, 255, 0.1);
 }
 
 .navbar-left,
@@ -304,9 +308,9 @@ const formatTime = timeStr => {
 /* Tab切换 */
 .tab-section {
   display: flex;
-  background: #1c1c1e;
+  background: white;
   margin: 20rpx;
-  border-radius: 12rpx;
+  border-radius: 20rpx;
   overflow: hidden;
 }
 
@@ -315,15 +319,14 @@ const formatTime = timeStr => {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 24rpx;
+  padding: 30rpx;
   position: relative;
-  background: transparent;
+  background: #f8f9fa;
   transition: all 0.3s ease;
-  color: #8e8e93;
 }
 
 .tab-item.active {
-  background: #007aff;
+  background: linear-gradient(45deg, #667eea, #764ba2);
   color: white;
 }
 
@@ -339,8 +342,10 @@ const formatTime = timeStr => {
   background: #ff4757;
   color: white;
   font-size: 20rpx;
-  padding: 4rpx 10rpx;
-  border-radius: 12rpx;
+  padding: 4rpx 8rpx;
+  border-radius: 10rpx;
+  min-width: 30rpx;
+  text-align: center;
 }
 
 /* 申请列表容器 */
@@ -358,9 +363,9 @@ const formatTime = timeStr => {
   align-items: center;
   padding: 30rpx;
   margin-bottom: 20rpx;
-  background: #1c1c1e;
+  background: white;
   border-radius: 20rpx;
-  box-shadow: 0 4rpx 15rpx rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.1);
 }
 
 .request-avatar {
@@ -381,8 +386,8 @@ const formatTime = timeStr => {
   right: 5rpx;
   width: 20rpx;
   height: 20rpx;
-  background: #34c759;
-  border: 3rpx solid #1c1c1e;
+  background: #52c41a;
+  border: 3rpx solid white;
   border-radius: 50%;
 }
 
@@ -393,20 +398,20 @@ const formatTime = timeStr => {
 .request-name {
   font-size: 32rpx;
   font-weight: bold;
-  color: #f2f2f7;
+  color: #333;
   margin-bottom: 8rpx;
 }
 
 .request-message {
   font-size: 26rpx;
-  color: #8e8e93;
+  color: #666;
   margin-bottom: 8rpx;
   line-height: 1.4;
 }
 
 .request-time {
   font-size: 22rpx;
-  color: #666;
+  color: #999;
 }
 
 .request-actions {
@@ -421,23 +426,26 @@ const formatTime = timeStr => {
   font-size: 24rpx;
   text-align: center;
   min-width: 80rpx;
-  color: #fff;
 }
 
 .status-pending {
-  background: #ff9500;
+  background: #ffeaa7;
+  color: #d63031;
 }
 
 .status-accepted {
-  background: #34c759;
+  background: #00b894;
+  color: white;
 }
 
 .status-rejected {
-  background: #ff3b30;
+  background: #ff7675;
+  color: white;
 }
 
 .status-blocked {
-  background: #8e8e93;
+  background: #636e72;
+  color: white;
 }
 
 /* 加载状态 */
@@ -446,7 +454,7 @@ const formatTime = timeStr => {
   flex-direction: column;
   align-items: center;
   padding: 100rpx 40rpx;
-  color: #888;
+  color: #999;
   gap: 20rpx;
 }
 
@@ -457,19 +465,17 @@ const formatTime = timeStr => {
   align-items: center;
   justify-content: center;
   padding: 100rpx 40rpx;
-  color: #888;
+  color: #999;
 }
 
 .empty-icon {
   font-size: 120rpx;
   margin-bottom: 30rpx;
-  opacity: 0.5;
 }
 
 .empty-text {
   font-size: 32rpx;
   margin-bottom: 15rpx;
-  color: #ccc;
 }
 
 .empty-desc {
@@ -484,8 +490,7 @@ const formatTime = timeStr => {
   bottom: 0;
   left: 0;
   right: 0;
-  background: rgba(28, 28, 30, 0.85);
-  backdrop-filter: blur(10px);
+  background: rgba(0, 0, 0, 0.8);
   color: white;
   padding: 20rpx;
   text-align: center;

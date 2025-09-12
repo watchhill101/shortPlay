@@ -129,4 +129,9 @@ export const getAssetBaseURL = () => {
   return config.assetBaseURL;
 };
 
+// 获取TRTC配置
+export const getTrtcConfig = () => {
+  return config.trtc;
+};
+
 export default config;
