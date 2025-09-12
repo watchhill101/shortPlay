@@ -34,9 +34,11 @@ const { middleware: monitoringMiddleware, getStats, reset: resetStats } = create
 // --- 核心中间件 ---
 
 // 1. 安全：设置各种 HTTP 头
-app.use(helmet({
-  contentSecurityPolicy: false
-}));
+app.use(
+  helmet({
+    contentSecurityPolicy: false,
+  })
+);
 
 // 2. 性能监控中间件（放在最前面）
 app.use(monitoringMiddleware);
@@ -104,23 +106,31 @@ app.use(cookieParser());
 app.use('/upload', express.static(path.join(__dirname, 'upload')));
 
 // 为视频文件添加特殊的CORS处理
-app.use('/uploads/video', (req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Range');
-  res.header('Access-Control-Expose-Headers', 'Content-Length, Content-Range, Accept-Ranges');
-  res.header('Access-Control-Allow-Credentials', 'false'); // 改为false，避免CORS问题
-  next();
-}, express.static(path.join(__dirname, 'uploads/video')));
+app.use(
+  '/uploads/video',
+  (req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Range');
+    res.header('Access-Control-Expose-Headers', 'Content-Length, Content-Range, Accept-Ranges');
+    res.header('Access-Control-Allow-Credentials', 'false'); // 改为false，避免CORS问题
+    next();
+  },
+  express.static(path.join(__dirname, 'uploads/video'))
+);
 
 // Serve static files from the 'uploads' directory with CORS headers
-app.use('/uploads', (req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Methods', 'GET, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-  res.header('Access-Control-Allow-Credentials', 'false'); // 改为false，避免CORS问题
-  next();
-}, express.static(path.join(__dirname, 'uploads')));
+app.use(
+  '/uploads',
+  (req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+    res.header('Access-Control-Allow-Credentials', 'false'); // 改为false，避免CORS问题
+    next();
+  },
+  express.static(path.join(__dirname, 'uploads'))
+);
 // 5. Session 管理 (使用 Redis 存储)
 const setupSession = async () => {
   try {
@@ -266,26 +276,26 @@ app.get('/test-video', (req, res) => {
 app.get('/video-proxy/:filename', (req, res) => {
   const filename = req.params.filename;
   const videoPath = path.join(__dirname, 'uploads', 'video', filename);
-  
+
   // 设置视频相关的响应头
   res.setHeader('Content-Type', 'video/mp4');
   res.setHeader('Accept-Ranges', 'bytes');
   res.setHeader('Cache-Control', 'public, max-age=0');
-  
+
   // 处理Range请求（视频流式播放需要）
   const range = req.headers.range;
   if (range) {
     const stat = require('fs').statSync(videoPath);
     const fileSize = stat.size;
-    const parts = range.replace(/bytes=/, "").split("-");
+    const parts = range.replace(/bytes=/, '').split('-');
     const start = parseInt(parts[0], 10);
     const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
-    const chunksize = (end - start) + 1;
-    
+    const chunksize = end - start + 1;
+
     res.status(206);
     res.setHeader('Content-Range', `bytes ${start}-${end}/${fileSize}`);
     res.setHeader('Content-Length', chunksize);
-    
+
     const stream = require('fs').createReadStream(videoPath, { start, end });
     stream.pipe(res);
   } else {

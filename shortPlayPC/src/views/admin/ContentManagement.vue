@@ -22,7 +22,6 @@ const pagination = reactive({
     totalPages: 0
 });
 
-
 const searchParams = reactive({
     search: '',
     status: 'all',
@@ -65,17 +64,21 @@ const submitted = ref(false);
 const statusSeverity = computed(() => {
     return (status) => {
         switch (status) {
-            case 'published': return 'success';
-            case 'draft': return 'warning';
-            case 'archived': return 'danger';
-            default: return 'info';
+            case 'published':
+                return 'success';
+            case 'draft':
+                return 'warning';
+            case 'archived':
+                return 'danger';
+            default:
+                return 'info';
         }
     };
 });
 
 const statusLabel = computed(() => {
     return (status) => {
-        const option = statusOptions.find(opt => opt.value === status);
+        const option = statusOptions.find((opt) => opt.value === status);
         return option ? option.label : status;
     };
 });
@@ -84,7 +87,7 @@ const statusLabel = computed(() => {
 const loadCollections = async () => {
     try {
         loading.value = true;
-        
+
         const params = {
             page: pagination.page,
             pageSize: pagination.pageSize,
@@ -92,14 +95,14 @@ const loadCollections = async () => {
         };
 
         // 移除空值参数
-        Object.keys(params).forEach(key => {
+        Object.keys(params).forEach((key) => {
             if (params[key] === null || params[key] === undefined || params[key] === 'all') {
                 delete params[key];
             }
         });
 
         const response = await AdminService.getCollections(params);
-        
+
         if (response.success) {
             collections.value = response.data;
             if (response.pagination) {
@@ -128,10 +131,7 @@ const loadClassifiers = async () => {
     try {
         const response = await AdminService.getClassifiers();
         if (response.success) {
-            classifiers.value = [
-                { name: '全部分类', _id: 'all' },
-                ...response.data
-            ];
+            classifiers.value = [{ name: '全部分类', _id: 'all' }, ...response.data];
         }
     } catch (error) {
         console.error('加载分类失败:', error);
@@ -153,7 +153,7 @@ const editCollection = (collection) => {
     collectionForm.tags = [...collection.tags];
     collectionForm.isFinished = collection.isFinished;
     collectionForm.coverImageFile = null;
-    
+
     submitted.value = false;
     collectionDialog.value = true;
 };
@@ -166,14 +166,14 @@ const confirmDeleteCollection = (collection) => {
 const deleteCollection = async () => {
     try {
         await AdminService.deleteCollection(selectedCollection.value._id);
-        
+
         toast.add({
             severity: 'success',
             summary: '成功',
             detail: '合集删除成功',
             life: 3000
         });
-        
+
         deleteDialog.value = false;
         selectedCollection.value = null;
         loadCollections();
@@ -189,7 +189,7 @@ const deleteCollection = async () => {
 
 const saveCollection = async () => {
     submitted.value = true;
-    
+
     if (!collectionForm.title || !collectionForm.description || !collectionForm.classifier) {
         return;
     }
@@ -206,12 +206,8 @@ const saveCollection = async () => {
 
         if (selectedCollection.value) {
             // 更新
-            await AdminService.updateCollection(
-                selectedCollection.value._id,
-                data,
-                collectionForm.coverImageFile
-            );
-            
+            await AdminService.updateCollection(selectedCollection.value._id, data, collectionForm.coverImageFile);
+
             toast.add({
                 severity: 'success',
                 summary: '成功',
@@ -221,7 +217,7 @@ const saveCollection = async () => {
         } else {
             // 创建
             await AdminService.createCollection(data, collectionForm.coverImageFile);
-            
+
             toast.add({
                 severity: 'success',
                 summary: '成功',
@@ -229,7 +225,7 @@ const saveCollection = async () => {
                 life: 3000
             });
         }
-        
+
         collectionDialog.value = false;
         resetForm();
         loadCollections();
@@ -341,13 +337,13 @@ onMounted(() => {
             </div>
 
             <!-- 数据表格 -->
-            <DataTable 
-                ref="dt" 
-                v-model:selection="selectedCollections" 
-                :value="collections" 
+            <DataTable
+                ref="dt"
+                v-model:selection="selectedCollections"
+                :value="collections"
                 dataKey="_id"
                 :loading="loading"
-                :paginator="true" 
+                :paginator="true"
                 :rows="pagination.pageSize"
                 :totalRecords="totalRecords"
                 :lazy="true"
@@ -364,7 +360,7 @@ onMounted(() => {
                 </template>
 
                 <Column selectionMode="multiple" style="width: 3rem" :exportable="false"></Column>
-                
+
                 <Column field="coverImage" header="封面" style="width: 100px">
                     <template #body="slotProps">
                         <Image :src="slotProps.data.coverImage" alt="Cover" width="60" height="80" preview />
@@ -427,44 +423,19 @@ onMounted(() => {
             <div class="grid">
                 <div class="col-12">
                     <label for="title" class="block text-900 font-medium mb-2">标题 *</label>
-                    <InputText 
-                        id="title" 
-                        v-model.trim="collectionForm.title" 
-                        required 
-                        autofocus 
-                        :class="{ 'p-invalid': submitted && !collectionForm.title }" 
-                        class="w-full"
-                        placeholder="请输入合集标题"
-                    />
+                    <InputText id="title" v-model.trim="collectionForm.title" required autofocus :class="{ 'p-invalid': submitted && !collectionForm.title }" class="w-full" placeholder="请输入合集标题" />
                     <small v-if="submitted && !collectionForm.title" class="p-error">标题不能为空</small>
                 </div>
 
                 <div class="col-12">
                     <label for="description" class="block text-900 font-medium mb-2">简介 *</label>
-                    <Textarea 
-                        id="description" 
-                        v-model="collectionForm.description" 
-                        required 
-                        rows="3" 
-                        :class="{ 'p-invalid': submitted && !collectionForm.description }" 
-                        class="w-full"
-                        placeholder="请输入合集简介"
-                    />
+                    <Textarea id="description" v-model="collectionForm.description" required rows="3" :class="{ 'p-invalid': submitted && !collectionForm.description }" class="w-full" placeholder="请输入合集简介" />
                     <small v-if="submitted && !collectionForm.description" class="p-error">简介不能为空</small>
                 </div>
 
                 <div class="col-12 md:col-6">
                     <label for="classifier" class="block text-900 font-medium mb-2">分类 *</label>
-                    <Dropdown 
-                        id="classifier" 
-                        v-model="collectionForm.classifier" 
-                        :options="classifiers" 
-                        optionLabel="name" 
-                        optionValue="_id" 
-                        placeholder="选择分类" 
-                        :class="{ 'p-invalid': submitted && !collectionForm.classifier }" 
-                        class="w-full"
-                    />
+                    <Dropdown id="classifier" v-model="collectionForm.classifier" :options="classifiers" optionLabel="name" optionValue="_id" placeholder="选择分类" :class="{ 'p-invalid': submitted && !collectionForm.classifier }" class="w-full" />
                     <small v-if="submitted && !collectionForm.classifier" class="p-error">请选择分类</small>
                 </div>
 
@@ -478,35 +449,17 @@ onMounted(() => {
 
                 <div class="col-12">
                     <label for="actors" class="block text-900 font-medium mb-2">主演</label>
-                    <Chips 
-                        id="actors" 
-                        v-model="collectionForm.actors" 
-                        placeholder="输入主演姓名后按回车添加" 
-                        class="w-full"
-                    />
+                    <Chips id="actors" v-model="collectionForm.actors" placeholder="输入主演姓名后按回车添加" class="w-full" />
                 </div>
 
                 <div class="col-12">
                     <label for="tags" class="block text-900 font-medium mb-2">标签</label>
-                    <Chips 
-                        id="tags" 
-                        v-model="collectionForm.tags" 
-                        placeholder="输入标签后按回车添加" 
-                        class="w-full"
-                    />
+                    <Chips id="tags" v-model="collectionForm.tags" placeholder="输入标签后按回车添加" class="w-full" />
                 </div>
 
                 <div class="col-12">
                     <label for="coverImage" class="block text-900 font-medium mb-2">封面图片</label>
-                    <FileUpload
-                        mode="basic"
-                        name="coverImage"
-                        accept="image/*"
-                        :maxFileSize="5000000"
-                        chooseLabel="选择图片"
-                        @select="onFileSelect"
-                        class="w-full"
-                    />
+                    <FileUpload mode="basic" name="coverImage" accept="image/*" :maxFileSize="5000000" chooseLabel="选择图片" @select="onFileSelect" class="w-full" />
                     <small class="text-600">支持 JPG、PNG 格式，文件大小不超过 5MB</small>
                 </div>
             </div>
@@ -521,7 +474,9 @@ onMounted(() => {
         <Dialog v-model:visible="deleteDialog" :style="{ width: '450px' }" header="确认删除" :modal="true">
             <div class="confirmation-content">
                 <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
-                <span v-if="selectedCollection">您确定要删除合集 <b>{{ selectedCollection.title }}</b> 吗？</span>
+                <span v-if="selectedCollection"
+                    >您确定要删除合集 <b>{{ selectedCollection.title }}</b> 吗？</span
+                >
             </div>
             <template #footer>
                 <Button label="取消" icon="pi pi-times" severity="secondary" @click="deleteDialog = false" />

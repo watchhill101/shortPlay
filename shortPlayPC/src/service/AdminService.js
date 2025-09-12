@@ -21,22 +21,22 @@ class AdminService {
         const headers = {
             'Content-Type': 'application/json'
         };
-        
+
         if (this.token) {
             headers.Authorization = `Bearer ${this.token}`;
         }
-        
+
         return headers;
     }
 
     // 获取带文件上传的请求头
     getFormHeaders() {
         const headers = {};
-        
+
         if (this.token) {
             headers.Authorization = `Bearer ${this.token}`;
         }
-        
+
         return headers;
     }
 
@@ -98,9 +98,9 @@ class AdminService {
     // 创建合集
     async createCollection(data, coverImageFile) {
         const formData = new FormData();
-        
+
         // 添加文本字段
-        Object.keys(data).forEach(key => {
+        Object.keys(data).forEach((key) => {
             if (data[key] !== null && data[key] !== undefined) {
                 if (Array.isArray(data[key])) {
                     formData.append(key, JSON.stringify(data[key]));
@@ -121,9 +121,9 @@ class AdminService {
     // 更新合集
     async updateCollection(id, data, coverImageFile) {
         const formData = new FormData();
-        
+
         // 添加文本字段
-        Object.keys(data).forEach(key => {
+        Object.keys(data).forEach((key) => {
             if (data[key] !== null && data[key] !== undefined) {
                 if (Array.isArray(data[key])) {
                     formData.append(key, JSON.stringify(data[key]));
@@ -158,26 +158,26 @@ class AdminService {
         });
     }
 
-  // ===== 作品管理 =====
+    // ===== 作品管理 =====
 
-  // 获取作品列表
-  async getWorks(params = {}) {
-    const queryString = new URLSearchParams(params).toString();
-    return this.request(`/works?${queryString}`);
-  }
+    // 获取作品列表
+    async getWorks(params = {}) {
+        const queryString = new URLSearchParams(params).toString();
+        return this.request(`/works?${queryString}`);
+    }
 
-  // 获取合集下的作品列表
-  async getWorksByCollection(collectionId, params = {}) {
-    const queryString = new URLSearchParams({ collectionId, ...params }).toString();
-    return this.request(`/works?${queryString}`);
-  }
+    // 获取合集下的作品列表
+    async getWorksByCollection(collectionId, params = {}) {
+        const queryString = new URLSearchParams({ collectionId, ...params }).toString();
+        return this.request(`/works?${queryString}`);
+    }
 
     // 创建作品
     async createWork(collectionId, data, videoFile, coverImageFile) {
         const formData = new FormData();
-        
+
         // 添加文本字段
-        Object.keys(data).forEach(key => {
+        Object.keys(data).forEach((key) => {
             if (data[key] !== null && data[key] !== undefined) {
                 formData.append(key, data[key]);
             }
@@ -199,9 +199,9 @@ class AdminService {
     // 更新作品
     async updateWork(id, data, videoFile, coverImageFile) {
         const formData = new FormData();
-        
+
         // 添加文本字段
-        Object.keys(data).forEach(key => {
+        Object.keys(data).forEach((key) => {
             if (data[key] !== null && data[key] !== undefined) {
                 formData.append(key, data[key]);
             }
@@ -288,41 +288,6 @@ class AdminService {
         });
     }
 
-    // ===== 作品管理 =====
-
-    // 获取作品列表
-    async getWorks(params = {}) {
-        const queryString = new URLSearchParams(params).toString();
-        return this.request(`/works?${queryString}`);
-    }
-
-    // 获取作品详情
-    async getWork(id) {
-        return this.request(`/works/${id}`);
-    }
-
-    // 创建作品
-    async createWork(data) {
-        return this.request('/works', {
-            method: 'POST',
-            body: JSON.stringify(data)
-        });
-    }
-
-    // 更新作品
-    async updateWork(id, data) {
-        return this.request(`/works/${id}`, {
-            method: 'PUT',
-            body: JSON.stringify(data)
-        });
-    }
-
-    // 删除作品
-    async deleteWork(id) {
-        return this.request(`/works/${id}`, {
-            method: 'DELETE'
-        });
-    }
 
     // ===== 统计数据 =====
 

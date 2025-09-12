@@ -42,7 +42,7 @@ router.get('/', async (req, res) => {
         { title: { $regex: search, $options: 'i' } },
         { description: { $regex: search, $options: 'i' } },
         { tags: { $in: [new RegExp(search, 'i')] } },
-        { actors: { $in: [new RegExp(search, 'i')] } }
+        { actors: { $in: [new RegExp(search, 'i')] } },
       ];
       console.log(`- 添加搜索条件: ${search}`);
     }
@@ -102,7 +102,7 @@ router.get('/', async (req, res) => {
       .populate({
         path: 'classifier',
         select: 'name sortOrder',
-        model: 'Classifier'
+        model: 'Classifier',
       }) // 关联查询分类的名称
       .sort(sortOptions) // 应用排序
       .skip(skip)

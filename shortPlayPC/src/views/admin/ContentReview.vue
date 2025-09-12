@@ -38,10 +38,14 @@ const reviewStatusOptions = [
 const statusSeverity = computed(() => {
     return (status) => {
         switch (status) {
-            case 'published': return 'success';
-            case 'draft': return 'warning';
-            case 'archived': return 'danger';
-            default: return 'info';
+            case 'published':
+                return 'success';
+            case 'draft':
+                return 'warning';
+            case 'archived':
+                return 'danger';
+            default:
+                return 'info';
         }
     };
 });
@@ -50,14 +54,14 @@ const statusSeverity = computed(() => {
 const loadPendingCollections = async () => {
     try {
         loading.value = true;
-        
+
         const params = {
             page: pagination.page,
             pageSize: pagination.pageSize
         };
 
         const response = await AdminService.getReviewCollections(params);
-        
+
         if (response.success) {
             collections.value = response.data;
             pagination.total = response.pagination.total;
@@ -95,11 +99,7 @@ const submitReview = async () => {
     }
 
     try {
-        await AdminService.reviewCollection(
-            selectedCollection.value._id,
-            reviewForm.status,
-            reviewForm.reviewNote
-        );
+        await AdminService.reviewCollection(selectedCollection.value._id, reviewForm.status, reviewForm.reviewNote);
 
         toast.add({
             severity: 'success',
@@ -131,14 +131,14 @@ const quickApprove = (collection) => {
         accept: async () => {
             try {
                 await AdminService.reviewCollection(collection._id, 'published', '快速审核通过');
-                
+
                 toast.add({
                     severity: 'success',
                     summary: '成功',
                     detail: '审核通过',
                     life: 3000
                 });
-                
+
                 loadPendingCollections();
             } catch (error) {
                 toast.add({
@@ -162,14 +162,14 @@ const quickReject = (collection) => {
         accept: async () => {
             try {
                 await AdminService.reviewCollection(collection._id, 'archived', '内容不符合要求');
-                
+
                 toast.add({
                     severity: 'success',
                     summary: '成功',
                     detail: '审核拒绝',
                     life: 3000
                 });
-                
+
                 loadPendingCollections();
             } catch (error) {
                 toast.add({
@@ -217,10 +217,10 @@ onMounted(() => {
             </div>
 
             <!-- 数据表格 -->
-            <DataTable 
-                :value="collections" 
+            <DataTable
+                :value="collections"
                 :loading="loading"
-                :paginator="true" 
+                :paginator="true"
                 :rows="pagination.pageSize"
                 :totalRecords="totalRecords"
                 :lazy="true"
@@ -243,7 +243,7 @@ onMounted(() => {
                         <p class="text-surface-600 text-xl">暂无待审核内容</p>
                     </div>
                 </template>
-                
+
                 <Column field="coverImage" header="封面" style="width: 100px">
                     <template #body="slotProps">
                         <Image :src="slotProps.data.coverImage" alt="Cover" width="60" height="80" preview />
@@ -285,16 +285,8 @@ onMounted(() => {
                 <Column field="actors" header="主演" style="min-width: 150px">
                     <template #body="slotProps">
                         <div v-if="slotProps.data.actors && slotProps.data.actors.length">
-                            <Tag 
-                                v-for="actor in slotProps.data.actors.slice(0, 2)" 
-                                :key="actor" 
-                                :value="actor" 
-                                severity="secondary" 
-                                class="mr-1"
-                            />
-                            <span v-if="slotProps.data.actors.length > 2" class="text-600">
-                                +{{ slotProps.data.actors.length - 2 }}
-                            </span>
+                            <Tag v-for="actor in slotProps.data.actors.slice(0, 2)" :key="actor" :value="actor" severity="secondary" class="mr-1" />
+                            <span v-if="slotProps.data.actors.length > 2" class="text-600"> +{{ slotProps.data.actors.length - 2 }} </span>
                         </div>
                         <span v-else class="text-500">无</span>
                     </template>
@@ -312,27 +304,9 @@ onMounted(() => {
                 <Column :exportable="false" style="min-width: 200px">
                     <template #body="slotProps">
                         <div class="flex gap-2">
-                            <Button 
-                                label="详细审核" 
-                                icon="pi pi-eye" 
-                                severity="info" 
-                                size="small" 
-                                @click="openReviewDialog(slotProps.data)" 
-                            />
-                            <Button 
-                                icon="pi pi-check" 
-                                severity="success" 
-                                size="small" 
-                                @click="quickApprove(slotProps.data)" 
-                                v-tooltip.top="'快速通过'"
-                            />
-                            <Button 
-                                icon="pi pi-times" 
-                                severity="danger" 
-                                size="small" 
-                                @click="quickReject(slotProps.data)" 
-                                v-tooltip.top="'快速拒绝'"
-                            />
+                            <Button label="详细审核" icon="pi pi-eye" severity="info" size="small" @click="openReviewDialog(slotProps.data)" />
+                            <Button icon="pi pi-check" severity="success" size="small" @click="quickApprove(slotProps.data)" v-tooltip.top="'快速通过'" />
+                            <Button icon="pi pi-times" severity="danger" size="small" @click="quickReject(slotProps.data)" v-tooltip.top="'快速拒绝'" />
                         </div>
                     </template>
                 </Column>
@@ -376,12 +350,7 @@ onMounted(() => {
                 <div class="col-12" v-if="selectedCollection.actors && selectedCollection.actors.length">
                     <label class="block text-900 font-medium mb-2">主演</label>
                     <div class="flex flex-wrap gap-2">
-                        <Tag 
-                            v-for="actor in selectedCollection.actors" 
-                            :key="actor" 
-                            :value="actor" 
-                            severity="secondary"
-                        />
+                        <Tag v-for="actor in selectedCollection.actors" :key="actor" :value="actor" severity="secondary" />
                     </div>
                 </div>
 
@@ -389,12 +358,7 @@ onMounted(() => {
                 <div class="col-12" v-if="selectedCollection.tags && selectedCollection.tags.length">
                     <label class="block text-900 font-medium mb-2">标签</label>
                     <div class="flex flex-wrap gap-2">
-                        <Tag 
-                            v-for="tag in selectedCollection.tags" 
-                            :key="tag" 
-                            :value="tag" 
-                            severity="success"
-                        />
+                        <Tag v-for="tag in selectedCollection.tags" :key="tag" :value="tag" severity="success" />
                     </div>
                 </div>
 
@@ -406,26 +370,12 @@ onMounted(() => {
 
                 <div class="col-12 md:col-6">
                     <label for="reviewStatus" class="block text-900 font-medium mb-2">审核结果 *</label>
-                    <Dropdown 
-                        id="reviewStatus" 
-                        v-model="reviewForm.status" 
-                        :options="reviewStatusOptions" 
-                        optionLabel="label" 
-                        optionValue="value" 
-                        placeholder="选择审核结果" 
-                        class="w-full"
-                    />
+                    <Dropdown id="reviewStatus" v-model="reviewForm.status" :options="reviewStatusOptions" optionLabel="label" optionValue="value" placeholder="选择审核结果" class="w-full" />
                 </div>
 
                 <div class="col-12">
                     <label for="reviewNote" class="block text-900 font-medium mb-2">审核意见</label>
-                    <Textarea 
-                        id="reviewNote" 
-                        v-model="reviewForm.reviewNote" 
-                        rows="3" 
-                        class="w-full"
-                        placeholder="请输入审核意见（选填）"
-                    />
+                    <Textarea id="reviewNote" v-model="reviewForm.reviewNote" rows="3" class="w-full" placeholder="请输入审核意见（选填）" />
                 </div>
             </div>
 

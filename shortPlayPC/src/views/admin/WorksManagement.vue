@@ -60,16 +60,19 @@ const submitted = ref(false);
 const statusSeverity = computed(() => {
     return (status) => {
         switch (status) {
-            case 'published': return 'success';
-            case 'draft': return 'warning';
-            default: return 'info';
+            case 'published':
+                return 'success';
+            case 'draft':
+                return 'warning';
+            default:
+                return 'info';
         }
     };
 });
 
 const statusLabel = computed(() => {
     return (status) => {
-        const option = statusOptions.find(opt => opt.value === status);
+        const option = statusOptions.find((opt) => opt.value === status);
         return option ? option.label : status;
     };
 });
@@ -94,7 +97,7 @@ const loadCollection = async () => {
 const loadWorks = async () => {
     try {
         loading.value = true;
-        
+
         const params = {
             page: pagination.page,
             pageSize: pagination.pageSize,
@@ -102,14 +105,14 @@ const loadWorks = async () => {
         };
 
         // 移除空值参数
-        Object.keys(params).forEach(key => {
+        Object.keys(params).forEach((key) => {
             if (!params[key] || params[key] === 'all') {
                 delete params[key];
             }
         });
 
         const response = await AdminService.getWorks(collectionId.value, params);
-        
+
         if (response.success) {
             works.value = response.data;
             pagination.total = response.pagination.total;
@@ -132,7 +135,7 @@ const openNew = () => {
     resetForm();
     // 自动设置下一个剧集编号
     if (works.value.length > 0) {
-        const maxEpisode = Math.max(...works.value.map(w => w.episodeNumber));
+        const maxEpisode = Math.max(...works.value.map((w) => w.episodeNumber));
         workForm.episodeNumber = maxEpisode + 1;
     } else {
         workForm.episodeNumber = 1;
@@ -149,7 +152,7 @@ const editWork = (work) => {
     workForm.status = work.status;
     workForm.videoFile = null;
     workForm.coverImageFile = null;
-    
+
     submitted.value = false;
     workDialog.value = true;
 };
@@ -162,14 +165,14 @@ const confirmDeleteWork = (work) => {
 const deleteWork = async () => {
     try {
         await AdminService.deleteWork(selectedWork.value._id);
-        
+
         toast.add({
             severity: 'success',
             summary: '成功',
             detail: '作品删除成功',
             life: 3000
         });
-        
+
         deleteDialog.value = false;
         selectedWork.value = null;
         loadWorks();
@@ -185,7 +188,7 @@ const deleteWork = async () => {
 
 const saveWork = async () => {
     submitted.value = true;
-    
+
     if (!workForm.title || !workForm.episodeNumber || !workForm.duration) {
         return;
     }
@@ -200,13 +203,8 @@ const saveWork = async () => {
 
         if (selectedWork.value) {
             // 更新
-            await AdminService.updateWork(
-                selectedWork.value._id,
-                data,
-                workForm.videoFile,
-                workForm.coverImageFile
-            );
-            
+            await AdminService.updateWork(selectedWork.value._id, data, workForm.videoFile, workForm.coverImageFile);
+
             toast.add({
                 severity: 'success',
                 summary: '成功',
@@ -215,13 +213,8 @@ const saveWork = async () => {
             });
         } else {
             // 创建
-            await AdminService.createWork(
-                collectionId.value,
-                data,
-                workForm.videoFile,
-                workForm.coverImageFile
-            );
-            
+            await AdminService.createWork(collectionId.value, data, workForm.videoFile, workForm.coverImageFile);
+
             toast.add({
                 severity: 'success',
                 summary: '成功',
@@ -229,7 +222,7 @@ const saveWork = async () => {
                 life: 3000
             });
         }
-        
+
         workDialog.value = false;
         resetForm();
         loadWorks();
@@ -288,7 +281,7 @@ const formatDuration = (seconds) => {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
     const secs = seconds % 60;
-    
+
     if (hours > 0) {
         return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     } else {
@@ -338,27 +331,19 @@ onMounted(() => {
                 <template #end>
                     <div class="flex gap-2 align-items-center">
                         <label for="statusFilter" class="text-900">状态筛选:</label>
-                        <Dropdown 
-                            id="statusFilter" 
-                            v-model="searchParams.status" 
-                            :options="statusOptions" 
-                            optionLabel="label" 
-                            optionValue="value" 
-                            @change="onSearch"
-                            class="w-10rem"
-                        />
+                        <Dropdown id="statusFilter" v-model="searchParams.status" :options="statusOptions" optionLabel="label" optionValue="value" @change="onSearch" class="w-10rem" />
                     </div>
                 </template>
             </Toolbar>
 
             <!-- 数据表格 -->
-            <DataTable 
-                ref="dt" 
-                v-model:selection="selectedWorks" 
-                :value="works" 
+            <DataTable
+                ref="dt"
+                v-model:selection="selectedWorks"
+                :value="works"
                 dataKey="_id"
                 :loading="loading"
-                :paginator="true" 
+                :paginator="true"
                 :rows="pagination.pageSize"
                 :totalRecords="totalRecords"
                 :lazy="true"
@@ -375,7 +360,7 @@ onMounted(() => {
                 </template>
 
                 <Column selectionMode="multiple" style="width: 3rem" :exportable="false"></Column>
-                
+
                 <Column field="episodeNumber" header="集数" sortable style="width: 80px">
                     <template #body="slotProps">
                         <Badge :value="`第${slotProps.data.episodeNumber}集`" severity="primary" />
@@ -446,83 +431,36 @@ onMounted(() => {
             <div class="grid">
                 <div class="col-12">
                     <label for="title" class="block text-900 font-medium mb-2">标题 *</label>
-                    <InputText 
-                        id="title" 
-                        v-model.trim="workForm.title" 
-                        required 
-                        autofocus 
-                        :class="{ 'p-invalid': submitted && !workForm.title }" 
-                        class="w-full"
-                        placeholder="请输入剧集标题"
-                    />
+                    <InputText id="title" v-model.trim="workForm.title" required autofocus :class="{ 'p-invalid': submitted && !workForm.title }" class="w-full" placeholder="请输入剧集标题" />
                     <small v-if="submitted && !workForm.title" class="p-error">标题不能为空</small>
                 </div>
 
                 <div class="col-12 md:col-4">
                     <label for="episodeNumber" class="block text-900 font-medium mb-2">集数 *</label>
-                    <InputNumber 
-                        id="episodeNumber" 
-                        v-model="workForm.episodeNumber" 
-                        mode="decimal"
-                        :min="1"
-                        :class="{ 'p-invalid': submitted && !workForm.episodeNumber }" 
-                        class="w-full"
-                        placeholder="集数"
-                    />
+                    <InputNumber id="episodeNumber" v-model="workForm.episodeNumber" mode="decimal" :min="1" :class="{ 'p-invalid': submitted && !workForm.episodeNumber }" class="w-full" placeholder="集数" />
                     <small v-if="submitted && !workForm.episodeNumber" class="p-error">请输入集数</small>
                 </div>
 
                 <div class="col-12 md:col-4">
                     <label for="duration" class="block text-900 font-medium mb-2">时长(秒) *</label>
-                    <InputNumber 
-                        id="duration" 
-                        v-model="workForm.duration" 
-                        mode="decimal"
-                        :min="1"
-                        :class="{ 'p-invalid': submitted && !workForm.duration }" 
-                        class="w-full"
-                        placeholder="视频时长"
-                    />
+                    <InputNumber id="duration" v-model="workForm.duration" mode="decimal" :min="1" :class="{ 'p-invalid': submitted && !workForm.duration }" class="w-full" placeholder="视频时长" />
                     <small v-if="submitted && !workForm.duration" class="p-error">请输入时长</small>
                 </div>
 
                 <div class="col-12 md:col-4">
                     <label for="status" class="block text-900 font-medium mb-2">状态</label>
-                    <Dropdown 
-                        id="status" 
-                        v-model="workForm.status" 
-                        :options="statusOptions.filter(s => s.value !== 'all')" 
-                        optionLabel="label" 
-                        optionValue="value" 
-                        class="w-full"
-                    />
+                    <Dropdown id="status" v-model="workForm.status" :options="statusOptions.filter((s) => s.value !== 'all')" optionLabel="label" optionValue="value" class="w-full" />
                 </div>
 
                 <div class="col-12">
                     <label for="video" class="block text-900 font-medium mb-2">视频文件</label>
-                    <FileUpload
-                        mode="basic"
-                        name="video"
-                        accept="video/*"
-                        :maxFileSize="500000000"
-                        chooseLabel="选择视频"
-                        @select="onVideoSelect"
-                        class="w-full"
-                    />
+                    <FileUpload mode="basic" name="video" accept="video/*" :maxFileSize="500000000" chooseLabel="选择视频" @select="onVideoSelect" class="w-full" />
                     <small class="text-600">支持 MP4、AVI、MOV 等格式，文件大小不超过 500MB</small>
                 </div>
 
                 <div class="col-12">
                     <label for="coverImage" class="block text-900 font-medium mb-2">封面图片</label>
-                    <FileUpload
-                        mode="basic"
-                        name="coverImage"
-                        accept="image/*"
-                        :maxFileSize="5000000"
-                        chooseLabel="选择封面"
-                        @select="onCoverSelect"
-                        class="w-full"
-                    />
+                    <FileUpload mode="basic" name="coverImage" accept="image/*" :maxFileSize="5000000" chooseLabel="选择封面" @select="onCoverSelect" class="w-full" />
                     <small class="text-600">支持 JPG、PNG 格式，文件大小不超过 5MB（不上传将使用合集封面）</small>
                 </div>
             </div>
@@ -537,7 +475,9 @@ onMounted(() => {
         <Dialog v-model:visible="deleteDialog" :style="{ width: '450px' }" header="确认删除" :modal="true">
             <div class="confirmation-content">
                 <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
-                <span v-if="selectedWork">您确定要删除剧集 <b>第{{ selectedWork.episodeNumber }}集 - {{ selectedWork.title }}</b> 吗？</span>
+                <span v-if="selectedWork"
+                    >您确定要删除剧集 <b>第{{ selectedWork.episodeNumber }}集 - {{ selectedWork.title }}</b> 吗？</span
+                >
             </div>
             <template #footer>
                 <Button label="取消" icon="pi pi-times" severity="secondary" @click="deleteDialog = false" />

@@ -17,16 +17,16 @@ router.get('/', async (req, res) => {
       collectionId,
       status = 'published',
       sortBy = 'episodeNumber',
-      sortOrder = 'asc'
+      sortOrder = 'asc',
     } = req.query;
 
     // 构建查询条件
     const query = {};
-    
+
     if (collectionId) {
       query.collectionId = collectionId;
     }
-    
+
     if (status && status !== 'all') {
       query.status = status;
     }
@@ -55,16 +55,16 @@ router.get('/', async (req, res) => {
         page: parseInt(page),
         pageSize: parseInt(pageSize),
         total,
-        totalPages: Math.ceil(total / parseInt(pageSize))
+        totalPages: Math.ceil(total / parseInt(pageSize)),
       },
-      message: '作品列表获取成功'
+      message: '作品列表获取成功',
     });
   } catch (error) {
     console.error('获取作品列表失败:', error);
     res.status(500).json({
       success: false,
       message: '获取作品列表失败',
-      error: error.message
+      error: error.message,
     });
   }
 });
@@ -76,27 +76,26 @@ router.get('/', async (req, res) => {
  */
 router.get('/:id', async (req, res) => {
   try {
-    const work = await Work.findById(req.params.id)
-      .populate('collectionId', 'title coverImage description');
+    const work = await Work.findById(req.params.id).populate('collectionId', 'title coverImage description');
 
     if (!work) {
       return res.status(404).json({
         success: false,
-        message: '作品不存在'
+        message: '作品不存在',
       });
     }
 
     res.json({
       success: true,
       data: work,
-      message: '作品详情获取成功'
+      message: '作品详情获取成功',
     });
   } catch (error) {
     console.error('获取作品详情失败:', error);
     res.status(500).json({
       success: false,
       message: '获取作品详情失败',
-      error: error.message
+      error: error.message,
     });
   }
 });
@@ -115,7 +114,7 @@ router.post('/', async (req, res) => {
     if (!collection) {
       return res.status(404).json({
         success: false,
-        message: '合集不存在'
+        message: '合集不存在',
       });
     }
 
@@ -126,33 +125,33 @@ router.post('/', async (req, res) => {
       videoUrl,
       coverImage,
       duration: parseInt(duration),
-      status
+      status,
     });
 
     await work.save();
 
     // 更新合集的作品数量
     await Collection.findByIdAndUpdate(collectionId, {
-      $inc: { workCount: 1 }
+      $inc: { workCount: 1 },
     });
 
     res.status(201).json({
       success: true,
       data: work,
-      message: '作品创建成功'
+      message: '作品创建成功',
     });
   } catch (error) {
     if (error.code === 11000) {
       res.status(400).json({
         success: false,
-        message: '该剧集编号已存在'
+        message: '该剧集编号已存在',
       });
     } else {
       console.error('创建作品失败:', error);
       res.status(400).json({
         success: false,
         message: '创建作品失败',
-        error: error.message
+        error: error.message,
       });
     }
   }
@@ -171,7 +170,7 @@ router.put('/:id', async (req, res) => {
     if (!work) {
       return res.status(404).json({
         success: false,
-        message: '作品不存在'
+        message: '作品不存在',
       });
     }
 
@@ -188,20 +187,20 @@ router.put('/:id', async (req, res) => {
     res.json({
       success: true,
       data: work,
-      message: '作品更新成功'
+      message: '作品更新成功',
     });
   } catch (error) {
     if (error.code === 11000) {
       res.status(400).json({
         success: false,
-        message: '该剧集编号已存在'
+        message: '该剧集编号已存在',
       });
     } else {
       console.error('更新作品失败:', error);
       res.status(400).json({
         success: false,
         message: '更新作品失败',
-        error: error.message
+        error: error.message,
       });
     }
   }
@@ -218,7 +217,7 @@ router.delete('/:id', async (req, res) => {
     if (!work) {
       return res.status(404).json({
         success: false,
-        message: '作品不存在'
+        message: '作品不存在',
       });
     }
 
@@ -227,19 +226,19 @@ router.delete('/:id', async (req, res) => {
 
     // 更新合集的作品数量
     await Collection.findByIdAndUpdate(collectionId, {
-      $inc: { workCount: -1 }
+      $inc: { workCount: -1 },
     });
 
     res.json({
       success: true,
-      message: '作品删除成功'
+      message: '作品删除成功',
     });
   } catch (error) {
     console.error('删除作品失败:', error);
     res.status(500).json({
       success: false,
       message: '删除作品失败',
-      error: error.message
+      error: error.message,
     });
   }
 });

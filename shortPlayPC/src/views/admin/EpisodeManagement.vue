@@ -84,16 +84,19 @@ const statusOptions = [
 const statusSeverity = computed(() => {
     return (status) => {
         switch (status) {
-            case 'published': return 'success';
-            case 'draft': return 'warning';
-            default: return 'info';
+            case 'published':
+                return 'success';
+            case 'draft':
+                return 'warning';
+            default:
+                return 'info';
         }
     };
 });
 
 const statusLabel = computed(() => {
     return (status) => {
-        const option = statusOptions.find(opt => opt.value === status);
+        const option = statusOptions.find((opt) => opt.value === status);
         return option ? option.label : status;
     };
 });
@@ -102,10 +105,10 @@ const statusLabel = computed(() => {
 const loadCollections = async () => {
     try {
         loading.value = true;
-        const response = await AdminService.getCollections({ 
-            pageSize: 100 
+        const response = await AdminService.getCollections({
+            pageSize: 100
         });
-        
+
         if (response.success) {
             collections.value = response.data;
         }
@@ -131,17 +134,17 @@ const onCollectionChange = () => {
 
 const loadEpisodes = async () => {
     if (!selectedCollection.value) return;
-    
+
     try {
         episodeLoading.value = true;
-        
+
         const params = {
             page: pagination.page,
             pageSize: pagination.pageSize
         };
 
         const response = await AdminService.getWorksByCollection(selectedCollection.value._id, params);
-        
+
         if (response.success) {
             episodes.value = response.data;
             pagination.total = response.pagination.total;
@@ -169,7 +172,7 @@ const openUploadDialog = () => {
         });
         return;
     }
-    
+
     resetUploadForm();
     getNextEpisodeNumber();
     uploadDialog.value = true;
@@ -177,7 +180,7 @@ const openUploadDialog = () => {
 
 const getNextEpisodeNumber = () => {
     if (episodes.value.length > 0) {
-        const maxEpisode = Math.max(...episodes.value.map(e => e.episodeNumber));
+        const maxEpisode = Math.max(...episodes.value.map((e) => e.episodeNumber));
         uploadForm.episodeNumber = maxEpisode + 1;
     } else {
         uploadForm.episodeNumber = 1;
@@ -201,16 +204,16 @@ const onVideoSelect = (event) => {
     const file = event.files[0];
     if (file) {
         uploadForm.videoFile = file;
-        
+
         // 创建视频元素来获取时长
         const video = document.createElement('video');
         video.preload = 'metadata';
-        
+
         video.onloadedmetadata = () => {
             uploadForm.duration = Math.round(video.duration);
             window.URL.revokeObjectURL(video.src);
         };
-        
+
         video.src = URL.createObjectURL(file);
     }
 };
@@ -224,23 +227,23 @@ const onCoverSelect = (event) => {
 
 const uploadEpisode = async () => {
     submitted.value = true;
-    
+
     if (!validateUploadForm()) {
         submitted.value = false;
         return;
     }
-    
+
     try {
         uploading.value = true;
         uploadProgress.value = 0;
-        
+
         // 模拟上传进度
         const progressInterval = setInterval(() => {
             if (uploadProgress.value < 90) {
                 uploadProgress.value += Math.random() * 10;
             }
         }, 500);
-        
+
         const data = {
             collectionId: selectedCollection.value._id,
             title: uploadForm.title,
@@ -251,23 +254,22 @@ const uploadEpisode = async () => {
             isPaid: uploadForm.isPaid,
             price: uploadForm.isPaid ? uploadForm.price : 0
         };
-        
+
         await AdminService.createWork(data);
-        
+
         clearInterval(progressInterval);
         uploadProgress.value = 100;
-        
+
         toast.add({
             severity: 'success',
             summary: '成功',
             detail: '分集上传成功',
             life: 3000
         });
-        
+
         uploadDialog.value = false;
         resetUploadForm();
         loadEpisodes();
-        
     } catch (error) {
         toast.add({
             severity: 'error',
@@ -292,7 +294,7 @@ const validateUploadForm = () => {
         });
         return false;
     }
-    
+
     if (!uploadForm.episodeNumber || uploadForm.episodeNumber < 1) {
         toast.add({
             severity: 'warn',
@@ -302,7 +304,7 @@ const validateUploadForm = () => {
         });
         return false;
     }
-    
+
     if (!uploadForm.videoFile) {
         toast.add({
             severity: 'warn',
@@ -312,7 +314,7 @@ const validateUploadForm = () => {
         });
         return false;
     }
-    
+
     return true;
 };
 
@@ -323,7 +325,7 @@ const editEpisode = (episode) => {
     editForm.duration = episode.duration;
     editForm.description = episode.description || '';
     editForm.status = episode.status;
-    
+
     editDialog.value = true;
 };
 
@@ -338,14 +340,14 @@ const saveEpisode = async () => {
         };
 
         await AdminService.updateWork(selectedEpisode.value._id, data);
-        
+
         toast.add({
             severity: 'success',
             summary: '成功',
             detail: '分集更新成功',
             life: 3000
         });
-        
+
         editDialog.value = false;
         loadEpisodes();
     } catch (error) {
@@ -363,7 +365,7 @@ const openPaymentDialog = (episode) => {
     paymentForm.isPaid = episode.isPaid || false;
     paymentForm.price = episode.price || 0;
     paymentForm.freePreviewDuration = episode.freePreviewDuration || 0;
-    
+
     paymentDialog.value = true;
 };
 
@@ -376,14 +378,14 @@ const savePaymentSettings = async () => {
         };
 
         await AdminService.updateWork(selectedEpisode.value._id, data);
-        
+
         toast.add({
             severity: 'success',
             summary: '成功',
             detail: '付费设置更新成功',
             life: 3000
         });
-        
+
         paymentDialog.value = false;
         loadEpisodes();
     } catch (error) {
@@ -404,14 +406,14 @@ const confirmDeleteEpisode = (episode) => {
 const deleteEpisode = async () => {
     try {
         await AdminService.deleteWork(selectedEpisode.value._id);
-        
+
         toast.add({
             severity: 'success',
             summary: '成功',
             detail: '分集删除成功',
             life: 3000
         });
-        
+
         deleteDialog.value = false;
         selectedEpisode.value = null;
         loadEpisodes();
@@ -435,7 +437,7 @@ const formatDuration = (seconds) => {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
     const secs = seconds % 60;
-    
+
     if (hours > 0) {
         return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     } else {
@@ -455,28 +457,28 @@ const formatFileSize = (bytes) => {
 const playEpisode = (episode) => {
     selectedEpisode.value = episode;
     playDialog.value = true;
-    
+
     // 延迟设置视频源，确保DOM更新完成
     nextTick(() => {
         console.log('准备播放视频:', episode.title);
         const videoUrl = getVideoUrl(episode.videoUrl);
         console.log('视频URL:', videoUrl);
-        
+
         if (videoPlayer.value) {
             // 清除之前的源
             videoPlayer.value.innerHTML = '';
-            
+
             // 创建新的source元素
             const source = document.createElement('source');
             source.src = videoUrl;
             source.type = 'video/mp4';
-            
+
             // 添加到video元素
             videoPlayer.value.appendChild(source);
-            
+
             // 重新加载视频
             videoPlayer.value.load();
-            
+
             console.log('视频源已设置:', videoUrl);
         }
     });
@@ -488,22 +490,22 @@ const closePlayDialog = () => {
         videoPlayer.value.pause();
         videoPlayer.value.currentTime = 0;
     }
-    
+
     playDialog.value = false;
     selectedEpisode.value = null;
 };
 
 const getVideoUrl = (videoUrl) => {
     if (!videoUrl) return '';
-    
+
     console.log('原始视频URL:', videoUrl);
-    
+
     // 如果已经是完整URL，直接返回
     if (videoUrl.startsWith('http://') || videoUrl.startsWith('https://')) {
         console.log('使用完整URL:', videoUrl);
         return videoUrl;
     }
-    
+
     // 如果是相对路径，使用代理路由，通过Vite代理避免跨域问题
     if (videoUrl.startsWith('/uploads/video/')) {
         const filename = videoUrl.split('/').pop();
@@ -511,7 +513,7 @@ const getVideoUrl = (videoUrl) => {
         console.log('使用代理URL:', proxyUrl);
         return proxyUrl;
     }
-    
+
     // 其他情况，直接返回相对路径
     console.log('使用相对路径:', videoUrl);
     return videoUrl;
@@ -520,12 +522,12 @@ const getVideoUrl = (videoUrl) => {
 // 处理封面图片URL
 const getCoverImageUrl = (coverImage) => {
     if (!coverImage) return '';
-    
+
     // 如果已经是完整URL，直接返回
     if (coverImage.startsWith('http://') || coverImage.startsWith('https://')) {
         return coverImage;
     }
-    
+
     // 如果是相对路径，直接返回，通过Vite代理处理
     return coverImage;
 };
@@ -551,7 +553,7 @@ const onVideoError = (event) => {
     console.error('视频元素:', event.target);
     console.error('视频源:', event.target.src);
     console.error('错误详情:', event.target.error);
-    
+
     let errorMessage = '视频加载失败';
     if (event.target.error) {
         switch (event.target.error.code) {
@@ -571,7 +573,7 @@ const onVideoError = (event) => {
                 errorMessage = `视频加载失败 (错误代码: ${event.target.error.code})`;
         }
     }
-    
+
     toast.add({
         severity: 'error',
         summary: '播放错误',
@@ -605,7 +607,7 @@ const loadCollectionsForSelector = async () => {
             pageSize: collectionPagination.value.pageSize,
             search: collectionSearchText.value
         };
-        
+
         const response = await AdminService.getCollections(params);
         if (response.success) {
             collections.value = response.data;
@@ -660,47 +662,24 @@ onMounted(() => {
                             选择剧集合集
                         </h4>
                         <div class="flex gap-2">
-                            <InputText 
-                                :value="selectedCollection ? selectedCollection.title : ''"
-                                placeholder="请选择要管理分集的剧集合集" 
-                                readonly
-                                class="flex-1"
-                            />
-                            <Button 
-                                icon="pi pi-search" 
-                                @click="openCollectionSelector"
-                                severity="secondary"
-                                v-tooltip.top="'搜索合集'"
-                            />
+                            <InputText :value="selectedCollection ? selectedCollection.title : ''" placeholder="请选择要管理分集的剧集合集" readonly class="flex-1" />
+                            <Button icon="pi pi-search" @click="openCollectionSelector" severity="secondary" v-tooltip.top="'搜索合集'" />
                         </div>
                     </div>
                     <div class="ml-4">
-                        <Button 
-                            label="上传新分集" 
-                            icon="pi pi-plus" 
-                            severity="success"
-                            @click="openUploadDialog"
-                            :disabled="!selectedCollection"
-                        />
+                        <Button label="上传新分集" icon="pi pi-plus" severity="success" @click="openUploadDialog" :disabled="!selectedCollection" />
                     </div>
                 </div>
-                
+
                 <div v-if="selectedCollection" class="mt-3 p-3 bg-surface-0 border-round">
                     <div class="flex">
-                        <img 
-                            :src="getCoverImageUrl(selectedCollection.coverImage)" 
-                            :alt="selectedCollection.title" 
-                            class="w-4rem h-5rem border-round mr-3"
-                            style="object-fit: cover; max-width: 4rem; max-height: 5rem;"
-                            @error="onImageError"
-                        />
+                        <img :src="getCoverImageUrl(selectedCollection.coverImage)" :alt="selectedCollection.title" class="w-4rem h-5rem border-round mr-3" style="object-fit: cover; max-width: 4rem; max-height: 5rem" @error="onImageError" />
                         <div class="flex-1">
                             <h5 class="m-0 mb-2">{{ selectedCollection.title }}</h5>
                             <p class="text-600 text-sm line-height-3">{{ selectedCollection.description }}</p>
                             <div class="flex gap-2 mt-2">
                                 <Tag :value="`${selectedCollection.workCount} 个分集`" severity="info" />
-                                <Tag :value="selectedCollection.isFinished ? '已完结' : '连载中'" 
-                                     :severity="selectedCollection.isFinished ? 'success' : 'warning'" />
+                                <Tag :value="selectedCollection.isFinished ? '已完结' : '连载中'" :severity="selectedCollection.isFinished ? 'success' : 'warning'" />
                             </div>
                         </div>
                     </div>
@@ -709,12 +688,12 @@ onMounted(() => {
 
             <!-- 分集列表 -->
             <div v-if="selectedCollection">
-                <DataTable 
-                    v-model:selection="selectedEpisodes" 
-                    :value="episodes" 
+                <DataTable
+                    v-model:selection="selectedEpisodes"
+                    :value="episodes"
                     dataKey="_id"
                     :loading="episodeLoading"
-                    :paginator="true" 
+                    :paginator="true"
                     :rows="pagination.pageSize"
                     :totalRecords="pagination.total"
                     :lazy="true"
@@ -743,50 +722,35 @@ onMounted(() => {
                     </template>
 
                     <Column selectionMode="multiple" style="width: 3rem" :exportable="false"></Column>
-                    
+
                     <Column field="episodeNumber" header="集数" sortable style="width: 80px">
                         <template #body="slotProps">
                             <Badge :value="`第${slotProps.data.episodeNumber}集`" severity="primary" />
                         </template>
                     </Column>
 
-            <Column field="coverImage" header="封面" style="width: 60px">
-                <template #body="slotProps">
-                    <div v-if="slotProps.data.coverImage">
-                        <Image 
-                            :src="getCoverImageUrl(slotProps.data.coverImage)" 
-                            alt="Cover" 
-                            width="40" 
-                            height="50" 
-                            preview 
-                            class="border-round"
-                        />
-                    </div>
-                    <div v-else class="flex align-items-center justify-content-center w-3rem h-3rem bg-surface-200 border-round">
-                        <i class="pi pi-image text-surface-600 text-lg"></i>
-                    </div>
-                </template>
-            </Column>
-            
-            <Column header="播放" style="width: 80px">
-                <template #body="slotProps">
-                    <Button 
-                        icon="pi pi-play" 
-                        severity="success"
-                        size="small"
-                        @click="playEpisode(slotProps.data)"
-                        v-tooltip.top="'播放视频'"
-                    />
-                </template>
-            </Column>
+                    <Column field="coverImage" header="封面" style="width: 60px">
+                        <template #body="slotProps">
+                            <div v-if="slotProps.data.coverImage">
+                                <Image :src="getCoverImageUrl(slotProps.data.coverImage)" alt="Cover" width="40" height="50" preview class="border-round" />
+                            </div>
+                            <div v-else class="flex align-items-center justify-content-center w-3rem h-3rem bg-surface-200 border-round">
+                                <i class="pi pi-image text-surface-600 text-lg"></i>
+                            </div>
+                        </template>
+                    </Column>
+
+                    <Column header="播放" style="width: 80px">
+                        <template #body="slotProps">
+                            <Button icon="pi pi-play" severity="success" size="small" @click="playEpisode(slotProps.data)" v-tooltip.top="'播放视频'" />
+                        </template>
+                    </Column>
 
                     <Column field="title" header="标题" sortable style="min-width: 200px">
                         <template #body="slotProps">
                             <div>
                                 <div class="font-bold">{{ slotProps.data.title }}</div>
-                                <div v-if="slotProps.data.description" class="text-sm text-600 mt-1">
-                                    {{ slotProps.data.description?.substring(0, 50) }}...
-                                </div>
+                                <div v-if="slotProps.data.description" class="text-sm text-600 mt-1">{{ slotProps.data.description?.substring(0, 50) }}...</div>
                             </div>
                         </template>
                     </Column>
@@ -822,27 +786,9 @@ onMounted(() => {
                     <Column :exportable="false" style="min-width: 150px">
                         <template #body="slotProps">
                             <div class="flex gap-2">
-                                <Button 
-                                    icon="pi pi-pencil" 
-                                    severity="info" 
-                                    size="small" 
-                                    @click="editEpisode(slotProps.data)" 
-                                    v-tooltip.top="'编辑分集'"
-                                />
-                                <Button 
-                                    icon="pi pi-dollar" 
-                                    severity="warning" 
-                                    size="small" 
-                                    @click="openPaymentDialog(slotProps.data)" 
-                                    v-tooltip.top="'付费设置'"
-                                />
-                                <Button 
-                                    icon="pi pi-trash" 
-                                    severity="danger" 
-                                    size="small" 
-                                    @click="confirmDeleteEpisode(slotProps.data)" 
-                                    v-tooltip.top="'删除'"
-                                />
+                                <Button icon="pi pi-pencil" severity="info" size="small" @click="editEpisode(slotProps.data)" v-tooltip.top="'编辑分集'" />
+                                <Button icon="pi pi-dollar" severity="warning" size="small" @click="openPaymentDialog(slotProps.data)" v-tooltip.top="'付费设置'" />
+                                <Button icon="pi pi-trash" severity="danger" size="small" @click="confirmDeleteEpisode(slotProps.data)" v-tooltip.top="'删除'" />
                             </div>
                         </template>
                     </Column>
@@ -860,65 +806,30 @@ onMounted(() => {
             <div class="grid">
                 <div class="col-12 md:col-6">
                     <label for="title" class="block text-900 font-medium mb-2">分集标题 *</label>
-                    <InputText 
-                        id="title" 
-                        v-model.trim="uploadForm.title" 
-                        placeholder="请输入分集标题" 
-                        class="w-full"
-                        :class="{ 'p-invalid': submitted && !uploadForm.title }"
-                    />
+                    <InputText id="title" v-model.trim="uploadForm.title" placeholder="请输入分集标题" class="w-full" :class="{ 'p-invalid': submitted && !uploadForm.title }" />
                     <small v-if="submitted && !uploadForm.title" class="p-error">标题不能为空</small>
                 </div>
 
                 <div class="col-12 md:col-3">
                     <label for="episodeNumber" class="block text-900 font-medium mb-2">集数 *</label>
-                    <InputNumber 
-                        id="episodeNumber" 
-                        v-model="uploadForm.episodeNumber" 
-                        mode="decimal"
-                        :min="1"
-                        placeholder="第几集" 
-                        class="w-full"
-                    />
+                    <InputNumber id="episodeNumber" v-model="uploadForm.episodeNumber" mode="decimal" :min="1" placeholder="第几集" class="w-full" />
                 </div>
 
                 <div class="col-12 md:col-3">
                     <label for="duration" class="block text-900 font-medium mb-2">时长(秒)</label>
-                    <InputNumber 
-                        id="duration" 
-                        v-model="uploadForm.duration" 
-                        mode="decimal"
-                        :min="0"
-                        placeholder="自动获取" 
-                        class="w-full"
-                        :disabled="true"
-                    />
+                    <InputNumber id="duration" v-model="uploadForm.duration" mode="decimal" :min="0" placeholder="自动获取" class="w-full" :disabled="true" />
                 </div>
 
                 <div class="col-12">
                     <label for="description" class="block text-900 font-medium mb-2">分集简介</label>
-                    <Textarea 
-                        id="description" 
-                        v-model="uploadForm.description" 
-                        rows="2" 
-                        placeholder="请输入分集简介（选填）" 
-                        class="w-full"
-                    />
+                    <Textarea id="description" v-model="uploadForm.description" rows="2" placeholder="请输入分集简介（选填）" class="w-full" />
                 </div>
 
                 <div class="col-12 md:col-6">
                     <label class="block text-900 font-medium mb-2">视频文件 *</label>
-                    <FileUpload
-                        mode="basic"
-                        name="video"
-                        accept="video/*"
-                        :maxFileSize="500000000"
-                        chooseLabel="选择视频文件"
-                        @select="onVideoSelect"
-                        class="w-full"
-                    />
+                    <FileUpload mode="basic" name="video" accept="video/*" :maxFileSize="500000000" chooseLabel="选择视频文件" @select="onVideoSelect" class="w-full" />
                     <small class="text-600">支持 MP4、AVI、MOV 等格式，最大 500MB</small>
-                    
+
                     <div v-if="uploadForm.videoFile" class="mt-2 p-2 bg-green-50 border-green-200 border-1 border-round">
                         <div class="text-sm font-medium text-green-700">{{ uploadForm.videoFile.name }}</div>
                         <div class="text-sm text-green-600">
@@ -930,17 +841,9 @@ onMounted(() => {
 
                 <div class="col-12 md:col-6">
                     <label class="block text-900 font-medium mb-2">封面图片</label>
-                    <FileUpload
-                        mode="basic"
-                        name="coverImage"
-                        accept="image/*"
-                        :maxFileSize="5000000"
-                        chooseLabel="选择封面图片"
-                        @select="onCoverSelect"
-                        class="w-full"
-                    />
+                    <FileUpload mode="basic" name="coverImage" accept="image/*" :maxFileSize="5000000" chooseLabel="选择封面图片" @select="onCoverSelect" class="w-full" />
                     <small class="text-600">支持 JPG、PNG 格式，最大 5MB</small>
-                    
+
                     <div v-if="uploadForm.coverImageFile" class="mt-2 p-2 bg-blue-50 border-blue-200 border-1 border-round">
                         <div class="text-sm font-medium text-blue-700">{{ uploadForm.coverImageFile.name }}</div>
                         <div class="text-sm text-blue-600">{{ formatFileSize(uploadForm.coverImageFile.size) }}</div>
@@ -962,28 +865,12 @@ onMounted(() => {
 
                 <div class="col-12 md:col-4" v-if="uploadForm.isPaid">
                     <label for="price" class="block text-900 font-medium mb-2">价格(元) *</label>
-                    <InputNumber 
-                        id="price" 
-                        v-model="uploadForm.price" 
-                        mode="currency" 
-                        currency="CNY" 
-                        locale="zh-CN"
-                        :min="0"
-                        placeholder="0.00" 
-                        class="w-full"
-                    />
+                    <InputNumber id="price" v-model="uploadForm.price" mode="currency" currency="CNY" locale="zh-CN" :min="0" placeholder="0.00" class="w-full" />
                 </div>
 
                 <div class="col-12 md:col-4">
                     <label for="freePreview" class="block text-900 font-medium mb-2">免费预览时长(秒)</label>
-                    <InputNumber 
-                        id="freePreview" 
-                        v-model="uploadForm.freePreviewDuration" 
-                        mode="decimal"
-                        :min="0"
-                        placeholder="0" 
-                        class="w-full"
-                    />
+                    <InputNumber id="freePreview" v-model="uploadForm.freePreviewDuration" mode="decimal" :min="0" placeholder="0" class="w-full" />
                 </div>
 
                 <!-- 上传进度 -->
@@ -1007,57 +894,27 @@ onMounted(() => {
             <div class="grid">
                 <div class="col-12">
                     <label for="editTitle" class="block text-900 font-medium mb-2">分集标题 *</label>
-                    <InputText 
-                        id="editTitle" 
-                        v-model.trim="editForm.title" 
-                        placeholder="请输入分集标题" 
-                        class="w-full"
-                    />
+                    <InputText id="editTitle" v-model.trim="editForm.title" placeholder="请输入分集标题" class="w-full" />
                 </div>
 
                 <div class="col-12 md:col-4">
                     <label for="editEpisodeNumber" class="block text-900 font-medium mb-2">集数 *</label>
-                    <InputNumber 
-                        id="editEpisodeNumber" 
-                        v-model="editForm.episodeNumber" 
-                        mode="decimal"
-                        :min="1"
-                        class="w-full"
-                    />
+                    <InputNumber id="editEpisodeNumber" v-model="editForm.episodeNumber" mode="decimal" :min="1" class="w-full" />
                 </div>
 
                 <div class="col-12 md:col-4">
                     <label for="editDuration" class="block text-900 font-medium mb-2">时长(秒)</label>
-                    <InputNumber 
-                        id="editDuration" 
-                        v-model="editForm.duration" 
-                        mode="decimal"
-                        :min="0"
-                        class="w-full"
-                    />
+                    <InputNumber id="editDuration" v-model="editForm.duration" mode="decimal" :min="0" class="w-full" />
                 </div>
 
                 <div class="col-12 md:col-4">
                     <label for="editStatus" class="block text-900 font-medium mb-2">状态</label>
-                    <Dropdown 
-                        id="editStatus" 
-                        v-model="editForm.status" 
-                        :options="statusOptions" 
-                        optionLabel="label" 
-                        optionValue="value" 
-                        class="w-full"
-                    />
+                    <Dropdown id="editStatus" v-model="editForm.status" :options="statusOptions" optionLabel="label" optionValue="value" class="w-full" />
                 </div>
 
                 <div class="col-12">
                     <label for="editDescription" class="block text-900 font-medium mb-2">分集简介</label>
-                    <Textarea 
-                        id="editDescription" 
-                        v-model="editForm.description" 
-                        rows="3" 
-                        placeholder="请输入分集简介（选填）" 
-                        class="w-full"
-                    />
+                    <Textarea id="editDescription" v-model="editForm.description" rows="3" placeholder="请输入分集简介（选填）" class="w-full" />
                 </div>
             </div>
 
@@ -1079,28 +936,12 @@ onMounted(() => {
 
                 <div class="col-12" v-if="paymentForm.isPaid">
                     <label for="paymentPrice" class="block text-900 font-medium mb-2">价格(元) *</label>
-                    <InputNumber 
-                        id="paymentPrice" 
-                        v-model="paymentForm.price" 
-                        mode="currency" 
-                        currency="CNY" 
-                        locale="zh-CN"
-                        :min="0"
-                        placeholder="0.00" 
-                        class="w-full"
-                    />
+                    <InputNumber id="paymentPrice" v-model="paymentForm.price" mode="currency" currency="CNY" locale="zh-CN" :min="0" placeholder="0.00" class="w-full" />
                 </div>
 
                 <div class="col-12">
                     <label for="paymentFreePreview" class="block text-900 font-medium mb-2">免费预览时长(秒)</label>
-                    <InputNumber 
-                        id="paymentFreePreview" 
-                        v-model="paymentForm.freePreviewDuration" 
-                        mode="decimal"
-                        :min="0"
-                        placeholder="0" 
-                        class="w-full"
-                    />
+                    <InputNumber id="paymentFreePreview" v-model="paymentForm.freePreviewDuration" mode="decimal" :min="0" placeholder="0" class="w-full" />
                     <small class="text-600">0表示不提供免费预览</small>
                 </div>
             </div>
@@ -1122,30 +963,20 @@ onMounted(() => {
                         <span>播放量: {{ selectedEpisode.playCount || 0 }}</span>
                     </div>
                 </div>
-                
+
                 <div class="video-wrapper">
-                    <video 
-                        :key="selectedEpisode._id"
-                        controls 
-                        preload="metadata"
-                        class="w-full border-round"
-                        style="max-height: 500px;"
-                        @loadstart="onVideoLoadStart"
-                        @canplay="onVideoCanPlay"
-                        @error="onVideoError"
-                        ref="videoPlayer"
-                    >
-                        <source :src="getVideoUrl(selectedEpisode.videoUrl)" type="video/mp4">
+                    <video :key="selectedEpisode._id" controls preload="metadata" class="w-full border-round" style="max-height: 500px" @loadstart="onVideoLoadStart" @canplay="onVideoCanPlay" @error="onVideoError" ref="videoPlayer">
+                        <source :src="getVideoUrl(selectedEpisode.videoUrl)" type="video/mp4" />
                         您的浏览器不支持视频播放
                     </video>
                 </div>
-                
+
                 <div v-if="selectedEpisode.description" class="mt-4">
                     <h5>分集简介</h5>
                     <p class="text-600 line-height-3">{{ selectedEpisode.description }}</p>
                 </div>
             </div>
-            
+
             <template #footer>
                 <Button label="关闭" icon="pi pi-times" severity="secondary" @click="closePlayDialog" />
             </template>
@@ -1166,34 +997,18 @@ onMounted(() => {
         </Dialog>
 
         <!-- 合集选择器对话框 -->
-        <Dialog 
-            v-model:visible="collectionSelectorVisible" 
-            :style="{ width: '800px' }" 
-            header="选择剧集合集" 
-            :modal="true" 
-            :closable="true"
-            @hide="closeCollectionSelector"
-        >
+        <Dialog v-model:visible="collectionSelectorVisible" :style="{ width: '800px' }" header="选择剧集合集" :modal="true" :closable="true" @hide="closeCollectionSelector">
             <div class="mb-4">
                 <div class="flex gap-2">
-                    <InputText 
-                        v-model="collectionSearchText" 
-                        placeholder="搜索合集标题..." 
-                        class="flex-1"
-                        @keyup.enter="onCollectionSearch"
-                    />
-                    <Button 
-                        icon="pi pi-search" 
-                        @click="onCollectionSearch"
-                        severity="primary"
-                    />
+                    <InputText v-model="collectionSearchText" placeholder="搜索合集标题..." class="flex-1" @keyup.enter="onCollectionSearch" />
+                    <Button icon="pi pi-search" @click="onCollectionSearch" severity="primary" />
                 </div>
             </div>
 
-            <DataTable 
-                :value="collections" 
+            <DataTable
+                :value="collections"
                 :loading="loading"
-                :paginator="true" 
+                :paginator="true"
                 :rows="collectionPagination.pageSize"
                 :totalRecords="collectionPagination.total"
                 @page="onCollectionPageChange"
@@ -1209,39 +1024,30 @@ onMounted(() => {
                         <div class="font-bold">{{ slotProps.data.title }}</div>
                     </template>
                 </Column>
-                
-                <Column field="description" header="简介" style="max-width: 200px;">
+
+                <Column field="description" header="简介" style="max-width: 200px">
                     <template #body="slotProps">
-                        <div class="text-sm text-600 line-height-2" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                        <div class="text-sm text-600 line-height-2" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap">
                             {{ slotProps.data.description }}
                         </div>
                     </template>
                 </Column>
-                
-                <Column field="workCount" header="分集数" style="width: 80px;">
+
+                <Column field="workCount" header="分集数" style="width: 80px">
                     <template #body="slotProps">
                         <Badge :value="`${slotProps.data.workCount}集`" severity="info" />
                     </template>
                 </Column>
-                
-                <Column field="status" header="状态" style="width: 100px;">
+
+                <Column field="status" header="状态" style="width: 100px">
                     <template #body="slotProps">
-                        <Tag 
-                            :value="slotProps.data.isFinished ? '已完结' : '连载中'" 
-                            :severity="slotProps.data.isFinished ? 'success' : 'warning'" 
-                        />
+                        <Tag :value="slotProps.data.isFinished ? '已完结' : '连载中'" :severity="slotProps.data.isFinished ? 'success' : 'warning'" />
                     </template>
                 </Column>
-                
-                <Column header="操作" style="width: 100px;">
+
+                <Column header="操作" style="width: 100px">
                     <template #body="slotProps">
-                        <Button 
-                            icon="pi pi-check" 
-                            severity="success" 
-                            size="small"
-                            @click="selectCollectionFromSelector(slotProps.data)"
-                            v-tooltip.top="'选择此合集'"
-                        />
+                        <Button icon="pi pi-check" severity="success" size="small" @click="selectCollectionFromSelector(slotProps.data)" v-tooltip.top="'选择此合集'" />
                     </template>
                 </Column>
             </DataTable>
@@ -1262,7 +1068,6 @@ onMounted(() => {
     display: flex;
     align-items: center;
 }
-
 
 /* 视频播放器样式 */
 .video-player-container {

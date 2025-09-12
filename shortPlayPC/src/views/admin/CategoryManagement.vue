@@ -36,16 +36,19 @@ const statusOptions = [
 const statusSeverity = computed(() => {
     return (status) => {
         switch (status) {
-            case 'active': return 'success';
-            case 'inactive': return 'danger';
-            default: return 'info';
+            case 'active':
+                return 'success';
+            case 'inactive':
+                return 'danger';
+            default:
+                return 'info';
         }
     };
 });
 
 const statusLabel = computed(() => {
     return (status) => {
-        const option = statusOptions.find(opt => opt.value === status);
+        const option = statusOptions.find((opt) => opt.value === status);
         return option ? option.label : status;
     };
 });
@@ -54,9 +57,9 @@ const statusLabel = computed(() => {
 const loadClassifiers = async () => {
     try {
         loading.value = true;
-        
+
         const response = await AdminService.getClassifiers();
-        
+
         if (response.success) {
             classifiers.value = response.data.sort((a, b) => (b.sortOrder || 0) - (a.sortOrder || 0));
         }
@@ -76,7 +79,7 @@ const openNew = () => {
     resetForm();
     // 设置默认排序：当前分类数量 + 1
     classifierForm.sortOrder = classifiers.value.length + 1;
-    
+
     submitted.value = false;
     classifierDialog.value = true;
 };
@@ -87,7 +90,7 @@ const editClassifier = (classifier) => {
     classifierForm.description = classifier.description;
     classifierForm.status = classifier.status;
     classifierForm.sortOrder = classifier.sortOrder || 0;
-    
+
     submitted.value = false;
     classifierDialog.value = true;
 };
@@ -100,14 +103,14 @@ const confirmDeleteClassifier = (classifier) => {
 const deleteClassifier = async () => {
     try {
         await AdminService.deleteClassifier(selectedClassifier.value._id);
-        
+
         toast.add({
             severity: 'success',
             summary: '成功',
             detail: '分类删除成功',
             life: 3000
         });
-        
+
         deleteDialog.value = false;
         selectedClassifier.value = null;
         loadClassifiers();
@@ -123,7 +126,7 @@ const deleteClassifier = async () => {
 
 const saveClassifier = async () => {
     submitted.value = true;
-    
+
     if (!classifierForm.name) {
         return;
     }
@@ -139,7 +142,7 @@ const saveClassifier = async () => {
         if (selectedClassifier.value) {
             // 更新
             await AdminService.updateClassifier(selectedClassifier.value._id, data);
-            
+
             toast.add({
                 severity: 'success',
                 summary: '成功',
@@ -149,7 +152,7 @@ const saveClassifier = async () => {
         } else {
             // 创建
             await AdminService.createClassifier(data);
-            
+
             toast.add({
                 severity: 'success',
                 summary: '成功',
@@ -157,7 +160,7 @@ const saveClassifier = async () => {
                 life: 3000
             });
         }
-        
+
         classifierDialog.value = false;
         resetForm();
         loadClassifiers();
@@ -186,22 +189,22 @@ const hideDialog = () => {
 };
 
 const moveUp = async (classifier) => {
-    const currentIndex = classifiers.value.findIndex(c => c._id === classifier._id);
+    const currentIndex = classifiers.value.findIndex((c) => c._id === classifier._id);
     if (currentIndex > 0) {
         const prevClassifier = classifiers.value[currentIndex - 1];
         const tempOrder = classifier.order;
-        
+
         try {
             // 交换排序
-            await AdminService.updateClassifier(classifier._id, { 
-                ...classifier, 
-                order: prevClassifier.order 
+            await AdminService.updateClassifier(classifier._id, {
+                ...classifier,
+                order: prevClassifier.order
             });
-            await AdminService.updateClassifier(prevClassifier._id, { 
-                ...prevClassifier, 
-                order: tempOrder 
+            await AdminService.updateClassifier(prevClassifier._id, {
+                ...prevClassifier,
+                order: tempOrder
             });
-            
+
             loadClassifiers();
         } catch (error) {
             toast.add({
@@ -215,22 +218,22 @@ const moveUp = async (classifier) => {
 };
 
 const moveDown = async (classifier) => {
-    const currentIndex = classifiers.value.findIndex(c => c._id === classifier._id);
+    const currentIndex = classifiers.value.findIndex((c) => c._id === classifier._id);
     if (currentIndex < classifiers.value.length - 1) {
         const nextClassifier = classifiers.value[currentIndex + 1];
         const tempOrder = classifier.order;
-        
+
         try {
             // 交换排序
-            await AdminService.updateClassifier(classifier._id, { 
-                ...classifier, 
-                order: nextClassifier.order 
+            await AdminService.updateClassifier(classifier._id, {
+                ...classifier,
+                order: nextClassifier.order
             });
-            await AdminService.updateClassifier(nextClassifier._id, { 
-                ...nextClassifier, 
-                order: tempOrder 
+            await AdminService.updateClassifier(nextClassifier._id, {
+                ...nextClassifier,
+                order: tempOrder
             });
-            
+
             loadClassifiers();
         } catch (error) {
             toast.add({
@@ -250,14 +253,14 @@ const toggleStatus = async (classifier) => {
             ...classifier,
             status: newStatus
         });
-        
+
         toast.add({
             severity: 'success',
             summary: '成功',
             detail: `分类已${newStatus === 'active' ? '启用' : '禁用'}`,
             life: 3000
         });
-        
+
         loadClassifiers();
     } catch (error) {
         toast.add({
@@ -296,12 +299,7 @@ onMounted(() => {
             </Toolbar>
 
             <!-- 数据表格 -->
-            <DataTable 
-                :value="classifiers" 
-                :loading="loading"
-                responsiveLayout="scroll"
-                class="p-datatable-gridlines"
-            >
+            <DataTable :value="classifiers" :loading="loading" responsiveLayout="scroll" class="p-datatable-gridlines">
                 <template #header>
                     <div class="flex flex-wrap gap-2 align-items-center justify-content-between">
                         <h4 class="m-0">分类列表</h4>
@@ -315,7 +313,6 @@ onMounted(() => {
                         <p class="text-surface-600 text-xl">暂无分类数据</p>
                     </div>
                 </template>
-
 
                 <Column field="name" header="分类名称" style="min-width: 200px">
                     <template #body="slotProps">
@@ -333,10 +330,7 @@ onMounted(() => {
 
                 <Column field="status" header="状态" style="min-width: 120px">
                     <template #body="slotProps">
-                        <Tag 
-                            :value="statusLabel(slotProps.data.status)" 
-                            :severity="statusSeverity(slotProps.data.status)" 
-                        />
+                        <Tag :value="statusLabel(slotProps.data.status)" :severity="statusSeverity(slotProps.data.status)" />
                     </template>
                 </Column>
 
@@ -358,28 +352,15 @@ onMounted(() => {
                 <Column :exportable="false" style="min-width: 180px">
                     <template #body="slotProps">
                         <div class="flex gap-2">
-                            <Button 
-                                :icon="slotProps.data.status === 'active' ? 'pi pi-eye-slash' : 'pi pi-eye'" 
-                                :severity="slotProps.data.status === 'active' ? 'warning' : 'success'" 
-                                size="small" 
-                                @click="toggleStatus(slotProps.data)" 
+                            <Button
+                                :icon="slotProps.data.status === 'active' ? 'pi pi-eye-slash' : 'pi pi-eye'"
+                                :severity="slotProps.data.status === 'active' ? 'warning' : 'success'"
+                                size="small"
+                                @click="toggleStatus(slotProps.data)"
                                 :v-tooltip.top="slotProps.data.status === 'active' ? '禁用' : '启用'"
                             />
-                            <Button 
-                                icon="pi pi-pencil" 
-                                severity="info" 
-                                size="small" 
-                                @click="editClassifier(slotProps.data)" 
-                                v-tooltip.top="'编辑'"
-                            />
-                            <Button 
-                                icon="pi pi-trash" 
-                                severity="danger" 
-                                size="small" 
-                                @click="confirmDeleteClassifier(slotProps.data)" 
-                                v-tooltip.top="'删除'"
-                                :disabled="(slotProps.data.collectionCount || 0) > 0"
-                            />
+                            <Button icon="pi pi-pencil" severity="info" size="small" @click="editClassifier(slotProps.data)" v-tooltip.top="'编辑'" />
+                            <Button icon="pi pi-trash" severity="danger" size="small" @click="confirmDeleteClassifier(slotProps.data)" v-tooltip.top="'删除'" :disabled="(slotProps.data.collectionCount || 0) > 0" />
                         </div>
                     </template>
                 </Column>
@@ -391,51 +372,23 @@ onMounted(() => {
             <div class="grid">
                 <div class="col-12">
                     <label for="name" class="block text-900 font-medium mb-2">分类名称 *</label>
-                    <InputText 
-                        id="name" 
-                        v-model.trim="classifierForm.name" 
-                        required 
-                        autofocus 
-                        :class="{ 'p-invalid': submitted && !classifierForm.name }" 
-                        class="w-full"
-                        placeholder="请输入分类名称"
-                    />
+                    <InputText id="name" v-model.trim="classifierForm.name" required autofocus :class="{ 'p-invalid': submitted && !classifierForm.name }" class="w-full" placeholder="请输入分类名称" />
                     <small v-if="submitted && !classifierForm.name" class="p-error">分类名称不能为空</small>
                 </div>
 
                 <div class="col-12">
                     <label for="description" class="block text-900 font-medium mb-2">分类描述</label>
-                    <Textarea 
-                        id="description" 
-                        v-model="classifierForm.description" 
-                        rows="3" 
-                        class="w-full"
-                        placeholder="请输入分类描述（选填）"
-                    />
+                    <Textarea id="description" v-model="classifierForm.description" rows="3" class="w-full" placeholder="请输入分类描述（选填）" />
                 </div>
 
                 <div class="col-12 md:col-6">
                     <label for="status" class="block text-900 font-medium mb-2">状态</label>
-                    <Dropdown 
-                        id="status" 
-                        v-model="classifierForm.status" 
-                        :options="statusOptions" 
-                        optionLabel="label" 
-                        optionValue="value" 
-                        class="w-full"
-                    />
+                    <Dropdown id="status" v-model="classifierForm.status" :options="statusOptions" optionLabel="label" optionValue="value" class="w-full" />
                 </div>
 
                 <div class="col-12 md:col-6">
                     <label for="order" class="block text-900 font-medium mb-2">排序</label>
-                    <InputNumber 
-                        id="order" 
-                        v-model="classifierForm.order" 
-                        mode="decimal"
-                        :min="0"
-                        class="w-full"
-                        placeholder="排序值"
-                    />
+                    <InputNumber id="order" v-model="classifierForm.order" mode="decimal" :min="0" class="w-full" placeholder="排序值" />
                     <small class="text-600">数字越小排序越靠前</small>
                 </div>
             </div>
@@ -452,7 +405,7 @@ onMounted(() => {
                 <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
                 <span v-if="selectedClassifier">
                     您确定要删除分类 <b>{{ selectedClassifier.name }}</b> 吗？
-                    <br/>
+                    <br />
                     <small class="text-600">删除后无法恢复，请谨慎操作。</small>
                 </span>
             </div>

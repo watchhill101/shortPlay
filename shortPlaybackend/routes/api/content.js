@@ -17,9 +17,9 @@ const storage = multer.diskStorage({
     }
   },
   filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
     cb(null, uniqueSuffix + path.extname(file.originalname));
-  }
+  },
 });
 
 const upload = multer({ storage: storage });
@@ -43,10 +43,7 @@ router.get('/collections', auth, async (req, res) => {
     if (status) query.status = status;
     if (classifier) query.classifier = classifier;
     if (keyword) {
-      query.$or = [
-        { title: { $regex: keyword, $options: 'i' } },
-        { description: { $regex: keyword, $options: 'i' } }
-      ];
+      query.$or = [{ title: { $regex: keyword, $options: 'i' } }, { description: { $regex: keyword, $options: 'i' } }];
     }
 
     const collections = await Collection.find(query)
@@ -66,9 +63,9 @@ router.get('/collections', auth, async (req, res) => {
           current: page,
           pageSize: limit,
           total,
-          pages: Math.ceil(total / limit)
-        }
-      }
+          pages: Math.ceil(total / limit),
+        },
+      },
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -83,14 +80,14 @@ router.get('/collections', auth, async (req, res) => {
 router.post('/collections', auth, upload.single('coverImage'), async (req, res) => {
   try {
     const { title, description, classifier, tags, isFinished } = req.body;
-    
+
     const collectionData = {
       backgroundUser: req.user.id,
       title,
       description,
       classifier,
       status: 'draft',
-      isFinished: isFinished === 'true'
+      isFinished: isFinished === 'true',
     };
 
     if (req.file) {
@@ -109,7 +106,7 @@ router.post('/collections', auth, upload.single('coverImage'), async (req, res) 
     res.status(201).json({
       success: true,
       data: collection,
-      message: '合集创建成功'
+      message: '合集创建成功',
     });
   } catch (error) {
     res.status(400).json({ success: false, message: error.message });
@@ -124,13 +121,13 @@ router.post('/collections', auth, upload.single('coverImage'), async (req, res) 
 router.put('/collections/:id', auth, upload.single('coverImage'), async (req, res) => {
   try {
     const { title, description, classifier, tags, isFinished, status } = req.body;
-    
+
     const updateData = {
       title,
       description,
       classifier,
       isFinished: isFinished === 'true',
-      status
+      status,
     };
 
     if (req.file) {
@@ -141,11 +138,10 @@ router.put('/collections/:id', auth, upload.single('coverImage'), async (req, re
       updateData.tags = Array.isArray(tags) ? tags : tags.split(',');
     }
 
-    const collection = await Collection.findByIdAndUpdate(
-      req.params.id,
-      updateData,
-      { new: true }
-    ).populate(['backgroundUser', 'classifier']);
+    const collection = await Collection.findByIdAndUpdate(req.params.id, updateData, { new: true }).populate([
+      'backgroundUser',
+      'classifier',
+    ]);
 
     if (!collection) {
       return res.status(404).json({ success: false, message: '合集不存在' });
@@ -154,7 +150,7 @@ router.put('/collections/:id', auth, upload.single('coverImage'), async (req, re
     res.json({
       success: true,
       data: collection,
-      message: '合集更新成功'
+      message: '合集更新成功',
     });
   } catch (error) {
     res.status(400).json({ success: false, message: error.message });
@@ -176,9 +172,9 @@ router.delete('/collections/:id', auth, async (req, res) => {
     // 检查是否有关联的作品
     const workCount = await Work.countDocuments({ collectionId: req.params.id });
     if (workCount > 0) {
-      return res.status(400).json({ 
-        success: false, 
-        message: '该合集下还有作品，请先删除所有作品后再删除合集' 
+      return res.status(400).json({
+        success: false,
+        message: '该合集下还有作品，请先删除所有作品后再删除合集',
       });
     }
 
@@ -186,7 +182,7 @@ router.delete('/collections/:id', auth, async (req, res) => {
 
     res.json({
       success: true,
-      message: '合集删除成功'
+      message: '合集删除成功',
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -202,12 +198,11 @@ router.delete('/collections/:id', auth, async (req, res) => {
  */
 router.get('/collections/:id/works', auth, async (req, res) => {
   try {
-    const works = await Work.find({ collectionId: req.params.id })
-      .sort({ episodeNumber: 1 });
+    const works = await Work.find({ collectionId: req.params.id }).sort({ episodeNumber: 1 });
 
     res.json({
       success: true,
-      data: works
+      data: works,
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -219,99 +214,109 @@ router.get('/collections/:id/works', auth, async (req, res) => {
  * @desc 为合集添加新作品
  * @access Private
  */
-router.post('/collections/:id/works', auth, upload.fields([
-  { name: 'video', maxCount: 1 },
-  { name: 'coverImage', maxCount: 1 }
-]), async (req, res) => {
-  try {
-    const { title, episodeNumber, duration } = req.body;
+router.post(
+  '/collections/:id/works',
+  auth,
+  upload.fields([
+    { name: 'video', maxCount: 1 },
+    { name: 'coverImage', maxCount: 1 },
+  ]),
+  async (req, res) => {
+    try {
+      const { title, episodeNumber, duration } = req.body;
 
-    // 检查合集是否存在
-    const collection = await Collection.findById(req.params.id);
-    if (!collection) {
-      return res.status(404).json({ success: false, message: '合集不存在' });
-    }
+      // 检查合集是否存在
+      const collection = await Collection.findById(req.params.id);
+      if (!collection) {
+        return res.status(404).json({ success: false, message: '合集不存在' });
+      }
 
-    const workData = {
-      collectionId: req.params.id,
-      title,
-      episodeNumber: parseInt(episodeNumber),
-      duration: parseInt(duration),
-      status: 'draft'
-    };
+      const workData = {
+        collectionId: req.params.id,
+        title,
+        episodeNumber: parseInt(episodeNumber),
+        duration: parseInt(duration),
+        status: 'draft',
+      };
 
-    if (req.files.video) {
-      workData.videoUrl = `/uploads/video/${req.files.video[0].filename}`;
-    }
+      if (req.files.video) {
+        workData.videoUrl = `/uploads/video/${req.files.video[0].filename}`;
+      }
 
-    if (req.files.coverImage) {
-      workData.coverImage = `/uploads/coverImage/${req.files.coverImage[0].filename}`;
-    }
+      if (req.files.coverImage) {
+        workData.coverImage = `/uploads/coverImage/${req.files.coverImage[0].filename}`;
+      }
 
-    const work = new Work(workData);
-    await work.save();
+      const work = new Work(workData);
+      await work.save();
 
-    // 更新合集的作品数量
-    await Collection.findByIdAndUpdate(req.params.id, {
-      $inc: { workCount: 1 }
-    });
+      // 更新合集的作品数量
+      await Collection.findByIdAndUpdate(req.params.id, {
+        $inc: { workCount: 1 },
+      });
 
-    res.status(201).json({
-      success: true,
-      data: work,
-      message: '作品添加成功'
-    });
-  } catch (error) {
-    if (error.code === 11000) {
-      res.status(400).json({ success: false, message: '该剧集编号已存在' });
-    } else {
-      res.status(400).json({ success: false, message: error.message });
+      res.status(201).json({
+        success: true,
+        data: work,
+        message: '作品添加成功',
+      });
+    } catch (error) {
+      if (error.code === 11000) {
+        res.status(400).json({ success: false, message: '该剧集编号已存在' });
+      } else {
+        res.status(400).json({ success: false, message: error.message });
+      }
     }
   }
-});
+);
 
 /**
  * @route PUT /api/content/works/:id
  * @desc 更新作品信息
  * @access Private
  */
-router.put('/works/:id', auth, upload.fields([
-  { name: 'video', maxCount: 1 },
-  { name: 'coverImage', maxCount: 1 }
-]), async (req, res) => {
-  try {
-    const { title, episodeNumber, duration, status } = req.body;
+router.put(
+  '/works/:id',
+  auth,
+  upload.fields([
+    { name: 'video', maxCount: 1 },
+    { name: 'coverImage', maxCount: 1 },
+  ]),
+  async (req, res) => {
+    try {
+      const { title, episodeNumber, duration, status } = req.body;
 
-    const updateData = {
-      title,
-      episodeNumber: parseInt(episodeNumber),
-      duration: parseInt(duration),
-      status
-    };
+      const updateData = {
+        title,
+        episodeNumber: parseInt(episodeNumber),
+        duration: parseInt(duration),
+        status,
+      };
 
-    if (req.files.video) {
-      updateData.videoUrl = `/uploads/video/${req.files.video[0].filename}`;
+      if (req.files.video) {
+        updateData.videoUrl = `/uploads/video/${req.files.video[0].filename}`;
+      }
+
+      if (req.files.coverImage) {
+        updateData.coverImage = `/uploads/coverImage/${req.files.coverImage[0].filename}`;
+      }
+
+      const work = await Work.findByIdAndUpdate(req.params.id, updateData, { new: true });
+
+      if (!work) {
+        return res.status(404).json({ success: false, message: '作品不存在' });
+      }
+
+      res.json({
+        success: true,
+        data: work,
+        message: '作品更新成功',
+      });
+    } catch (error) {
+      res.status(400).json({ success: false, message: error.message });
     }
-
-    if (req.files.coverImage) {
-      updateData.coverImage = `/uploads/coverImage/${req.files.coverImage[0].filename}`;
-    }
-
-    const work = await Work.findByIdAndUpdate(req.params.id, updateData, { new: true });
-
-    if (!work) {
-      return res.status(404).json({ success: false, message: '作品不存在' });
-    }
-
-    res.json({
-      success: true,
-      data: work,
-      message: '作品更新成功'
-    });
-  } catch (error) {
-    res.status(400).json({ success: false, message: error.message });
   }
-});
+);
 
 /**
  * @route DELETE /api/content/works/:id
@@ -330,12 +335,12 @@ router.delete('/works/:id', auth, async (req, res) => {
 
     // 更新合集的作品数量
     await Collection.findByIdAndUpdate(collectionId, {
-      $inc: { workCount: -1 }
+      $inc: { workCount: -1 },
     });
 
     res.json({
       success: true,
-      message: '作品删除成功'
+      message: '作品删除成功',
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -351,12 +356,11 @@ router.delete('/works/:id', auth, async (req, res) => {
  */
 router.get('/classifiers', auth, async (req, res) => {
   try {
-    const classifiers = await Classifier.find({ status: 'active' })
-      .sort({ order: 1 });
+    const classifiers = await Classifier.find({ status: 'active' }).sort({ order: 1 });
 
     res.json({
       success: true,
-      data: classifiers
+      data: classifiers,
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -376,7 +380,7 @@ router.post('/classifiers', auth, async (req, res) => {
       name,
       description,
       order: order || 0,
-      status: 'active'
+      status: 'active',
     });
 
     await classifier.save();
@@ -384,7 +388,7 @@ router.post('/classifiers', auth, async (req, res) => {
     res.status(201).json({
       success: true,
       data: classifier,
-      message: '分类创建成功'
+      message: '分类创建成功',
     });
   } catch (error) {
     if (error.code === 11000) {
@@ -408,11 +412,11 @@ router.put('/collections/:id/status', auth, async (req, res) => {
 
     const collection = await Collection.findByIdAndUpdate(
       req.params.id,
-      { 
+      {
         status,
         auditReason: reason || null,
         auditBy: req.user.id,
-        auditAt: new Date()
+        auditAt: new Date(),
       },
       { new: true }
     ).populate(['backgroundUser', 'classifier']);
@@ -424,7 +428,7 @@ router.put('/collections/:id/status', auth, async (req, res) => {
     res.json({
       success: true,
       data: collection,
-      message: `合集${status === 'published' ? '审核通过' : '审核拒绝'}`
+      message: `合集${status === 'published' ? '审核通过' : '审核拒绝'}`,
     });
   } catch (error) {
     res.status(400).json({ success: false, message: error.message });
