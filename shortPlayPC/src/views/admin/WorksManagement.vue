@@ -2,13 +2,11 @@
 import { ref, reactive, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useToast } from 'primevue/usetoast';
-import { useConfirm } from 'primevue/useconfirm';
 import AdminService from '@/service/AdminService';
 
 const route = useRoute();
 const router = useRouter();
 const toast = useToast();
-const confirm = useConfirm();
 
 // 获取合集ID
 const collectionId = computed(() => route.params.id);
@@ -287,14 +285,6 @@ const formatDuration = (seconds) => {
     } else {
         return `${minutes}:${secs.toString().padStart(2, '0')}`;
     }
-};
-
-const formatFileSize = (bytes) => {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 };
 
 // 生命周期

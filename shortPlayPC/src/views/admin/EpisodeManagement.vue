@@ -1,11 +1,9 @@
 <script setup>
 import { ref, reactive, onMounted, computed, nextTick } from 'vue';
 import { useToast } from 'primevue/usetoast';
-import { useConfirm } from 'primevue/useconfirm';
 import AdminService from '@/service/AdminService';
 
 const toast = useToast();
-const confirm = useConfirm();
 
 // 数据定义
 const collections = ref([]);
@@ -80,6 +78,19 @@ const statusOptions = [
     { label: '已发布', value: 'published' }
 ];
 
+// 筛选参数
+const filterParams = reactive({
+    status: 'all'
+});
+
+// 筛选状态选项
+const filterStatusOptions = [
+    { label: '全部状态', value: 'all' },
+
+    { label: '已发布', value: 'published' },
+    { label: '被拒绝', value: 'rejected' }
+];
+
 // 计算属性
 const statusSeverity = computed(() => {
     return (status) => {
@@ -132,6 +143,11 @@ const onCollectionChange = () => {
     }
 };
 
+const onStatusFilterChange = () => {
+    pagination.page = 1;
+    loadEpisodes();
+};
+
 const loadEpisodes = async () => {
     if (!selectedCollection.value) return;
 
@@ -142,6 +158,11 @@ const loadEpisodes = async () => {
             page: pagination.page,
             pageSize: pagination.pageSize
         };
+
+        // 只有当状态不是 'all' 时才添加状态参数
+        if (filterParams.status !== 'all') {
+            params.status = filterParams.status;
+        }
 
         const response = await AdminService.getWorksByCollection(selectedCollection.value._id, params);
 
@@ -245,7 +266,6 @@ const uploadEpisode = async () => {
         }, 500);
 
         const data = {
-            collectionId: selectedCollection.value._id,
             title: uploadForm.title,
             episodeNumber: uploadForm.episodeNumber,
             duration: uploadForm.duration,
@@ -255,7 +275,7 @@ const uploadEpisode = async () => {
             price: uploadForm.isPaid ? uploadForm.price : 0
         };
 
-        await AdminService.createWork(data);
+        await AdminService.createWork(selectedCollection.value._id, data, uploadForm.videoFile, uploadForm.coverImageFile);
 
         clearInterval(progressInterval);
         uploadProgress.value = 100;
@@ -707,7 +727,8 @@ onMounted(() => {
                     <template #header>
                         <div class="flex flex-wrap gap-2 align-items-center justify-content-between">
                             <h4 class="m-0">分集列表</h4>
-                            <div class="flex gap-2">
+                            <div class="flex gap-2 align-items-center">
+                                <Dropdown v-model="filterParams.status" :options="filterStatusOptions" optionLabel="label" optionValue="value" placeholder="筛选状态" @change="onStatusFilterChange" style="min-width: 120px" />
                                 <Button label="批量删除" icon="pi pi-trash" severity="danger" :disabled="!selectedEpisodes.length" />
                             </div>
                         </div>
@@ -761,9 +782,18 @@ onMounted(() => {
                         </template>
                     </Column>
 
-                    <Column field="status" header="状态" sortable style="min-width: 120px">
+                    <Column field="status" header="状态" sortable style="min-width: 200px">
                         <template #body="slotProps">
-                            <Tag :value="statusLabel(slotProps.data.status)" :severity="statusSeverity(slotProps.data.status)" />
+                            <div class="flex flex-column gap-1">
+                                <Tag :value="statusLabel(slotProps.data.status)" :severity="statusSeverity(slotProps.data.status)" />
+                                <div v-if="slotProps.data.status === 'rejected' && slotProps.data.reviewNote" class="text-xs text-red-500">
+                                    <div class="font-semibold">拒绝原因:</div>
+                                    <div class="text-red-400">{{ slotProps.data.reviewNote }}</div>
+                                    <div v-if="slotProps.data.reviewedAt" class="text-gray-500">
+                                        {{ new Date(slotProps.data.reviewedAt).toLocaleDateString() }}
+                                    </div>
+                                </div>
+                            </div>
                         </template>
                     </Column>
 
@@ -786,9 +816,15 @@ onMounted(() => {
                     <Column :exportable="false" style="min-width: 150px">
                         <template #body="slotProps">
                             <div class="flex gap-2">
-                                <Button icon="pi pi-pencil" severity="info" size="small" @click="editEpisode(slotProps.data)" v-tooltip.top="'编辑分集'" />
-                                <Button icon="pi pi-dollar" severity="warning" size="small" @click="openPaymentDialog(slotProps.data)" v-tooltip.top="'付费设置'" />
-                                <Button icon="pi pi-trash" severity="danger" size="small" @click="confirmDeleteEpisode(slotProps.data)" v-tooltip.top="'删除'" />
+                                <Button v-if="slotProps.data.status !== 'rejected'" icon="pi pi-pencil" severity="info" size="small" @click="editEpisode(slotProps.data)" v-tooltip.top="'编辑分集'" />
+                                <Button v-if="slotProps.data.status !== 'rejected'" icon="pi pi-dollar" severity="warning" size="small" @click="openPaymentDialog(slotProps.data)" v-tooltip.top="'付费设置'" />
+                                <Button
+                                    icon="pi pi-trash"
+                                    :severity="slotProps.data.status === 'rejected' ? 'danger' : 'danger'"
+                                    size="small"
+                                    @click="confirmDeleteEpisode(slotProps.data)"
+                                    v-tooltip.top="slotProps.data.status === 'rejected' ? '删除被拒分集' : '删除分集'"
+                                />
                             </div>
                         </template>
                     </Column>

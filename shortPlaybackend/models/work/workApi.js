@@ -15,7 +15,7 @@ router.get('/', async (req, res) => {
       page = 1,
       pageSize = 10,
       collectionId,
-      status = 'published',
+      status = 'all',
       sortBy = 'episodeNumber',
       sortOrder = 'asc',
     } = req.query;
@@ -30,6 +30,9 @@ router.get('/', async (req, res) => {
     if (status && status !== 'all') {
       query.status = status;
     }
+
+    console.log('🔍 分集查询参数:', { collectionId, status, page, pageSize });
+    console.log('🔍 查询条件:', query);
 
     // 计算跳过的数量
     const skip = (parseInt(page) - 1) * parseInt(pageSize);

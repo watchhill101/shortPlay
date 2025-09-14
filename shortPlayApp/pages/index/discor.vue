@@ -9,14 +9,14 @@
               <view class="search-placeholder" :class="{ animating: isPlaceholderAnimating }">
                 {{ currentPlaceholder }}
               </view>
-        </view>
             </view>
+          </view>
         </view>
 
         <!-- 功能按钮区域 -->
         <view class="function-module">
           <view class="function-buttons">
-              <view
+            <view
               class="function-btn"
               v-for="(func, index) in functionButtons"
               :key="index"
@@ -37,7 +37,7 @@
 
           <view class="item">
             <view class="playlet" v-for="(item, index) in searchResults" :keys="index" @tap="toPalyletDetail(item)">
-                <view class="cover">
+              <view class="cover">
                 <image
                   :src="item.image"
                   class="goods-img"
@@ -45,13 +45,13 @@
                   @error="onImageError"
                   @load="onImageLoad"
                 ></image>
-                </view>
-
-                <view class="goods-info flex-1">
-                  <view class="title">{{ item.title }}</view>
-                <view class="brief">{{ item.brief }}</view>
-                </view>
               </view>
+
+              <view class="goods-info flex-1">
+                <view class="title">{{ item.title }}</view>
+                <view class="brief">{{ item.brief }}</view>
+              </view>
+            </view>
 
             <view v-if="searchResults.length % 2 != 0" class="playlet-empty"></view>
           </view>
@@ -77,7 +77,7 @@
               <view class="skeleton-content">
                 <view class="skeleton-title"></view>
                 <view class="skeleton-brief"></view>
-          </view>
+              </view>
             </view>
           </view>
 
@@ -860,7 +860,7 @@ export default {
   width: 28rpx;
   height: 28rpx;
   margin-right: 16rpx;
-    position: relative;
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -900,8 +900,8 @@ export default {
     opacity 0.3s ease,
     transform 0.3s ease;
   white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+  overflow: hidden;
+  text-overflow: ellipsis;
   position: relative;
 }
 

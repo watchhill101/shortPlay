@@ -2,6 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const Classifier = require('./index');
+const Collection = require('../collection/index');
 
 /**
  * @route GET /api/classifier
@@ -12,14 +13,29 @@ router.get('/', async (req, res) => {
   try {
     // 使用 sortorder 字段排序，因为数据库中使用的是 sortorder 而不是 order
     const classifiers = await Classifier.find({}).sort({ sortOrder: -1, createdAt: -1 });
-    console.log('获取到的分类数量:', classifiers.length);
+
+    // 为每个分类计算使用次数（合集数量）
+    const classifiersWithCount = await Promise.all(
+      classifiers.map(async classifier => {
+        const collectionCount = await Collection.countDocuments({
+          classifier: classifier._id,
+        });
+        return {
+          ...classifier.toObject(),
+          collectionCount,
+        };
+      })
+    );
+
+    console.log('获取到的分类数量:', classifiersWithCount.length);
     console.log(
       '分类数据:',
-      classifiers.map(c => ({ name: c.name, sortOrder: c.sortOrder }))
+      classifiersWithCount.map(c => ({ name: c.name, sortOrder: c.sortOrder, collectionCount: c.collectionCount }))
     );
+
     res.json({
       success: true,
-      data: classifiers,
+      data: classifiersWithCount,
       message: '分类列表获取成功',
     });
   } catch (error) {
@@ -46,9 +62,20 @@ router.get('/:id', async (req, res) => {
         message: '分类不存在',
       });
     }
+
+    // 计算该分类的使用次数（合集数量）
+    const collectionCount = await Collection.countDocuments({
+      classifier: classifier._id,
+    });
+
+    const classifierWithCount = {
+      ...classifier.toObject(),
+      collectionCount,
+    };
+
     res.json({
       success: true,
-      data: classifier,
+      data: classifierWithCount,
       message: '分类详情获取成功',
     });
   } catch (error) {

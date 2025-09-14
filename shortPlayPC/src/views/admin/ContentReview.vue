@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive, onMounted, computed } from 'vue';
+import { ref, reactive, onMounted } from 'vue';
 import { useToast } from 'primevue/usetoast';
 import { useConfirm } from 'primevue/useconfirm';
 import AdminService from '@/service/AdminService';
@@ -23,32 +23,23 @@ const pagination = reactive({
 // 审核对话框
 const reviewDialog = ref(false);
 const selectedCollection = ref(null);
+const episodes = ref([]);
+const episodeLoading = ref(false);
 const reviewForm = reactive({
     status: '',
     reviewNote: ''
 });
+
+// 视频播放相关
+const playDialog = ref(false);
+const selectedEpisode = ref(null);
+const videoPlayer = ref(null);
 
 // 审核状态选项
 const reviewStatusOptions = [
     { label: '通过发布', value: 'published' },
     { label: '拒绝归档', value: 'archived' }
 ];
-
-// 计算属性
-const statusSeverity = computed(() => {
-    return (status) => {
-        switch (status) {
-            case 'published':
-                return 'success';
-            case 'draft':
-                return 'warning';
-            case 'archived':
-                return 'danger';
-            default:
-                return 'info';
-        }
-    };
-});
 
 // 方法定义
 const loadPendingCollections = async () => {
@@ -80,11 +71,26 @@ const loadPendingCollections = async () => {
     }
 };
 
+const loadEpisodes = async (collectionId) => {
+    try {
+        episodeLoading.value = true;
+        const response = await AdminService.getWorksByCollection(collectionId, { status: 'pending' });
+        if (response.success) {
+            episodes.value = response.data;
+        }
+    } catch (error) {
+        console.error('加载分集失败:', error);
+    } finally {
+        episodeLoading.value = false;
+    }
+};
+
 const openReviewDialog = (collection) => {
     selectedCollection.value = collection;
     reviewForm.status = '';
     reviewForm.reviewNote = '';
     reviewDialog.value = true;
+    loadEpisodes(collection._id);
 };
 
 const submitReview = async () => {
@@ -194,6 +200,70 @@ const hideReviewDialog = () => {
     selectedCollection.value = null;
     reviewForm.status = '';
     reviewForm.reviewNote = '';
+};
+
+// 视频播放相关方法
+const playEpisode = (episode) => {
+    selectedEpisode.value = episode;
+    playDialog.value = true;
+};
+
+const closePlayDialog = () => {
+    playDialog.value = false;
+    selectedEpisode.value = null;
+    if (videoPlayer.value) {
+        videoPlayer.value.pause();
+        videoPlayer.value.currentTime = 0;
+    }
+};
+
+const getVideoUrl = (videoUrl) => {
+    if (!videoUrl) return '';
+
+    console.log('原始视频URL:', videoUrl);
+
+    // 如果已经是完整URL，直接返回
+    if (videoUrl.startsWith('http://') || videoUrl.startsWith('https://')) {
+        console.log('使用完整URL:', videoUrl);
+        return videoUrl;
+    }
+
+    // 如果是相对路径，使用代理路由，通过Vite代理避免跨域问题
+    if (videoUrl.startsWith('/uploads/video/')) {
+        const filename = videoUrl.split('/').pop();
+        const proxyUrl = `/video-proxy/${filename}`;
+        console.log('使用代理URL:', proxyUrl);
+        return proxyUrl;
+    }
+
+    // 其他情况，直接返回相对路径
+    console.log('使用相对路径:', videoUrl);
+    return videoUrl;
+};
+
+const formatDuration = (seconds) => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}分${remainingSeconds}秒`;
+};
+
+// 视频事件处理
+const onVideoLoadStart = () => {
+    console.log('视频开始加载');
+};
+
+const onVideoCanPlay = () => {
+    console.log('视频可以播放');
+};
+
+const onVideoError = (event) => {
+    console.error('视频播放错误:', event);
+    toast.add({
+        severity: 'error',
+        summary: '播放错误',
+        detail: '视频加载失败，请检查文件是否存在',
+        life: 3000
+    });
 };
 
 // 生命周期
@@ -362,6 +432,35 @@ onMounted(() => {
                     </div>
                 </div>
 
+                <!-- 待审核分集列表 -->
+                <div class="col-12">
+                    <Divider />
+                    <h4>待审核分集</h4>
+                    <div v-if="episodeLoading" class="text-center p-4">
+                        <ProgressSpinner />
+                    </div>
+                    <div v-else-if="episodes.length === 0" class="text-center p-4 text-500">暂无待审核分集</div>
+                    <div v-else class="grid">
+                        <div v-for="episode in episodes" :key="episode._id" class="col-12 md:col-6">
+                            <Card class="mb-3">
+                                <template #content>
+                                    <div class="flex align-items-center">
+                                        <div class="flex-1">
+                                            <h5 class="mb-2">{{ episode.title }}</h5>
+                                            <p class="text-sm text-500 mb-2">第{{ episode.episodeNumber }}集</p>
+                                            <p class="text-sm text-500 mb-2">时长: {{ formatDuration(episode.duration) }}</p>
+                                            <Button label="播放视频" icon="pi pi-play" size="small" severity="secondary" @click="playEpisode(episode)" />
+                                        </div>
+                                        <div class="ml-3">
+                                            <Tag value="待审核" severity="warning" />
+                                        </div>
+                                    </div>
+                                </template>
+                            </Card>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- 审核表单 -->
                 <div class="col-12">
                     <Divider />
@@ -384,11 +483,67 @@ onMounted(() => {
                 <Button label="提交审核" icon="pi pi-check" @click="submitReview" />
             </template>
         </Dialog>
+
+        <!-- 视频播放对话框 -->
+        <Dialog v-model:visible="playDialog" :style="{ width: '900px' }" header="视频播放" :modal="true" :closable="true" @hide="closePlayDialog">
+            <div v-if="selectedEpisode" class="video-player-container">
+                <div class="video-info mb-4">
+                    <h4 class="m-0 mb-2">{{ selectedEpisode.title }}</h4>
+                    <div class="flex gap-3 text-sm text-600">
+                        <span>第{{ selectedEpisode.episodeNumber }}集</span>
+                        <span>时长: {{ formatDuration(selectedEpisode.duration) }}</span>
+                        <span>播放量: {{ selectedEpisode.playCount || 0 }}</span>
+                    </div>
+                </div>
+
+                <div class="video-wrapper">
+                    <video :key="selectedEpisode._id" controls preload="metadata" class="w-full border-round" style="max-height: 500px" @loadstart="onVideoLoadStart" @canplay="onVideoCanPlay" @error="onVideoError" ref="videoPlayer">
+                        <source :src="getVideoUrl(selectedEpisode.videoUrl)" type="video/mp4" />
+                        您的浏览器不支持视频播放
+                    </video>
+                </div>
+
+                <div v-if="selectedEpisode.description" class="mt-4">
+                    <h5>分集简介</h5>
+                    <p class="text-600 line-height-3">{{ selectedEpisode.description }}</p>
+                </div>
+            </div>
+
+            <template #footer>
+                <Button label="关闭" icon="pi pi-times" severity="secondary" @click="closePlayDialog" />
+            </template>
+        </Dialog>
     </div>
 </template>
 
 <style scoped>
 .content-review {
     padding: 1rem;
+}
+
+/* 视频播放器样式 */
+.video-player-container {
+    max-width: 100%;
+}
+
+.video-wrapper {
+    position: relative;
+    background: #000;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.video-wrapper video {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.video-info h4 {
+    color: #1f2937;
+}
+
+.video-info .text-600 {
+    color: #6b7280;
 }
 </style>

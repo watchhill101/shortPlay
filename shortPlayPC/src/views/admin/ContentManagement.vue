@@ -2,12 +2,12 @@
 import { ref, reactive, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useToast } from 'primevue/usetoast';
-import { useConfirm } from 'primevue/useconfirm';
 import AdminService from '@/service/AdminService';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 const router = useRouter();
 const toast = useToast();
-const confirm = useConfirm();
 
 // 数据定义
 const collections = ref([]);
@@ -201,7 +201,8 @@ const saveCollection = async () => {
             classifier: collectionForm.classifier,
             actors: collectionForm.actors,
             tags: collectionForm.tags,
-            isFinished: collectionForm.isFinished
+            isFinished: collectionForm.isFinished,
+            status: selectedCollection.value ? undefined : 'published' // 创建时默认为发布状态
         };
 
         if (selectedCollection.value) {
@@ -285,12 +286,304 @@ const viewWorks = (collection) => {
     router.push(`/admin/collections/${collection._id}/works`);
 };
 
-const formatFileSize = (bytes) => {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+// 智能PDF导出功能
+const exportToPDF = async () => {
+    if (selectedCollections.value.length === 0) {
+        toast.add({
+            severity: 'warn',
+            summary: '警告',
+            detail: '请先选择要导出的合集',
+            life: 3000
+        });
+        return;
+    }
+
+    try {
+        // 智能导出模式：根据选中数量自动切换导出格式
+        if (selectedCollections.value.length === 1) {
+            // 单合集模式：导出详细信息PDF（包含封面图片和剧集列表）
+            await exportSingleCollectionDetail(selectedCollections.value[0]);
+        } else {
+            // 多合集模式：导出列表格式PDF
+            await exportMultipleCollectionsList(selectedCollections.value);
+        }
+    } catch (error) {
+        console.error('导出PDF失败:', error);
+        toast.add({
+            severity: 'error',
+            summary: '错误',
+            detail: '导出PDF失败',
+            life: 3000
+        });
+    }
+};
+
+// 单合集详情导出 - 分页布局设计
+const exportSingleCollectionDetail = async (collection) => {
+    const doc = new jsPDF();
+
+    // 第一页：合集基本信息（标题、封面、描述、分类、统计）
+    const firstPageHtml = `
+        <div style="font-family: 'Microsoft YaHei', 'SimSun', sans-serif; padding: 20px; width: 800px; background: #f8f9fa;">
+            <!-- 标题区域 -->
+            <div style="text-align: center; margin-bottom: 30px;">
+                <h1 style="color: #2c3e50; font-size: 28px; margin: 0 0 10px 0; font-weight: 600;">${collection.title}</h1>
+                <div style="width: 80px; height: 3px; background: #007bff; margin: 0 auto; border-radius: 2px;"></div>
+            </div>
+            
+            <!-- 封面图片区域 -->
+            <div style="text-align: center; margin-bottom: 30px;">
+                <img src="${collection.coverImage}" style="width: 300px; height: 400px; object-fit: cover; border-radius: 12px; box-shadow: 0 6px 20px rgba(0,0,0,0.15); display: block; margin: 0 auto;" />
+            </div>
+            
+            <!-- 基本信息卡片 -->
+            <div style="background: #ffffff; padding: 30px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px;">
+                <h3 style="color: #2c3e50; margin: 0 0 25px 0; font-size: 20px; font-weight: 600; display: flex; align-items: center;">
+                    <span style="width: 4px; height: 24px; background: #007bff; margin-right: 12px; border-radius: 2px;"></span>
+                    基本信息
+                </h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 20px;">
+                    <div style="padding: 15px; background: #e3f2fd; border-radius: 8px; border-left: 3px solid #1976d2; text-align: center;">
+                        <div style="font-size: 12px; color: #666; margin-bottom: 5px;">分类</div>
+                        <div style="font-size: 16px; font-weight: 600; color: #1976d2;">${collection.classifier?.name || '未分类'}</div>
+                    </div>
+                    <div style="padding: 15px; background: #e8f5e8; border-radius: 8px; border-left: 3px solid #28a745; text-align: center;">
+                        <div style="font-size: 12px; color: #666; margin-bottom: 5px;">剧集数</div>
+                        <div style="font-size: 16px; font-weight: 600; color: #28a745;">${collection.workCount} 集</div>
+                    </div>
+                    <div style="padding: 15px; background: ${collection.status === 'published' ? '#e8f5e8' : '#fff3cd'}; border-radius: 8px; border-left: 3px solid ${collection.status === 'published' ? '#28a745' : '#ffc107'}; text-align: center;">
+                        <div style="font-size: 12px; color: #666; margin-bottom: 5px;">状态</div>
+                        <div style="font-size: 16px; font-weight: 600; color: ${collection.status === 'published' ? '#28a745' : '#ffc107'};">${collection.status}</div>
+                    </div>
+                    <div style="padding: 15px; background: #f3e5f5; border-radius: 8px; border-left: 3px solid #e91e63; text-align: center;">
+                        <div style="font-size: 12px; color: #666; margin-bottom: 5px;">创建时间</div>
+                        <div style="font-size: 16px; font-weight: 600; color: #e91e63;">${new Date(collection.createdAt).toLocaleDateString()}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 内容简介卡片 -->
+            <div style="background: #ffffff; padding: 30px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                <h3 style="color: #2c3e50; margin: 0 0 20px 0; font-size: 20px; font-weight: 600; display: flex; align-items: center;">
+                    <span style="width: 4px; height: 24px; background: #ffc107; margin-right: 12px; border-radius: 2px;"></span>
+                    内容简介
+                </h3>
+                <div style="background: #f8f9fa; padding: 25px; border-radius: 8px; border-left: 3px solid #ffc107;">
+                    <p style="font-size: 16px; line-height: 1.8; color: #495057; text-align: justify; margin: 0;">${collection.description || '暂无简介'}</p>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // 第二页：剧集列表表格
+    const secondPageHtml = `
+        <div style="font-family: 'Microsoft YaHei', 'SimSun', sans-serif; padding: 30px; max-width: 800px; background: #ffffff;">
+            <h2 style="color: #333; text-align: center; margin-bottom: 30px; font-size: 24px;">剧集列表</h2>
+            <div id="episodes-table" style="background: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                <p style="text-align: center; padding: 40px; color: #666;">正在加载剧集信息...</p>
+            </div>
+        </div>
+    `;
+
+    // 分离式渲染：两页内容分别生成，避免内容挤压
+    const firstPageDiv = document.createElement('div');
+    const secondPageDiv = document.createElement('div');
+
+    firstPageDiv.innerHTML = firstPageHtml;
+    secondPageDiv.innerHTML = secondPageHtml;
+
+    // 设置样式
+    [firstPageDiv, secondPageDiv].forEach((div) => {
+        div.style.position = 'absolute';
+        div.style.left = '-9999px';
+        div.style.top = '0';
+        div.style.width = '800px';
+        document.body.appendChild(div);
+    });
+
+    try {
+        // 加载剧集信息并生成表格
+        const episodesResponse = await AdminService.getWorksByCollection(collection._id, { pageSize: 100 });
+        if (episodesResponse.success && episodesResponse.data.length > 0) {
+            const episodesTableHtml = `
+                <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                    <thead>
+                        <tr style="background: #007bff; color: white;">
+                            <th style="padding: 12px; text-align: center; border: 1px solid #ddd;">集数</th>
+                            <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">标题</th>
+                            <th style="padding: 12px; text-align: center; border: 1px solid #ddd;">时长</th>
+                            <th style="padding: 12px; text-align: center; border: 1px solid #ddd;">状态</th>
+                            <th style="padding: 12px; text-align: center; border: 1px solid #ddd;">创建时间</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${episodesResponse.data
+                            .map(
+                                (episode, index) => `
+                            <tr style="background: ${index % 2 === 0 ? '#ffffff' : '#f8f9fa'};">
+                                <td style="padding: 10px; text-align: center; border: 1px solid #ddd; font-weight: bold; color: #007bff;">第${episode.episodeNumber}集</td>
+                                <td style="padding: 10px; text-align: left; border: 1px solid #ddd;">${episode.title}</td>
+                                <td style="padding: 10px; text-align: center; border: 1px solid #ddd;">${formatDuration(episode.duration)}</td>
+                                <td style="padding: 10px; text-align: center; border: 1px solid #ddd;">
+                                    <span style="background: ${episode.status === 'published' ? '#d4edda' : episode.status === 'pending' ? '#fff3cd' : '#f8d7da'}; 
+                                        color: ${episode.status === 'published' ? '#155724' : episode.status === 'pending' ? '#856404' : '#721c24'}; 
+                                        padding: 4px 8px; border-radius: 4px; font-size: 12px;">
+                                        ${episode.status}
+                                    </span>
+                                </td>
+                                <td style="padding: 10px; text-align: center; border: 1px solid #ddd; font-size: 12px; color: #666;">
+                                    ${new Date(episode.createdAt).toLocaleDateString()}
+                                </td>
+                            </tr>
+                        `
+                            )
+                            .join('')}
+                    </tbody>
+                </table>
+            `;
+
+            const episodesTableDiv = secondPageDiv.querySelector('#episodes-table');
+            if (episodesTableDiv) {
+                episodesTableDiv.innerHTML = episodesTableHtml;
+            }
+        }
+
+        // 等待DOM更新
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+
+        // 分别生成图片 - 高质量渲染
+        const options = {
+            scale: 2, // 2倍分辨率
+            useCORS: true, // 跨域支持
+            backgroundColor: '#ffffff', // 白色背景
+            allowTaint: true // 允许跨域图片
+        };
+
+        const firstPageCanvas = await html2canvas(firstPageDiv, options);
+        const secondPageCanvas = await html2canvas(secondPageDiv, options);
+
+        // 分别添加到PDF
+        const imgWidth = 210;
+        const firstPageImgData = firstPageCanvas.toDataURL('image/png');
+        const secondPageImgData = secondPageCanvas.toDataURL('image/png');
+
+        const firstPageImgHeight = (firstPageCanvas.height * imgWidth) / firstPageCanvas.width;
+        const secondPageImgHeight = (secondPageCanvas.height * imgWidth) / secondPageCanvas.width;
+
+        // 第一页
+        doc.addImage(firstPageImgData, 'PNG', 0, 0, imgWidth, firstPageImgHeight);
+
+        // 第二页
+        doc.addPage();
+        doc.addImage(secondPageImgData, 'PNG', 0, 0, imgWidth, secondPageImgHeight);
+
+        doc.save(`${collection.title}_详情.pdf`);
+
+        toast.add({
+            severity: 'success',
+            summary: '成功',
+            detail: 'PDF导出成功',
+            life: 3000
+        });
+    } finally {
+        document.body.removeChild(firstPageDiv);
+        document.body.removeChild(secondPageDiv);
+    }
+};
+
+// 多合集列表导出 - 表格格式
+const exportMultipleCollectionsList = async (collections) => {
+    const doc = new jsPDF();
+
+    // 创建HTML内容
+    const htmlContent = `
+        <div style="font-family: 'Microsoft YaHei', 'SimSun', sans-serif; padding: 20px; max-width: 800px;">
+            <h1 style="text-align: center; color: #333; margin-bottom: 30px;">合集列表</h1>
+            <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                <thead>
+                    <tr style="background: #007bff; color: white;">
+                        <th style="padding: 12px; text-align: center; border: 1px solid #ddd;">标题</th>
+                        <th style="padding: 12px; text-align: center; border: 1px solid #ddd;">分类</th>
+                        <th style="padding: 12px; text-align: center; border: 1px solid #ddd;">剧集数</th>
+                        <th style="padding: 12px; text-align: center; border: 1px solid #ddd;">状态</th>
+                        <th style="padding: 12px; text-align: center; border: 1px solid #ddd;">创建时间</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${collections
+                        .map(
+                            (collection, index) => `
+                        <tr style="background: ${index % 2 === 0 ? '#ffffff' : '#f8f9fa'};">
+                            <td style="padding: 10px; text-align: left; border: 1px solid #ddd;">${collection.title}</td>
+                            <td style="padding: 10px; text-align: center; border: 1px solid #ddd;">${collection.classifier?.name || '未分类'}</td>
+                            <td style="padding: 10px; text-align: center; border: 1px solid #ddd;">${collection.workCount}</td>
+                            <td style="padding: 10px; text-align: center; border: 1px solid #ddd;">${collection.status}</td>
+                            <td style="padding: 10px; text-align: center; border: 1px solid #ddd;">${new Date(collection.createdAt).toLocaleDateString()}</td>
+                        </tr>
+                    `
+                        )
+                        .join('')}
+                </tbody>
+            </table>
+        </div>
+    `;
+
+    // 创建临时容器
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = htmlContent;
+    tempDiv.style.position = 'absolute';
+    tempDiv.style.left = '-9999px';
+    tempDiv.style.top = '0';
+    tempDiv.style.width = '800px';
+    document.body.appendChild(tempDiv);
+
+    // 等待DOM更新
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    // 使用html2canvas渲染HTML为图片
+    const canvas = await html2canvas(tempDiv, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff'
+    });
+
+    const imgData = canvas.toDataURL('image/png');
+    const imgWidth = 210;
+    const pageHeight = 295;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    let heightLeft = imgHeight;
+
+    let position = 0;
+
+    doc.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+    heightLeft -= pageHeight;
+
+    while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        doc.addPage();
+        doc.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+    }
+
+    doc.save('合集列表.pdf');
+
+    // 清理临时元素
+    document.body.removeChild(tempDiv);
+
+    toast.add({
+        severity: 'success',
+        summary: '成功',
+        detail: 'PDF导出成功',
+        life: 3000
+    });
+};
+
+// 时长格式化函数
+const formatDuration = (seconds) => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    return hours > 0 ? `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}` : `${minutes}:${secs.toString().padStart(2, '0')}`;
 };
 
 // 生命周期
@@ -310,7 +603,7 @@ onMounted(() => {
                 </template>
 
                 <template #end>
-                    <Button label="导出" icon="pi pi-upload" severity="help" />
+                    <Button label="导出" icon="pi pi-upload" severity="help" :disabled="selectedCollections.length === 0" @click="exportToPDF" />
                 </template>
             </Toolbar>
 

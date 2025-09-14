@@ -1,2 +1,27 @@
-# Auto detect text files and perform LF normalization
-* text=auto
+# 默认情况下，让 Git 自动处理文本文件，并在提交时将换行符标准化为 LF
+* text=auto eol=lf
+
+# 明确指定某些文件类型是文本文件
+*.js text
+*.mjs text
+*.cjs text
+*.json text
+*.css text
+*.scss text
+*.html text
+*.vue text
+*.md text
+*.yaml text
+*.yml text
+
+# 明确指定某些文件类型是二进制文件，Git不应修改它们的换行符
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.svg binary
+*.eot binary
+*.ttf binary
+*.woff binary
+*.woff2 binary

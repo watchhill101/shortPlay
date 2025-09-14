@@ -17,9 +17,6 @@ export default {
   // shortPlayPC项目 - JavaScript/Vue文件
   'shortPlayPC/src/**/*.{vue,js,ts}': ['npm run lint:fix --workspace=shortPlayPC', 'prettier --write'],
 
-  // shortPlayPC项目 - 仅检查src目录下的自定义样式文件，排除第三方CSS
-  'shortPlayPC/src/{components,views,layout}/**/*.{css,scss,vue}': ['npm run stylelint:fix --workspace=shortPlayPC'],
-
   // 配置文件 - 只格式化
   '*.{json,md,mjs}': ['prettier --write'],
 };

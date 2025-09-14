@@ -5,9 +5,6 @@ const path = require('path');
 const fs = require('fs');
 const Collection = require('../../models/collection');
 const Work = require('../../models/work');
-const Comment = require('../../models/comment');
-const Classifier = require('../../models/Classifier');
-const authMiddleware = require('../../middleware/auth');
 
 const router = express.Router();
 
@@ -179,7 +176,7 @@ router.get(
  */
 router.post('/collections', /* authMiddleware, */ upload.single('coverImage'), async (req, res) => {
   try {
-    const { title, description, classifier, actors, tags, isFinished = false } = req.body;
+    const { title, description, classifier, actors, tags, isFinished = false, status = 'published' } = req.body;
 
     // 处理封面图片
     let coverImage = '';
@@ -208,7 +205,7 @@ router.post('/collections', /* authMiddleware, */ upload.single('coverImage'), a
       tags: tagsList,
       isFinished,
       backgroundUser: null, // 暂时设为null，因为没有认证用户
-      status: 'draft',
+      status,
     });
 
     await collection.save();
@@ -388,6 +385,32 @@ router.post(
     try {
       const { title, episodeNumber, duration } = req.body;
 
+      // 验证必填字段
+      if (!title) {
+        return res.status(400).json({
+          success: false,
+          message: '作品标题不能为空',
+        });
+      }
+      if (!episodeNumber) {
+        return res.status(400).json({
+          success: false,
+          message: '剧集编号不能为空',
+        });
+      }
+      if (!duration) {
+        return res.status(400).json({
+          success: false,
+          message: '视频时长不能为空',
+        });
+      }
+      if (!req.files || !req.files.video) {
+        return res.status(400).json({
+          success: false,
+          message: '视频文件不能为空',
+        });
+      }
+
       // 检查合集是否存在
       const collection = await Collection.findById(req.params.id);
       if (!collection) {
@@ -402,13 +425,11 @@ router.post(
         title,
         episodeNumber: parseInt(episodeNumber),
         duration: parseInt(duration),
-        status: 'draft',
+        status: 'pending',
       };
 
       // 处理视频文件
-      if (req.files && req.files.video) {
-        workData.videoUrl = `/uploads/video/${req.files.video[0].filename}`;
-      }
+      workData.videoUrl = `/uploads/video/${req.files.video[0].filename}`;
 
       // 处理封面图片
       if (req.files && req.files.coverImage) {
@@ -559,14 +580,31 @@ router.get(
       const { page = 1, pageSize = 10 } = req.query;
       const skip = (parseInt(page) - 1) * parseInt(pageSize);
 
-      const collections = await Collection.find({ status: 'draft' })
+      // 先找到包含pending状态分集的合集ID
+      const pendingWorks = await Work.find({ status: 'pending' }).distinct('collectionId');
+
+      if (pendingWorks.length === 0) {
+        return res.json({
+          success: true,
+          data: [],
+          pagination: {
+            page: parseInt(page),
+            pageSize: parseInt(pageSize),
+            total: 0,
+            totalPages: 0,
+          },
+          message: '暂无待审核内容',
+        });
+      }
+
+      const collections = await Collection.find({ _id: { $in: pendingWorks } })
         .populate('classifier', 'name')
         .populate('backgroundUser', 'account')
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(parseInt(pageSize));
 
-      const total = await Collection.countDocuments({ status: 'draft' });
+      const total = await Collection.countDocuments({ _id: { $in: pendingWorks } });
 
       res.json({
         success: true,
@@ -608,17 +646,8 @@ router.put(
         });
       }
 
-      const collection = await Collection.findByIdAndUpdate(
-        req.params.id,
-        {
-          status,
-          reviewNote,
-          reviewedAt: new Date(),
-          reviewedBy: req.user._id,
-        },
-        { new: true }
-      );
-
+      // 先检查合集是否存在
+      const collection = await Collection.findById(req.params.id);
       if (!collection) {
         return res.status(404).json({
           success: false,
@@ -626,9 +655,50 @@ router.put(
         });
       }
 
+      // 更新该合集下所有pending状态的分集
+      let workStatus;
+      let collectionUpdate = {};
+
+      if (status === 'published') {
+        workStatus = 'published';
+        // 通过审核时，更新合集状态为已发布
+        collectionUpdate = {
+          status: 'published',
+          reviewNote,
+          reviewedAt: new Date(),
+          reviewedBy: req.user ? req.user._id : null,
+        };
+      } else if (status === 'archived') {
+        workStatus = 'rejected';
+        // 拒绝归档时，只更新分集状态，不更新合集状态
+        collectionUpdate = {
+          reviewNote,
+          reviewedAt: new Date(),
+          reviewedBy: req.user ? req.user._id : null,
+        };
+      }
+
+      // 更新分集状态
+      if (workStatus) {
+        await Work.updateMany(
+          {
+            collectionId: req.params.id,
+            status: 'pending',
+          },
+          {
+            status: workStatus,
+            reviewedAt: new Date(),
+            reviewNote: reviewNote || '',
+          }
+        );
+      }
+
+      // 更新合集信息（但不改变合集状态，除非是通过审核）
+      const updatedCollection = await Collection.findByIdAndUpdate(req.params.id, collectionUpdate, { new: true });
+
       res.json({
         success: true,
-        data: collection,
+        data: updatedCollection,
         message: '审核完成',
       });
     } catch (error) {

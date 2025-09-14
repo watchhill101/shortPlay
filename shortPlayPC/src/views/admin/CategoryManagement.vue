@@ -1,11 +1,9 @@
 <script setup>
 import { ref, reactive, onMounted, computed } from 'vue';
 import { useToast } from 'primevue/usetoast';
-import { useConfirm } from 'primevue/useconfirm';
 import AdminService from '@/service/AdminService';
 
 const toast = useToast();
-const confirm = useConfirm();
 
 // 数据定义
 const classifiers = ref([]);
@@ -188,64 +186,6 @@ const hideDialog = () => {
     resetForm();
 };
 
-const moveUp = async (classifier) => {
-    const currentIndex = classifiers.value.findIndex((c) => c._id === classifier._id);
-    if (currentIndex > 0) {
-        const prevClassifier = classifiers.value[currentIndex - 1];
-        const tempOrder = classifier.order;
-
-        try {
-            // 交换排序
-            await AdminService.updateClassifier(classifier._id, {
-                ...classifier,
-                order: prevClassifier.order
-            });
-            await AdminService.updateClassifier(prevClassifier._id, {
-                ...prevClassifier,
-                order: tempOrder
-            });
-
-            loadClassifiers();
-        } catch (error) {
-            toast.add({
-                severity: 'error',
-                summary: '错误',
-                detail: '调整排序失败',
-                life: 3000
-            });
-        }
-    }
-};
-
-const moveDown = async (classifier) => {
-    const currentIndex = classifiers.value.findIndex((c) => c._id === classifier._id);
-    if (currentIndex < classifiers.value.length - 1) {
-        const nextClassifier = classifiers.value[currentIndex + 1];
-        const tempOrder = classifier.order;
-
-        try {
-            // 交换排序
-            await AdminService.updateClassifier(classifier._id, {
-                ...classifier,
-                order: nextClassifier.order
-            });
-            await AdminService.updateClassifier(nextClassifier._id, {
-                ...nextClassifier,
-                order: tempOrder
-            });
-
-            loadClassifiers();
-        } catch (error) {
-            toast.add({
-                severity: 'error',
-                summary: '错误',
-                detail: '调整排序失败',
-                life: 3000
-            });
-        }
-    }
-};
-
 const toggleStatus = async (classifier) => {
     try {
         const newStatus = classifier.status === 'active' ? 'inactive' : 'active';
@@ -357,7 +297,7 @@ onMounted(() => {
                                 :severity="slotProps.data.status === 'active' ? 'warning' : 'success'"
                                 size="small"
                                 @click="toggleStatus(slotProps.data)"
-                                :v-tooltip.top="slotProps.data.status === 'active' ? '禁用' : '启用'"
+                                v-tooltip.top="slotProps.data.status === 'active' ? '禁用' : '启用'"
                             />
                             <Button icon="pi pi-pencil" severity="info" size="small" @click="editClassifier(slotProps.data)" v-tooltip.top="'编辑'" />
                             <Button icon="pi pi-trash" severity="danger" size="small" @click="confirmDeleteClassifier(slotProps.data)" v-tooltip.top="'删除'" :disabled="(slotProps.data.collectionCount || 0) > 0" />
