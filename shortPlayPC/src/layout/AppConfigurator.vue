@@ -18,8 +18,8 @@ const presetOptions = ref(Object.keys(presets));
 
 const menuMode = ref(layoutConfig.menuMode);
 const menuModeOptions = ref([
-    { label: '静态', value: 'static' },
-    { label: '覆盖', value: 'overlay' }
+    { label: 'Static', value: 'static' },
+    { label: 'Overlay', value: 'overlay' }
 ]);
 
 const primaryColors = ref([
@@ -204,7 +204,7 @@ function onMenuModeChange() {
     >
         <div class="flex flex-col gap-4">
             <div>
-                <span class="text-sm text-muted-color font-semibold">主色</span>
+                <span class="text-sm text-muted-color font-semibold">Primary</span>
                 <div class="pt-2 flex gap-2 flex-wrap justify-between">
                     <button
                         v-for="primaryColor of primaryColors"
@@ -218,7 +218,7 @@ function onMenuModeChange() {
                 </div>
             </div>
             <div>
-                <span class="text-sm text-muted-color font-semibold">表面</span>
+                <span class="text-sm text-muted-color font-semibold">Surface</span>
                 <div class="pt-2 flex gap-2 flex-wrap justify-between">
                     <button
                         v-for="surface of surfaces"
@@ -235,11 +235,11 @@ function onMenuModeChange() {
                 </div>
             </div>
             <div class="flex flex-col gap-2">
-                <span class="text-sm text-muted-color font-semibold">预设</span>
+                <span class="text-sm text-muted-color font-semibold">Presets</span>
                 <SelectButton v-model="preset" @change="onPresetChange" :options="presetOptions" :allowEmpty="false" />
             </div>
             <div class="flex flex-col gap-2">
-                <span class="text-sm text-muted-color font-semibold">菜单模式</span>
+                <span class="text-sm text-muted-color font-semibold">Menu Mode</span>
                 <SelectButton v-model="menuMode" @change="onMenuModeChange" :options="menuModeOptions" :allowEmpty="false" optionLabel="label" optionValue="value" />
             </div>
         </div>

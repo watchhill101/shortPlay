@@ -12,11 +12,11 @@ import FloatingConfigurator from '@/components/FloatingConfigurator.vue';
                         <div class="flex justify-center items-center border-2 border-orange-500 rounded-full" style="width: 3.2rem; height: 3.2rem">
                             <i class="text-orange-500 pi pi-fw pi-lock !text-2xl"></i>
                         </div>
-                        <h1 class="text-surface-900 dark:text-surface-0 font-bold text-4xl lg:text-5xl mb-2">访问被拒绝</h1>
-                        <span class="text-muted-color mb-8">您没有必要的权限。请联系管理员。</span>
-                        <img src="/demo/images/access/asset-access.svg" alt="访问被拒绝" class="mb-8" width="80%" />
+                        <h1 class="text-surface-900 dark:text-surface-0 font-bold text-4xl lg:text-5xl mb-2">Access Denied</h1>
+                        <span class="text-muted-color mb-8">You do not have the necessary permisions. Please contact admins.</span>
+                        <img src="/demo/images/access/asset-access.svg" alt="Access denied" class="mb-8" width="80%" />
                         <div class="col-span-12 mt-8 text-center">
-                            <Button as="router-link" label="返回仪表盘" to="/" severity="warn" />
+                            <Button as="router-link" label="Go to Dashboard" to="/" severity="warn" />
                         </div>
                     </div>
                 </div>

@@ -27,34 +27,34 @@
             <div class="col-span-12 md:col-span-10">
                 <div class="grid grid-cols-12 gap-8 text-center md:text-left">
                     <div class="col-span-12 md:col-span-3">
-                        <h4 class="font-medium text-2xl leading-normal mb-4 text-surface-900 dark:text-surface-0">公司</h4>
-                        <a class="leading-normal text-xl block cursor-pointer mb-2 text-surface-700 dark:text-surface-100">关于我们</a>
-                        <a class="leading-normal text-xl block cursor-pointer mb-2 text-surface-700 dark:text-surface-100">新闻</a>
-                        <a class="leading-normal text-xl block cursor-pointer mb-2 text-surface-700 dark:text-surface-100">投资者关系</a>
-                        <a class="leading-normal text-xl block cursor-pointer mb-2 text-surface-700 dark:text-surface-100">招贤纳士</a>
-                        <a class="leading-normal text-xl block cursor-pointer text-surface-700 dark:text-surface-100">媒体资料</a>
+                        <h4 class="font-medium text-2xl leading-normal mb-4 text-surface-900 dark:text-surface-0">Company</h4>
+                        <a class="leading-normal text-xl block cursor-pointer mb-2 text-surface-700 dark:text-surface-100">About Us</a>
+                        <a class="leading-normal text-xl block cursor-pointer mb-2 text-surface-700 dark:text-surface-100">News</a>
+                        <a class="leading-normal text-xl block cursor-pointer mb-2 text-surface-700 dark:text-surface-100">Investor Relations</a>
+                        <a class="leading-normal text-xl block cursor-pointer mb-2 text-surface-700 dark:text-surface-100">Careers</a>
+                        <a class="leading-normal text-xl block cursor-pointer text-surface-700 dark:text-surface-100">Media Kit</a>
                     </div>
 
                     <div class="col-span-12 md:col-span-3">
-                        <h4 class="font-medium text-2xl leading-normal mb-4 text-surface-900 dark:text-surface-0">资源</h4>
-                        <a class="leading-normal text-xl block cursor-pointer mb-2 text-surface-700 dark:text-surface-100">快速入门</a>
-                        <a class="leading-normal text-xl block cursor-pointer mb-2 text-surface-700 dark:text-surface-100">学习</a>
-                        <a class="leading-normal text-xl block cursor-pointer text-surface-700 dark:text-surface-100">案例研究</a>
+                        <h4 class="font-medium text-2xl leading-normal mb-4 text-surface-900 dark:text-surface-0">Resources</h4>
+                        <a class="leading-normal text-xl block cursor-pointer mb-2 text-surface-700 dark:text-surface-100">Get Started</a>
+                        <a class="leading-normal text-xl block cursor-pointer mb-2 text-surface-700 dark:text-surface-100">Learn</a>
+                        <a class="leading-normal text-xl block cursor-pointer text-surface-700 dark:text-surface-100">Case Studies</a>
                     </div>
 
                     <div class="col-span-12 md:col-span-3">
-                        <h4 class="font-medium text-2xl leading-normal mb-4 text-surface-900 dark:text-surface-0">社区</h4>
+                        <h4 class="font-medium text-2xl leading-normal mb-4 text-surface-900 dark:text-surface-0">Community</h4>
                         <a class="leading-normal text-xl block cursor-pointer mb-2 text-surface-700 dark:text-surface-100">Discord</a>
-                        <a class="leading-normal text-xl block cursor-pointer mb-2 text-surface-700 dark:text-surface-100">活动<img src="/demo/images/landing/new-badge.svg" class="ml-2" /></a>
-                        <a class="leading-normal text-xl block cursor-pointer mb-2 text-surface-700 dark:text-surface-100">常见问题</a>
-                        <a class="leading-normal text-xl block cursor-pointer text-surface-700 dark:text-surface-100">博客</a>
+                        <a class="leading-normal text-xl block cursor-pointer mb-2 text-surface-700 dark:text-surface-100">Events<img src="/demo/images/landing/new-badge.svg" class="ml-2" /></a>
+                        <a class="leading-normal text-xl block cursor-pointer mb-2 text-surface-700 dark:text-surface-100">FAQ</a>
+                        <a class="leading-normal text-xl block cursor-pointer text-surface-700 dark:text-surface-100">Blog</a>
                     </div>
 
                     <div class="col-span-12 md:col-span-3">
-                        <h4 class="font-medium text-2xl leading-normal mb-4 text-surface-900 dark:text-surface-0">法律</h4>
-                        <a class="leading-normal text-xl block cursor-pointer mb-2 text-surface-700 dark:text-surface-100">品牌政策</a>
-                        <a class="leading-normal text-xl block cursor-pointer mb-2 text-surface-700 dark:text-surface-100">隐私政策</a>
-                        <a class="leading-normal text-xl block cursor-pointer text-surface-700 dark:text-surface-100">服务条款</a>
+                        <h4 class="font-medium text-2xl leading-normal mb-4 text-surface-900 dark:text-surface-0">Legal</h4>
+                        <a class="leading-normal text-xl block cursor-pointer mb-2 text-surface-700 dark:text-surface-100">Brand Policy</a>
+                        <a class="leading-normal text-xl block cursor-pointer mb-2 text-surface-700 dark:text-surface-100">Privacy Policy</a>
+                        <a class="leading-normal text-xl block cursor-pointer text-surface-700 dark:text-surface-100">Terms of Service</a>
                     </div>
                 </div>
             </div>

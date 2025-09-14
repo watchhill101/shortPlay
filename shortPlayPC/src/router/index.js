@@ -103,6 +103,32 @@ const router = createRouter({
                     path: '/documentation',
                     name: 'documentation',
                     component: () => import('@/views/pages/Documentation.vue')
+                },
+                {
+                    path: '/admin/content-management',
+                    name: 'contentManagement',
+                    component: () => import('@/views/admin/ContentManagement.vue')
+                },
+                {
+                    path: '/admin/collections/:id/works',
+                    name: 'worksManagement',
+                    component: () => import('@/views/admin/WorksManagement.vue')
+                },
+                {
+                    path: '/admin/content-review',
+                    name: 'contentReview',
+                    component: () => import('@/views/admin/ContentReview.vue')
+                },
+                {
+                    path: '/admin/category-management',
+                    name: 'categoryManagement',
+                    component: () => import('@/views/admin/CategoryManagement.vue')
+                },
+                // 分集管理
+                {
+                    path: '/admin/episode-management',
+                    name: 'episodeManagement',
+                    component: () => import('@/views/admin/EpisodeManagement.vue')
                 }
             ]
         },

@@ -62,15 +62,15 @@ const { toggleMenu, toggleDarkMode, isDarkTheme } = useLayout();
                 <div class="layout-topbar-menu-content">
                     <button type="button" class="layout-topbar-action">
                         <i class="pi pi-calendar"></i>
-                        <span>日历</span>
+                        <span>Calendar</span>
                     </button>
                     <button type="button" class="layout-topbar-action">
                         <i class="pi pi-inbox"></i>
-                        <span>消息</span>
+                        <span>Messages</span>
                     </button>
                     <button type="button" class="layout-topbar-action">
                         <i class="pi pi-user"></i>
-                        <span>个人资料</span>
+                        <span>Profile</span>
                     </button>
                 </div>
             </div>

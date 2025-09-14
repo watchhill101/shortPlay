@@ -3,6 +3,7 @@ const express = require('express');
 const authRoutes = require('./auth');
 const healthRoutes = require('./health');
 const workRoutes = require('../../models/work/indexApi');
+const workApiRoutes = require('../../models/work/workApi');
 const commentRoutes = require('../../models/comment/indexApi');
 const collectionRoutes = require('../../models/collection/indexApi');
 const aiRoutes = require('./ai');
@@ -19,12 +20,15 @@ const paymentRoutes = require('./payment'); // 引入支付路由
 const walletApiRoutes = require('./wallet'); // 引入钱包路由
 const uniIdAuthRoutes = require('./uniIdAuth'); // 引入uni-id-co认证路由
 const trtcRoutes = require('./trtc'); // 引入TRTC视频通话路由
+const contentRoutes = require('./content');
+const adminRoutes = require('./admin');
 
 const router = express.Router();
 
 router.use('/auth', authRoutes);
 router.use('/health', healthRoutes);
 router.use('/work', workRoutes);
+router.use('/works', workApiRoutes);
 router.use('/comment', commentRoutes);
 router.use('/collection', collectionRoutes);
 router.use('/ai', aiRoutes);
@@ -41,5 +45,7 @@ router.use('/payment', paymentRoutes); // 注册支付路由
 router.use('/wallet', walletApiRoutes); // 注册钱包路由
 router.use('/uniid-auth', uniIdAuthRoutes); // 注册uni-id-co认证路由
 router.use('/trtc', trtcRoutes); // 注册TRTC视频通话路由
+router.use('/content', contentRoutes);
+router.use('/admin', adminRoutes);
 
 module.exports = router;
