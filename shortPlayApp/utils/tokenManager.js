@@ -1,25 +1,6 @@
 // utils/tokenManager.js - UniApp版本双Token管理器
 import { getApiConfig, getTokenConfig } from '@/config/index.js';
-
-/**
- * 将相对头像路径解析为完整的URL
- * @param {string} avatarPath - 数据库中存储的头像路径
- * @returns {string|null} - 可直接显示的完整URL，或在没有路径时返回null
- */
-const resolveAvatarUrl = avatarPath => {
-  if (!avatarPath) {
-    return null;
-  }
-  // 如果已经是完整的URL，则直接返回
-  if (avatarPath.startsWith('http')) {
-    return avatarPath;
-  }
-  // 否则，拼接基础URL
-  const apiConfig = getApiConfig();
-  // 移除baseURL末尾的/api，以获得服务器根地址
-  const baseURL = apiConfig.baseURL.replace(/\/api$/, '');
-  return baseURL + avatarPath;
-};
+import { resolveAvatarUrl } from './avatarHelper.js';
 
 class TokenManager {
   constructor() {
@@ -200,13 +181,8 @@ class TokenManager {
 
       const userInfo = JSON.parse(userInfoStr);
 
-      // 动态解析头像的完整URL
-      if (userInfo.avatar) {
-        userInfo.avatarUrl = resolveAvatarUrl(userInfo.avatar);
-      } else {
-        // 如果用户没有头像，提供一个本地的默认头像
-        userInfo.avatarUrl = '../../static/img/avatar.png';
-      }
+      // 动态解析头像的完整URL（统一使用resolveAvatarUrl处理）
+      userInfo.avatarUrl = resolveAvatarUrl(userInfo.avatar);
       console.log('[DEBUG] tokenManager: Resolved user info returned:', JSON.stringify(userInfo));
       return userInfo;
     } catch (_error) {

@@ -177,6 +177,10 @@ const handleUpdateNickname = async () => {
       userInfo.nickname = response.data.data.nickname;
       // 更新本地存储
       tokenManager.updateUserInfo({ nickname: response.data.data.nickname });
+
+      // 发出全局事件通知更新
+      uni.$emit('userInfoUpdated');
+
       uni.showToast({ title: '昵称修改成功', icon: 'success' });
       showNicknameModal.value = false;
     } else {
@@ -235,6 +239,9 @@ const handleAvatarAction = async action => {
       if (updateRes.data.success) {
         // 更新本地存储（存储的是相对路径）
         tokenManager.updateUserInfo({ avatar: newAvatarPath });
+
+        // 发出全局事件通知更新
+        uni.$emit('userInfoUpdated');
 
         // 重新检查登录状态以刷新整个页面的用户信息，包括拼接好的头像URL
         checkLoginStatus();

@@ -79,6 +79,7 @@ import { ref, onMounted } from 'vue';
 import tokenManager from '@/utils/tokenManager.js';
 import http from '@/utils/request.js';
 import { getApiConfig } from '@/config/index.js';
+import { resolveAvatarUrl, getDefaultAvatarUrl } from '@/utils/avatarHelper.js';
 
 const userInfo = ref({
   avatar: '/static/img/avatar.png',
@@ -123,6 +124,22 @@ const goBack = () => {
   uni.navigateBack();
 };
 
+// 🔴 新增：获取头像URL函数
+const getAvatarUrl = () => {
+  return resolveAvatarUrl(userInfo.value.avatar);
+};
+
+// 🔴 新增：头像加载成功处理
+const onAvatarLoad = () => {
+  console.log('头像加载成功');
+};
+
+// 🔴 新增：头像加载失败处理
+const onAvatarError = () => {
+  console.log('头像加载失败，使用默认头像');
+  userInfo.value.avatar = getDefaultAvatarUrl();
+};
+
 const changeAvatar = () => {
   uni.chooseImage({
     count: 1,
@@ -143,8 +160,10 @@ const changeAvatar = () => {
           success: uploadFileRes => {
             const data = JSON.parse(uploadFileRes.data);
             if (data.success) {
-              userInfo.value.avatar = data.data.avatarUrl;
-              tokenManager.updateUserInfo({ avatar: data.data.avatarUrl });
+              // 🔴 修复：统一使用相对路径字段，与G-Settings页面保持一致
+              const newAvatarPath = data.data.url; // 相对路径 /uploads/avatars/...
+              userInfo.value.avatar = newAvatarPath;
+              tokenManager.updateUserInfo({ avatar: newAvatarPath });
               uni.showToast({ title: '头像更新成功', icon: 'success' });
             } else {
               uni.showToast({ title: data.message || '上传失败', icon: 'error' });

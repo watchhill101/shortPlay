@@ -95,6 +95,8 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 
+// 启用 CORS (移除了无路径前缀的静态服务，避免拦截其他路由)
+
 // 9. 日志：根据环境选择不同日志格式
 app.use(morgan(config.env === 'development' ? 'dev' : 'combined'));
 
@@ -102,8 +104,8 @@ app.use(morgan(config.env === 'development' ? 'dev' : 'combined'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-// 🔴 新增：静态资源托管 —— 让 /uploads 目录可通过 HTTP 访问
-app.use('/upload', express.static(path.join(__dirname, 'upload')));
+// 🔴 已修复：移除错误的 /upload 路径配置（目录不存在）
+// app.use('/upload', express.static(path.join(__dirname, 'upload'))); // 已注释：目录不存在
 
 // 为视频文件添加特殊的CORS处理
 app.use(
@@ -258,7 +260,10 @@ app.delete('/api/system/cache', async (req, res) => {
   }
 });
 
-// 调试：记录静态文件请求
+// 🔴 已修复：移除重复的静态文件配置
+// 调试日志和静态服务已在上面 126-136 行正确配置
+// 重复配置已注释以避免冲突
+/*
 app.use('/uploads', (req, res, next) => {
   console.log('静态文件请求:', req.url);
   console.log('文件路径:', path.join(__dirname, 'uploads', req.url));
@@ -266,6 +271,7 @@ app.use('/uploads', (req, res, next) => {
 });
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+*/
 
 // 测试页面
 app.get('/test-video', (req, res) => {

@@ -26,7 +26,7 @@ const config = {
   api: {
     // 开发环境
     development: {
-      baseURL: `http://172.20.10.4:3000/api`,
+      baseURL: `http://192.168.0.65:3000/api`,
       timeout: 10000,
     },
     // 测试环境

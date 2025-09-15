@@ -73,7 +73,7 @@
 
 <script setup>
 import { ref, reactive } from 'vue';
-import { onShow } from '@dcloudio/uni-app';
+import { onShow, onLoad, onUnload } from '@dcloudio/uni-app';
 import tokenManager from '../../utils/tokenManager.js';
 
 // --- state ---
@@ -117,7 +117,7 @@ const dramaList = reactive([
 const handleLogoutState = () => {
   isLoggedIn.value = false;
   Object.assign(userInfo, {
-    avatarUrl: '../../static/img/avatar.png',
+    avatarUrl: '/static/img/avatar.png', // 🔴 修复：使用绝对路径
     name: '点击登录',
     following: 0,
     followers: 0,
@@ -186,8 +186,18 @@ const onDramaClick = drama => {
 };
 
 // --- lifecycle hooks ---
+onLoad(() => {
+  // 监听用户信息更新事件
+  uni.$on('userInfoUpdated', checkLoginStatus);
+});
+
 onShow(() => {
   checkLoginStatus();
+});
+
+onUnload(() => {
+  // 移除监听，避免内存泄漏
+  uni.$off('userInfoUpdated', checkLoginStatus);
 });
 </script>
 
