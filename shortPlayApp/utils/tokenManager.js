@@ -1,5 +1,6 @@
 // utils/tokenManager.js - UniApp版本双Token管理器
 import { getApiConfig, getTokenConfig } from '@/config/index.js';
+import { resolveAvatarUrl } from './avatarHelper.js';
 
 class TokenManager {
   constructor() {
@@ -173,9 +174,19 @@ class TokenManager {
   getUserInfo() {
     try {
       const prefix = this.tokenConfig.storagePrefix;
-      const userInfo = uni.getStorageSync(prefix + 'userInfo');
-      return userInfo ? JSON.parse(userInfo) : null;
+      const userInfoStr = uni.getStorageSync(prefix + 'userInfo');
+      console.log('[DEBUG] tokenManager: Raw user info from storage:', userInfoStr);
+
+      if (!userInfoStr) return null;
+
+      const userInfo = JSON.parse(userInfoStr);
+
+      // 动态解析头像的完整URL（统一使用resolveAvatarUrl处理）
+      userInfo.avatarUrl = resolveAvatarUrl(userInfo.avatar);
+      console.log('[DEBUG] tokenManager: Resolved user info returned:', JSON.stringify(userInfo));
+      return userInfo;
     } catch (_error) {
+      console.error('[DEBUG] tokenManager: Error parsing user info:', _error);
       return null;
     }
   }
@@ -183,14 +194,14 @@ class TokenManager {
   // 更新本地存储的用户信息
   updateUserInfo(updatedFields) {
     try {
-      const currentUserInfo = this.getUserInfo();
-      if (currentUserInfo) {
-        const newUserInfo = { ...currentUserInfo, ...updatedFields };
-        const prefix = this.tokenConfig.storagePrefix;
-        uni.setStorageSync(prefix + 'userInfo', JSON.stringify(newUserInfo));
-        return true;
-      }
-      return false;
+      const storedUserInfo = uni.getStorageSync(this.tokenConfig.storagePrefix + 'userInfo');
+      const currentUserInfo = storedUserInfo ? JSON.parse(storedUserInfo) : {};
+
+      const newUserInfo = { ...currentUserInfo, ...updatedFields };
+
+      const prefix = this.tokenConfig.storagePrefix;
+      uni.setStorageSync(prefix + 'userInfo', JSON.stringify(newUserInfo));
+      return true;
     } catch (_error) {
       return false;
     }
@@ -392,7 +403,7 @@ class TokenManager {
     }
   }
 
-  // 验证Token
+  // 验证Token（支持传统Token和uni-id-co Token）
   async verifyToken() {
     const accessToken = this.getAccessToken();
     if (!accessToken) {
@@ -400,6 +411,21 @@ class TokenManager {
     }
 
     try {
+      // 首先尝试uni-id-co Token验证
+      const uniIdResponse = await uni.request({
+        url: `${this.config.baseURL}/uniid-auth/verify`,
+        method: 'GET',
+        header: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+        timeout: this.config.timeout,
+      });
+
+      if (uniIdResponse.statusCode === 200 && uniIdResponse.data.success) {
+        return { success: true, type: 'uniId', data: uniIdResponse.data };
+      }
+
+      // 如果uni-id-co验证失败，尝试传统Token验证
       const response = await uni.request({
         url: `${this.config.baseURL}/auth/verify`,
         method: 'GET',
@@ -409,9 +435,38 @@ class TokenManager {
         timeout: this.config.timeout,
       });
 
-      return response.statusCode === 200 && response.data.success;
+      if (response.statusCode === 200 && response.data.success) {
+        return { success: true, type: 'traditional', data: response.data };
+      }
+
+      return { success: false };
     } catch (_error) {
-      return false;
+      return { success: false };
+    }
+  }
+
+  // 同步用户数据到后端（仅用于uni-id-co Token）
+  async syncUserData(userData) {
+    const accessToken = this.getAccessToken();
+    if (!accessToken) {
+      throw new Error('No access token available');
+    }
+
+    try {
+      const response = await uni.request({
+        url: `${this.config.baseURL}/uniid-auth/sync-user`,
+        method: 'POST',
+        data: userData,
+        header: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        timeout: this.config.timeout,
+      });
+
+      return response.data;
+    } catch (error) {
+      throw error;
     }
   }
 }

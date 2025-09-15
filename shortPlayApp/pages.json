@@ -29,6 +29,14 @@
       }
     },
     {
+      "path": "pages/messages/index",
+      "style": {
+        "navigationBarTitleText": "消息中心",
+        "enablePullDownRefresh": true,
+        "navigationStyle": "custom"
+      }
+    },
+    {
       "path": "pages/mine/index",
       "style": {
         "app-plus": {
@@ -36,34 +44,6 @@
         },
         "navigationBarTitleText": "",
         "enablePullDownRefresh": false
-      }
-    },
-    {
-      "path": "pages/G-Settings/index",
-      "style": {
-        "navigationBarTitleText": "设置",
-        "navigationStyle": "custom",
-        "backgroundColor": "#FFFFFF"
-      }
-    },
-    {
-      "path": "pages/playlet/episodes",
-      "style": {
-        "app-plus": {
-          "bounce": "none"
-        },
-        "navigationBarTitleText": "",
-        "enablePullDownRefresh": false
-      }
-    },
-    {
-      "path": "pages/playlet/detail",
-      "style": {
-        "app-plus": {
-          "bounce": "none"
-        },
-        "navigationBarTitleText": "",
-        "enablePullDownRefresh": true
       }
     },
     {
@@ -78,22 +58,11 @@
       }
     },
     {
-      "path": "pages/chat/chatAi",
+      "path": "pages/G-Settings/index",
       "style": {
-        "navigationBarTitleText": "AI客服",
-        "navigationStyle": "custom"
-      }
-    },
-    {
-      "path": "pages/chat/messages",
-      "style": {
-        "navigationBarTitleText": "我的消息",
+        "navigationBarTitleText": "设置",
         "navigationStyle": "custom",
-        "enablePullDownRefresh": true,
-        "backgroundTextStyle": "dark",
-        "app-plus": {
-          "bounce": "none"
-        }
+        "backgroundColor": "#FFFFFF"
       }
     },
     {
@@ -108,14 +77,6 @@
       "style": {
         "navigationBarTitleText": "切换用户",
         "navigationStyle": "custom"
-      }
-    },
-    {
-      "path": "pages/friends/friendList",
-      "style": {
-        "navigationBarTitleText": "好友列表",
-        "navigationStyle": "custom",
-        "enablePullDownRefresh": true
       }
     },
     {
@@ -134,24 +95,26 @@
       }
     },
     {
-      "path": "pages/test/testApi",
+      "path": "pages/messages/friendList",
       "style": {
-        "navigationBarTitleText": "API测试",
-        "navigationStyle": "default"
+        "navigationBarTitleText": "好友列表",
+        "navigationStyle": "custom",
+        "enablePullDownRefresh": true
       }
     },
     {
-      "path": "pages/test/connectionTest",
+      "path": "pages/messages/messages",
       "style": {
-        "navigationBarTitleText": "连接测试",
-        "navigationStyle": "default"
+        "navigationBarTitleText": "消息列表",
+        "navigationStyle": "custom",
+        "enablePullDownRefresh": true
       }
     },
     {
-      "path": "pages/test/quickTest",
+      "path": "pages/chat/chatAi",
       "style": {
-        "navigationBarTitleText": "快速测试",
-        "navigationStyle": "default"
+        "navigationBarTitleText": "AI客服",
+        "navigationStyle": "custom"
       }
     },
     {
@@ -165,6 +128,97 @@
       "path": "pages/chat/chatDatabase",
       "style": {
         "navigationBarTitleText": "聊天数据库",
+        "navigationStyle": "default"
+      }
+    },
+    {
+      "path": "pages/video/call",
+      "style": {
+        "navigationBarTitleText": "视频通话",
+        "navigationStyle": "custom",
+        "app-plus": {
+          "background": "#000000"
+        }
+      }
+    },
+    {
+      "path": "pages/playlet/detail",
+      "style": {
+        "app-plus": {
+          "bounce": "none"
+        },
+        "navigationBarTitleText": "",
+        "enablePullDownRefresh": true
+      }
+    },
+    {
+      "path": "pages/playlet/episodes",
+      "style": {
+        "app-plus": {
+          "bounce": "none"
+        },
+        "navigationBarTitleText": "",
+        "enablePullDownRefresh": false
+      }
+    },
+    {
+      "path": "pages/search/index",
+      "style": {
+        "app-plus": {
+          "bounce": "none"
+        },
+        "navigationBarTitleText": "搜索",
+        "enablePullDownRefresh": false
+      }
+    },
+    {
+      "path": "pages/index/search",
+      "style": {
+        "app-plus": {
+          "bounce": "none"
+        },
+        "navigationBarTitleText": "搜索",
+        "enablePullDownRefresh": false
+      }
+    },
+    {
+      "path": "pages/index/filter",
+      "style": {
+        "app-plus": {
+          "bounce": "none"
+        },
+        "navigationBarTitleText": "筛选",
+        "enablePullDownRefresh": false
+      }
+    },
+    {
+      "path": "pages/balance/index",
+      "style": {
+        "app-plus": {
+          "bounce": "none"
+        },
+        "navigationBarTitleText": "余额",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/test/quickTest",
+      "style": {
+        "navigationBarTitleText": "快速测试",
+        "navigationStyle": "default"
+      }
+    },
+    {
+      "path": "pages/test/testApi",
+      "style": {
+        "navigationBarTitleText": "API测试",
+        "navigationStyle": "default"
+      }
+    },
+    {
+      "path": "pages/test/connectionTest",
+      "style": {
+        "navigationBarTitleText": "连接测试",
         "navigationStyle": "default"
       }
     },
@@ -187,14 +241,6 @@
       "style": {
         "navigationBarTitleText": "WebSocket测试",
         "navigationStyle": "default"
-      }
-    },
-    {
-      "path": "pages/messages/index",
-      "style": {
-        "navigationBarTitleText": "消息中心",
-        "enablePullDownRefresh": false,
-        "navigationStyle": "custom"
       }
     }
   ],

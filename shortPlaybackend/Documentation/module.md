@@ -53,6 +53,10 @@
 - `email`: 邮箱地址
 - `status`: 账号状态 (active/inactive/locked)
 - `lastLoginAt`: 最后登录时间
+  现在 hasPermission 方法具备了实际的权限校验能力。当您在路由中间件或其他业务逻辑中调用 await user.hasPermission('SOME_CODE') 时，它会：
+  安全地从数据库中查询出该用户的所有有效权限。
+  准确地判断该用户是否真的拥有 SOME_CODE 这个权限。
+  返回 true 或 false，从而有效地保护您的API接口。
   **关联关系**:
 - 一对多关联 Collection
 - 多对多关联 Role (RBAC角色)

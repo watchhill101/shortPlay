@@ -6,7 +6,7 @@ const CollectionSchema = new mongoose.Schema(
     backgroundUser: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'BackgroundUser',
-      required: true,
+      required: false, // 暂时设为可选，因为没有认证
       index: true,
     },
     // 合集标题
@@ -27,13 +27,13 @@ const CollectionSchema = new mongoose.Schema(
 
     coverImage: {
       type: String,
-      required: [true, '合集封面图不能为空'],
+      required: false, // 暂时设为可选，允许没有封面图
     },
     // 关联分类
     classifier: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Classifier',
-      required: true,
+      required: false, // 暂时设为可选
       index: true,
     },
     // 状态：draft（草稿）, published（已发布）, archived（已归档）
@@ -44,6 +44,12 @@ const CollectionSchema = new mongoose.Schema(
       index: true,
     },
     tags: [String],
+    // 主演列表
+    actors: {
+      type: [String],
+      default: [],
+      index: true, // 为主演添加索引，便于搜索
+    },
     isFinished: {
       type: Boolean,
       default: false, // 标记该合集是否已完结
@@ -62,6 +68,17 @@ const CollectionSchema = new mongoose.Schema(
     },
     collectCount: {
       // 合集被收藏次数
+      type: Number,
+      default: 0,
+    },
+    // 关注者列表
+    followers: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+      },
+    ],
+    followerCount: {
       type: Number,
       default: 0,
     },

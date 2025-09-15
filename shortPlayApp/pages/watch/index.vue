@@ -100,6 +100,9 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted, onUnmounted } from 'vue';
+import { onHide, onShow } from '@dcloudio/uni-app';
+import http from '@/utils/request.js';
+import tokenManager from '@/utils/tokenManager';
 
 // 当前播放视频索引
 const currentVideo = ref(0);
@@ -113,6 +116,8 @@ let videoContext: any = null;
 let lastMediaOperationTime = 0;
 // 防抖动时间阈值（毫秒）
 const DEBOUNCE_THRESHOLD = 300;
+// 新增一个状态，用于标记视频是否因页面切换而暂停
+let pausedBySystem = false;
 
 // 视频列表数据
 const videoList = reactive([]);
@@ -133,10 +138,7 @@ async function fetchVideos() {
     console.log('开始从后端获取视频数据...');
 
     // 调用后端API获取视频数据
-    const response = await uni.request({
-      url: 'http://localhost:3000/api/work/videos',
-      method: 'GET',
-    });
+    const response = await http.get('/work/videos');
 
     // 处理响应数据
     // 200表示成功，201表示资源已创建，都视为评论成功
@@ -552,12 +554,8 @@ function onLike(e: any) {
 // 调用API更新视频点赞状态
 async function updateVideoLikeStatus(videoId: string, isLiked: boolean) {
   try {
-    const response = await uni.request({
-      url: `http://localhost:3000/api/work/like/${videoId}`,
-      method: 'POST',
-      data: {
-        isLiked: isLiked,
-      },
+    const response = await http.post(`/work/like/${videoId}`, {
+      isLiked: isLiked,
     });
 
     // 200表示成功，201表示资源已创建，都视为评论成功
@@ -627,10 +625,7 @@ async function fetchComments(workId: string) {
       return;
     }
 
-    const response = await uni.request({
-      url: `http://localhost:3000/api/comment/work/${workId}`,
-      method: 'GET',
-    });
+    const response = await http.get(`/comment/work/${workId}`);
 
     if (response.statusCode === 200) {
       comments.value = response.data || [];
@@ -740,15 +735,10 @@ async function submitComment() {
   try {
     isLoading.value = true;
 
-    const response = await uni.request({
-      url: 'http://localhost:3000/api/comment',
-      method: 'POST',
-      data: {
-        targetType: 'work',
-        targetId: currentCommentVideoId,
-        content: commentContent.value.trim(),
-        parentComment: replyToComment?._id || null,
-      },
+    const response = await http.post(`/comment/work/${currentCommentVideoId}`, {
+      userId: tokenManager.getUserId(),
+      text: commentContent.value.trim(),
+      parentComment: replyToComment?._id || null,
     });
 
     // 200表示成功，201表示资源已创建，都视为评论成功
@@ -805,10 +795,7 @@ async function likeComment(commentId: string) {
     comment.likeCount = comment.isLiked ? comment.likeCount + 1 : Math.max(0, comment.likeCount - 1);
 
     // 调用API更新评论点赞状态
-    const response = await uni.request({
-      url: `http://localhost:3000/api/comment/like/${commentId}`,
-      method: 'POST',
-    });
+    const response = await http.post(`/comment/like/${commentId}`);
 
     if (response.statusCode !== 200) {
       console.error('评论点赞失败:', response.statusCode);
@@ -952,12 +939,8 @@ function onCollect(e: any) {
 // 调用API更新视频收藏状态
 async function updateVideoCollectStatus(videoId: string, isCollected: boolean) {
   try {
-    const response = await uni.request({
-      url: `http://localhost:3000/api/work/collect/${videoId}`,
-      method: 'POST',
-      data: {
-        isCollected: isCollected,
-      },
+    const response = await http.post(`/collect`, {
+      workId: videoId,
     });
 
     if (response.statusCode === 200) {
@@ -1068,12 +1051,8 @@ async function updateCollectionFollowStatus(collectionId: string, isFollowing: b
 
     console.log('最终使用的collectionId:', safeCollectionId);
 
-    const response = await uni.request({
-      url: `http://localhost:3000/api/collection/follow/${encodeURIComponent(safeCollectionId)}`,
-      method: 'POST',
-      data: {
-        isFollowing: isFollowing,
-      },
+    const response = await http.post(`/collection/follow/${encodeURIComponent(safeCollectionId)}`, {
+      isFollowing: isFollowing,
     });
 
     // 200表示成功，201表示资源已创建，都视为关注成功
@@ -1161,6 +1140,32 @@ onMounted(() => {
   console.log('watch页面组件已挂载');
   // 获取视频数据
   fetchVideos();
+});
+
+// 页面隐藏时的处理
+onHide(() => {
+  if (videoContext && playingState.value) {
+    try {
+      pausedBySystem = true;
+      videoContext.pause();
+      console.log('页面已隐藏，视频已暂停');
+    } catch (error) {
+      console.error('页面隐藏时暂停视频出错:', error);
+    }
+  }
+});
+
+// 页面显示时的处理
+onShow(() => {
+  if (videoContext && pausedBySystem) {
+    try {
+      videoContext.play();
+      pausedBySystem = false;
+      console.log('页面已显示，视频已恢复播放');
+    } catch (error) {
+      console.error('页面显示时恢复播放视频出错:', error);
+    }
+  }
 });
 
 // 组件卸载时的清理
@@ -1254,9 +1259,10 @@ button {
   color: #fff !important;
 }
 
-/* 为scroll-view添加enable-flex属性 */
+/* 为scroll-view添加flex布局 */
 :deep(.u-short-video scroll-view) {
-  enable-flex: true;
+  display: flex;
+  flex-direction: column;
 }
 
 /* 确保视频控件层级正确 */

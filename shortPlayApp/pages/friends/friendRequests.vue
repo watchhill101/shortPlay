@@ -103,6 +103,9 @@
 import { ref, computed, onMounted } from 'vue';
 import tokenManager from '@/utils/tokenManager';
 import friendService from '@/utils/friendService';
+import { getApiConfig } from '@/config/index.js';
+
+const apiConfig = getApiConfig();
 
 const activeTab = ref('received');
 const requestList = ref([]);
@@ -120,6 +123,9 @@ onMounted(async () => {
     loadRequests();
     uni.$on('friendRequestsChanged', loadRequests);
   }
+  // 获取状态栏高度 - uni-app中直接使用固定值
+  const systemInfo = uni.getSystemInfoSync();
+  console.log('状态栏高度:', systemInfo.statusBarHeight);
 });
 
 const switchTab = tab => {
@@ -134,7 +140,7 @@ const loadRequests = async () => {
   loading.value = true;
   try {
     const response = await uni.request({
-      url: `http://localhost:3000/api/friends/requests/${currentUser.value.id}`,
+      url: `${apiConfig.baseURL}/friends/requests/${currentUser.value.id}`,
       method: 'GET',
       data: { type: activeTab.value },
       header: {
@@ -176,7 +182,7 @@ const doHandleRequest = async (requestId, action) => {
   try {
     uni.showLoading({ title: '处理中...' });
     const response = await uni.request({
-      url: `http://localhost:3000/api/friends/request/${requestId}`,
+      url: `${apiConfig.baseURL}/friends/request/${requestId}`,
       method: 'PUT',
       data: { action, userId: currentUser.value.id },
       header: {
@@ -232,11 +238,13 @@ const goToAddFriend = () => {
 };
 
 const goBack = () => {
+  // 检查页面栈，返回上一页
   const pages = getCurrentPages();
-  if (pages.length <= 1) {
-    uni.reLaunch({ url: '/pages/friends/friendList' });
-  } else {
+  if (pages.length > 1) {
     uni.navigateBack({ delta: 1 });
+  } else {
+    // 如果没有上一页，跳转到消息中心
+    uni.reLaunch({ url: '/pages/messages/index' });
   }
 };
 
@@ -270,6 +278,7 @@ const formatTime = timeStr => {
   justify-content: space-between;
   height: 88rpx;
   padding: 0 30rpx;
+  padding-top: 108rpx;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   position: sticky;

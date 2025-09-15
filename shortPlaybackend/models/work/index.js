@@ -34,11 +34,19 @@ const WorkSchema = new mongoose.Schema(
       type: Number,
       required: [true, '视频时长不能为空'],
     },
-    // 状态：draft（草稿）, published（已发布）
+    // 状态：draft（草稿）, pending（待审核）, rejected（审核未通过）, published（已发布）
     status: {
       type: String,
-      enum: ['draft', 'published'],
+      enum: ['draft', 'pending', 'rejected', 'published'],
       default: 'draft',
+    },
+    // 审核时间
+    reviewedAt: {
+      type: Date,
+    },
+    // 审核意见
+    reviewNote: {
+      type: String,
     },
 
     // --- 计数器缓存 ---
@@ -54,6 +62,13 @@ const WorkSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    // 记录点赞的用户
+    likes: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+      },
+    ],
   },
   { timestamps: true }
 );

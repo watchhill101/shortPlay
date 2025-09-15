@@ -5,6 +5,16 @@
       "customPlaygroundType": "device",
       "playground": "standard",
       "type": "uni-app:app-android"
+    },
+    {
+      "app": {
+        "launchtype": "remote"
+      },
+      "default": {
+        "launchtype": "local"
+      },
+      "provider": "aliyun",
+      "type": "uniCloud"
     }
   ]
 }

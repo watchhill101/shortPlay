@@ -10,7 +10,8 @@ class MessageStorage {
     try {
       const conversations = uni.getStorageSync(this.conversationsKey) || [];
       return conversations;
-    } catch (_e) {
+    } catch (e) {
+      console.error('获取对话列表失败:', e);
       return [];
     }
   }
@@ -20,7 +21,8 @@ class MessageStorage {
     try {
       uni.setStorageSync(this.conversationsKey, conversations);
       return true;
-    } catch (_e) {
+    } catch (e) {
+      console.error('保存对话列表失败:', e);
       return false;
     }
   }
@@ -30,7 +32,8 @@ class MessageStorage {
     try {
       const allMessages = uni.getStorageSync(this.storageKey) || {};
       return allMessages[conversationId] || [];
-    } catch (_e) {
+    } catch (e) {
+      console.error('获取消息失败:', e);
       return [];
     }
   }
@@ -57,7 +60,8 @@ class MessageStorage {
       this.updateConversation(conversationId, newMessage);
 
       return newMessage;
-    } catch (_e) {
+    } catch (e) {
+      console.error('保存消息失败:', e);
       return null;
     }
   }
@@ -83,7 +87,9 @@ class MessageStorage {
       }
 
       this.saveConversations(conversations);
-    } catch (_e) {}
+    } catch (e) {
+      console.error('更新对话失败:', e);
+    }
   }
 
   // 标记对话为已读
@@ -95,7 +101,9 @@ class MessageStorage {
         conversation.unreadCount = 0;
         this.saveConversations(conversations);
       }
-    } catch (_e) {}
+    } catch (e) {
+      console.error('标记已读失败:', e);
+    }
   }
 
   // 获取未读消息数
@@ -104,7 +112,8 @@ class MessageStorage {
       const conversations = this.getConversations();
       const conversation = conversations.find(c => c.id === conversationId);
       return conversation ? conversation.unreadCount || 0 : 0;
-    } catch (_e) {
+    } catch (e) {
+      console.error('获取未读数失败:', e);
       return 0;
     }
   }
@@ -115,7 +124,8 @@ class MessageStorage {
       uni.removeStorageSync(this.storageKey);
       uni.removeStorageSync(this.conversationsKey);
       return true;
-    } catch (_e) {
+    } catch (e) {
+      console.error('清空消息失败:', e);
       return false;
     }
   }

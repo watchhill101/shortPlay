@@ -5,6 +5,7 @@ const router = express.Router();
 
 // SiliconFlow API 配置
 const SILICONFLOW_API_URL = 'https://api.siliconflow.cn/v1/chat/completions';
+const SILICONFLOW_IMAGE_API_URL = 'https://api.siliconflow.cn/v1/images/generations';
 const API_KEY = process.env.SILICONFLOW_API_KEY || 'sk-qnprobguoovvanqhdjahwendqrfeacremxubyynhcoonxxjx';
 
 /**
@@ -616,6 +617,180 @@ router.post('/simple-chat', async (req, res) => {
         success: false,
         error: '请求超时',
         message: '连接 SiliconFlow API 超时，请稍后重试',
+      });
+    } else {
+      // 其他错误
+      res.status(500).json({
+        success: false,
+        error: '服务器内部错误',
+        message: error.message,
+      });
+    }
+  }
+});
+
+/**
+ * AI 图片生成接口
+ * POST /ai/generate-image
+ *
+ * 请求体示例:
+ * {
+ *   "prompt": "一只可爱的小猫在花园里玩耍",
+ *   "model": "Kwai-Kolors/Kolors",
+ *   "sessionId": "session_123",
+ *   "userId": "user_456"
+ * }
+ */
+router.post('/generate-image', async (req, res) => {
+  try {
+    const {
+      prompt,
+      model = 'Kwai-Kolors/Kolors',
+      sessionId,
+      userId,
+      size = '1024x1024',
+      quality = 'standard',
+      n = 1,
+    } = req.body;
+
+    // 验证必需参数
+    if (!prompt || typeof prompt !== 'string') {
+      return res.status(400).json({
+        success: false,
+        error: 'prompt字段是必需的，且必须是字符串',
+        example: { prompt: '一只可爱的小猫在花园里玩耍' },
+      });
+    }
+
+    if (prompt.trim().length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'prompt不能为空',
+      });
+    }
+
+    console.log('收到图片生成请求:', {
+      prompt: prompt.trim(),
+      model,
+      sessionId,
+      userId,
+      size,
+      quality,
+      n,
+    });
+
+    // 准备发送给 SiliconFlow 的请求体
+    const requestBody = {
+      model,
+      prompt: prompt.trim(),
+      size,
+      quality,
+      n,
+    };
+
+    console.log('发送图片生成请求到 SiliconFlow API:', JSON.stringify(requestBody, null, 2));
+
+    // 发送请求到 SiliconFlow 图片生成 API
+    const response = await axios({
+      method: 'POST',
+      url: SILICONFLOW_IMAGE_API_URL,
+      headers: {
+        Authorization: `Bearer ${API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      data: requestBody,
+      timeout: 60000, // 图片生成可能需要更长时间，设置60秒超时
+    });
+
+    console.log('SiliconFlow 图片生成 API 响应:', JSON.stringify(response.data, null, 2));
+
+    // 提取图片URL
+    const imageUrl = response.data?.images?.[0]?.url || response.data?.data?.[0]?.url;
+
+    if (!imageUrl) {
+      console.error('未找到图片URL，完整响应:', response.data);
+      return res.status(500).json({
+        success: false,
+        error: '图片生成失败',
+        message: '未能获取图片URL',
+        debug: response.data,
+      });
+    }
+
+    // 如果提供了会话ID，保存消息到会话中
+    if (sessionId && userId) {
+      try {
+        // 保存用户的图片生成请求消息
+        await chatSessionService.addMessage(sessionId, {
+          type: 'user',
+          content: `[图片生成请求] ${prompt}`,
+          userId: userId,
+          timestamp: new Date().toISOString(),
+        });
+
+        // 保存AI的图片回复消息
+        await chatSessionService.addMessage(sessionId, {
+          type: 'ai',
+          content: imageUrl,
+          messageType: 'image',
+          metadata: {
+            prompt: prompt.trim(),
+            model,
+            size,
+            quality,
+            generatedAt: new Date().toISOString(),
+            seed: response.data?.seed,
+            timings: response.data?.timings,
+          },
+          timestamp: new Date().toISOString(),
+        });
+
+        console.log(`图片生成消息已保存到会话 ${sessionId}`);
+      } catch (sessionError) {
+        console.warn('保存图片消息到会话失败:', sessionError);
+        // 不因为会话保存失败而影响图片生成的成功响应
+      }
+    }
+
+    // 返回成功响应
+    res.json({
+      success: true,
+      imageUrl,
+      prompt: prompt.trim(),
+      model,
+      metadata: {
+        size,
+        quality,
+        seed: response.data?.seed,
+        timings: response.data?.timings,
+        created: response.data?.created,
+        shared_id: response.data?.shared_id,
+      },
+      timestamp: Date.now(),
+    });
+  } catch (error) {
+    console.error('图片生成接口错误:', error);
+
+    if (error.response) {
+      // API 返回的错误
+      const status = error.response.status || 500;
+      const errorData = error.response.data || {};
+
+      console.error('SiliconFlow API 错误响应:', errorData);
+
+      res.status(status).json({
+        success: false,
+        error: 'SiliconFlow 图片生成 API 错误',
+        status: status,
+        message: errorData.message || error.message,
+        details: errorData,
+      });
+    } else if (error.code === 'ECONNABORTED') {
+      // 请求超时
+      res.status(408).json({
+        success: false,
+        error: '请求超时',
+        message: '图片生成超时，请稍后重试',
       });
     } else {
       // 其他错误

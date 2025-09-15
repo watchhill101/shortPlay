@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const config = require('../config');
 const chatSessionService = require('../services/redis.service');
 const axios = require('axios');
+const { handleVideoCallEvents } = require('./videoCall');
 
 // SiliconFlow API 配置
 const SILICONFLOW_API_URL = 'https://api.siliconflow.cn/v1/chat/completions';
@@ -43,8 +44,9 @@ const simpleAuthMiddleware = (socket, next) => {
 function initializeSocket(server) {
   const io = new Server(server, {
     cors: {
-      origin: config.cors.origin,
+      origin: '*', // 允许所有来源进行调试
       methods: ['GET', 'POST'],
+      credentials: true,
     },
   });
 
@@ -60,6 +62,9 @@ function initializeSocket(server) {
 
     // 加入以用户ID命名的房间，方便私聊或定向推送
     socket.join(socket.user.id);
+
+    // 初始化视频通话事件处理器
+    handleVideoCallEvents(socket, io);
 
     // 创建AI聊天会话
     socket.on('createChatSession', async (data, callback) => {

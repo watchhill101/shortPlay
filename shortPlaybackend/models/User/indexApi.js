@@ -438,6 +438,48 @@ const getSessions = async (req, res, next) => {
   }
 };
 
+/**
+ * @desc    手机号一键登录或注册
+ * @route   POST /api/auth/login-one-click
+ */
+const loginWithOneClick = async (req, res, next) => {
+  const { phone, deviceId } = req.body;
+  if (!phone || !/^1[3-9]\d{9}$/.test(phone)) {
+    return res.status(400).json({ success: false, message: 'Invalid phone number' });
+  }
+
+  try {
+    let user = await User.findOne({ mobilePhoneNumber: phone });
+
+    // 如果用户不存在，则创建新用户
+    if (!user) {
+      user = await User.create({ mobilePhoneNumber: phone });
+    } else {
+      // 如果用户已存在，更新最后登录时间
+      user.lastLoginAt = Date.now();
+      await user.save();
+    }
+
+    // 生成双Token
+    const tokenPair = await generateTokenPair(user._id, deviceId);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        ...tokenPair,
+        user: {
+          id: user._id,
+          nickname: user.nickname,
+          avatar: user.avatar,
+          mobilePhoneNumber: user.mobilePhoneNumber,
+        },
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // 导出所有认证相关函数
 module.exports = {
   sendSmsCode,
@@ -447,6 +489,7 @@ module.exports = {
   verifyToken,
   logout,
   getSessions,
+  loginWithOneClick, // <-- 添加导出
   generateAccessToken, // 导出工具函数，方便其他模块使用
   generateRefreshToken,
   generateTokenPair,

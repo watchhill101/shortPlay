@@ -209,7 +209,7 @@ router.get('/conversations', async (req, res) => {
     res.json({
       success: true,
       data: {
-        conversations: conversations.filter(conv => conv.lastMessage), // 只返回有消息的会话
+        conversations: conversations, // 返回所有好友会话（无消息时 lastMessage 为 null）
         total: conversations.length,
       },
     });
@@ -249,6 +249,57 @@ router.get('/unread-count', async (req, res) => {
     res.status(500).json({
       success: false,
       message: '获取未读消息数失败',
+      error: error.message,
+    });
+  }
+});
+
+// 标记消息为已读
+// POST /api/chat/mark-read/:friendId
+router.post('/mark-read/:friendId', async (req, res) => {
+  try {
+    const { friendId } = req.params;
+    const currentUserId = req.user?.id || req.body.userId;
+
+    if (!currentUserId) {
+      return res.status(401).json({
+        success: false,
+        message: '用户未认证',
+      });
+    }
+
+    // 验证好友关系
+    const friendship = await Friend.findOne({
+      $or: [
+        { requester: currentUserId, recipient: friendId, status: 'accepted' },
+        { requester: friendId, recipient: currentUserId, status: 'accepted' },
+      ],
+    });
+
+    if (!friendship) {
+      return res.status(403).json({
+        success: false,
+        message: '您与该用户不是好友关系',
+      });
+    }
+
+    // 标记该好友发送给当前用户的所有消息为已读
+    await ChatMessage.markAsRead(currentUserId, friendId, currentUserId);
+
+    console.log(`已标记 ${friendId} → ${currentUserId} 的消息为已读`);
+
+    res.json({
+      success: true,
+      message: '消息已标记为已读',
+      data: {
+        readAt: new Date(),
+      },
+    });
+  } catch (error) {
+    console.error('标记消息已读失败:', error);
+    res.status(500).json({
+      success: false,
+      message: '标记消息已读失败',
       error: error.message,
     });
   }
@@ -311,6 +362,157 @@ router.delete('/conversation/:friendId', async (req, res) => {
     res.status(500).json({
       success: false,
       message: '删除聊天记录失败',
+      error: error.message,
+    });
+  }
+});
+
+// 标记会话为未读
+// PUT /api/chat/conversations/:friendId/mark-unread
+router.put('/conversations/:friendId/mark-unread', async (req, res) => {
+  try {
+    const { friendId } = req.params;
+    const currentUserId = req.user?.id || req.body.userId;
+
+    if (!currentUserId) {
+      return res.status(401).json({
+        success: false,
+        message: '用户未认证',
+      });
+    }
+
+    // 验证好友关系
+    const friendship = await Friend.findOne({
+      $or: [
+        { requester: currentUserId, recipient: friendId, status: 'accepted' },
+        { requester: friendId, recipient: currentUserId, status: 'accepted' },
+      ],
+    });
+
+    if (!friendship) {
+      return res.status(403).json({
+        success: false,
+        message: '您与该用户不是好友关系',
+      });
+    }
+
+    // 这里可以添加标记未读的逻辑，比如在数据库中记录用户手动标记的未读状态
+    // 目前只返回成功，让前端处理显示逻辑
+    res.json({
+      success: true,
+      message: '已标记为未读',
+    });
+  } catch (error) {
+    console.error('标记未读失败:', error);
+    res.status(500).json({
+      success: false,
+      message: '标记未读失败',
+      error: error.message,
+    });
+  }
+});
+
+// 隐藏会话
+// PUT /api/chat/conversations/:friendId/hide
+router.put('/conversations/:friendId/hide', async (req, res) => {
+  try {
+    const { friendId } = req.params;
+    const currentUserId = req.user?.id || req.body.userId;
+
+    if (!currentUserId) {
+      return res.status(401).json({
+        success: false,
+        message: '用户未认证',
+      });
+    }
+
+    // 验证好友关系
+    const friendship = await Friend.findOne({
+      $or: [
+        { requester: currentUserId, recipient: friendId, status: 'accepted' },
+        { requester: friendId, recipient: currentUserId, status: 'accepted' },
+      ],
+    });
+
+    if (!friendship) {
+      return res.status(403).json({
+        success: false,
+        message: '您与该用户不是好友关系',
+      });
+    }
+
+    // 这里可以添加隐藏会话的逻辑，比如在数据库中记录隐藏状态
+    // 目前只返回成功，让前端处理显示逻辑
+    res.json({
+      success: true,
+      message: '会话已隐藏',
+    });
+  } catch (error) {
+    console.error('隐藏会话失败:', error);
+    res.status(500).json({
+      success: false,
+      message: '隐藏会话失败',
+      error: error.message,
+    });
+  }
+});
+
+// 清空聊天记录
+// DELETE /api/chat/conversations/:friendId/clear
+router.delete('/conversations/:friendId/clear', async (req, res) => {
+  try {
+    const { friendId } = req.params;
+    const currentUserId = req.user?.id || req.body.userId;
+
+    if (!currentUserId) {
+      return res.status(401).json({
+        success: false,
+        message: '用户未认证',
+      });
+    }
+
+    // 验证好友关系
+    const friendship = await Friend.findOne({
+      $or: [
+        { requester: currentUserId, recipient: friendId, status: 'accepted' },
+        { requester: friendId, recipient: currentUserId, status: 'accepted' },
+      ],
+    });
+
+    if (!friendship) {
+      return res.status(403).json({
+        success: false,
+        message: '您与该用户不是好友关系',
+      });
+    }
+
+    // 删除聊天记录
+    const conversationId = ChatMessage.generateConversationId(currentUserId, friendId);
+    console.log('清空聊天记录参数:', {
+      currentUserId,
+      friendId,
+      conversationId,
+    });
+
+    // 先查询要删除的消息数量
+    const messageCount = await ChatMessage.countDocuments({ conversationId });
+    console.log(`准备清空 ${messageCount} 条消息`);
+
+    const result = await ChatMessage.deleteMany({ conversationId });
+    console.log('清空结果:', result);
+
+    res.json({
+      success: true,
+      message: '聊天记录已清空',
+      data: {
+        deletedCount: result.deletedCount,
+      },
+    });
+  } catch (error) {
+    console.error('清空聊天记录失败:', error);
+    res.status(500).json({
+      success: false,
+      message: '清空聊天记录失败',
       error: error.message,
     });
   }

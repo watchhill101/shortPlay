@@ -34,7 +34,11 @@ const { middleware: monitoringMiddleware, getStats, reset: resetStats } = create
 // --- 核心中间件 ---
 
 // 1. 安全：设置各种 HTTP 头
-app.use(helmet());
+app.use(
+  helmet({
+    contentSecurityPolicy: false,
+  })
+);
 
 // 2. 性能监控中间件（放在最前面）
 app.use(monitoringMiddleware);
@@ -91,6 +95,8 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 
+// 启用 CORS (移除了无路径前缀的静态服务，避免拦截其他路由)
+
 // 9. 日志：根据环境选择不同日志格式
 app.use(morgan(config.env === 'development' ? 'dev' : 'combined'));
 
@@ -98,8 +104,35 @@ app.use(morgan(config.env === 'development' ? 'dev' : 'combined'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-// 🔴 新增：静态资源托管 —— 让 /uploads 目录可通过 HTTP 访问
-app.use('/upload', express.static(path.join(__dirname, 'upload')));
+// 🔴 已修复：移除错误的 /upload 路径配置（目录不存在）
+// app.use('/upload', express.static(path.join(__dirname, 'upload'))); // 已注释：目录不存在
+
+// 为视频文件添加特殊的CORS处理
+app.use(
+  '/uploads/video',
+  (req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Range');
+    res.header('Access-Control-Expose-Headers', 'Content-Length, Content-Range, Accept-Ranges');
+    res.header('Access-Control-Allow-Credentials', 'false'); // 改为false，避免CORS问题
+    next();
+  },
+  express.static(path.join(__dirname, 'uploads/video'))
+);
+
+// Serve static files from the 'uploads' directory with CORS headers
+app.use(
+  '/uploads',
+  (req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+    res.header('Access-Control-Allow-Credentials', 'false'); // 改为false，避免CORS问题
+    next();
+  },
+  express.static(path.join(__dirname, 'uploads'))
+);
 // 5. Session 管理 (使用 Redis 存储)
 const setupSession = async () => {
   try {
@@ -227,7 +260,10 @@ app.delete('/api/system/cache', async (req, res) => {
   }
 });
 
-// 调试：记录静态文件请求
+// 🔴 已修复：移除重复的静态文件配置
+// 调试日志和静态服务已在上面 126-136 行正确配置
+// 重复配置已注释以避免冲突
+/*
 app.use('/uploads', (req, res, next) => {
   console.log('静态文件请求:', req.url);
   console.log('文件路径:', path.join(__dirname, 'uploads', req.url));
@@ -235,6 +271,43 @@ app.use('/uploads', (req, res, next) => {
 });
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+*/
+
+// 测试页面
+app.get('/test-video', (req, res) => {
+  res.sendFile(path.join(__dirname, 'test-video.html'));
+});
+
+// 视频代理路由 - 解决跨域问题
+app.get('/video-proxy/:filename', (req, res) => {
+  const filename = req.params.filename;
+  const videoPath = path.join(__dirname, 'uploads', 'video', filename);
+
+  // 设置视频相关的响应头
+  res.setHeader('Content-Type', 'video/mp4');
+  res.setHeader('Accept-Ranges', 'bytes');
+  res.setHeader('Cache-Control', 'public, max-age=0');
+
+  // 处理Range请求（视频流式播放需要）
+  const range = req.headers.range;
+  if (range) {
+    const stat = require('fs').statSync(videoPath);
+    const fileSize = stat.size;
+    const parts = range.replace(/bytes=/, '').split('-');
+    const start = parseInt(parts[0], 10);
+    const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+    const chunksize = end - start + 1;
+
+    res.status(206);
+    res.setHeader('Content-Range', `bytes ${start}-${end}/${fileSize}`);
+    res.setHeader('Content-Length', chunksize);
+
+    const stream = require('fs').createReadStream(videoPath, { start, end });
+    stream.pipe(res);
+  } else {
+    res.sendFile(videoPath);
+  }
+});
 
 app.use('/api', apiRoutes); // 所有 API 路由都以 /api 开头
 

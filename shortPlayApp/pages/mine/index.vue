@@ -3,7 +3,7 @@
     <!-- 用户信息区域 -->
     <view class="user-info-section">
       <view class="user-profile" @click="!isLoggedIn && goToLogin()">
-        <image :src="userInfo.avatar" class="user-avatar" mode="aspectFill"></image>
+        <image :src="userInfo.avatarUrl" class="user-avatar" mode="aspectFill"></image>
         <view class="user-details">
           <text class="username">{{ userInfo.name }}</text>
           <view v-if="isLoggedIn" class="user-stats">
@@ -73,24 +73,24 @@
 
 <script setup>
 import { ref, reactive } from 'vue';
-import { onShow } from '@dcloudio/uni-app';
+import { onShow, onLoad, onUnload } from '@dcloudio/uni-app';
 import tokenManager from '../../utils/tokenManager.js';
 
 // --- state ---
 const isLoggedIn = ref(false);
 
 const userInfo = reactive({
-  avatar: '../../static/img/avatar.png',
-  name: '坚强的南风',
+  avatarUrl: '../../static/img/avatar.png',
+  name: '点击登录',
   following: 0,
   followers: 0,
   likes: 0,
 });
 
 const menuItems = reactive([
-  { type: 'coins', label: '金币', icon: '◯', iconClass: 'icon-coins' },
+  { type: 'balance', label: '钱包', icon: '◯', iconClass: 'icon-coins' },
   { type: 'orders', label: '订单', icon: '🛍', iconClass: 'icon-orders' },
-  { type: 'messages', label: '消息', icon: '✉', iconClass: 'icon-messages' },
+  { type: 'customer-service', label: '客服', icon: '✉', iconClass: 'icon-messages' },
   { type: 'withdraw', label: '提现', icon: '💰', iconClass: 'icon-withdraw' },
   { type: 'appointment', label: '预约', icon: '📅', iconClass: 'icon-appointment' },
 ]);
@@ -117,7 +117,7 @@ const dramaList = reactive([
 const handleLogoutState = () => {
   isLoggedIn.value = false;
   Object.assign(userInfo, {
-    avatar: '../../static/img/avatar.png',
+    avatarUrl: '/static/img/avatar.png', // 🔴 修复：使用绝对路径
     name: '点击登录',
     following: 0,
     followers: 0,
@@ -128,12 +128,14 @@ const handleLogoutState = () => {
 const checkLoginStatus = () => {
   if (tokenManager.isLoggedIn()) {
     const storedUserInfo = tokenManager.getUserInfo();
+    console.log('[DEBUG] Mine Page: Received user info:', JSON.stringify(storedUserInfo));
     if (storedUserInfo) {
-      userInfo.name = storedUserInfo.nickname || '用户';
-      userInfo.avatar = storedUserInfo.avatarUrl || '../../static/img/avatar.png';
-      // TODO: 获取真实的 following, followers, likes 数据
       isLoggedIn.value = true;
+      userInfo.name = storedUserInfo.nickname || '用户';
+      userInfo.avatarUrl = storedUserInfo.avatarUrl; // 直接使用拼接好的URL
+      // TODO: 获取真实的 following, followers, likes 数据
     } else {
+      // 本地存储信息异常，视为未登录
       handleLogoutState();
     }
   } else {
@@ -150,10 +152,16 @@ const goToSettings = () => {
 };
 
 const onMenuClick = type => {
+  if (type === 'customer-service') {
+    uni.navigateTo({ url: '/pages/chat/chatAi' });
+    return;
+  }
+  if (type === 'balance') {
+    uni.navigateTo({ url: '/pages/balance/index' });
+    return;
+  }
   const actions = {
-    coins: '金币功能开发中',
     orders: '订单功能开发中',
-    messages: '消息功能开发中',
     withdraw: '提现功能开发中',
     appointment: '预约功能开发中',
   };
@@ -178,8 +186,18 @@ const onDramaClick = drama => {
 };
 
 // --- lifecycle hooks ---
+onLoad(() => {
+  // 监听用户信息更新事件
+  uni.$on('userInfoUpdated', checkLoginStatus);
+});
+
 onShow(() => {
   checkLoginStatus();
+});
+
+onUnload(() => {
+  // 移除监听，避免内存泄漏
+  uni.$off('userInfoUpdated', checkLoginStatus);
 });
 </script>
 
@@ -201,9 +219,7 @@ onShow(() => {
   border-bottom: 1rpx solid rgba(255, 255, 255, 0.1);
 }
 
-.settings-icon {
-  /* No specific styles needed for positioning anymore */
-}
+/* Settings icon styles handled by parent container */
 
 .user-profile {
   display: flex;

@@ -60,10 +60,17 @@ backgroundUserSchema.index({ account: 1 });
 backgroundUserSchema.index({ status: 1 });
 
 // 用户权限验证方法
-backgroundUserSchema.methods.hasPermission = function (_permissionCode) {
-  // 这里可以实现复杂的权限验证逻辑
-  // 检查用户角色的权限 + 额外权限
-  return true; // 实际实现需要查询权限
+backgroundUserSchema.methods.hasPermission = async function (permissionCode) {
+  // 1. 调用 getAllPermissions() 获取当前用户实例的所有权限对象
+  const allPermissions = await this.getAllPermissions();
+
+  // 2. 使用 Array.prototype.some() 方法来检查
+  //    在所有权限对象中，是否存在任何一个权限的 code 与传入的 permissionCode 相等。
+  //    .some() 只要找到一个匹配项就会立刻返回 true，效率很高。
+  const hasPerm = allPermissions.some(perm => perm.code === permissionCode);
+
+  // 3. 返回最终的布尔值结果
+  return hasPerm;
 };
 
 // 获取用户所有权限

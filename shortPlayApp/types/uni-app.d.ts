@@ -1,4 +1,3 @@
-/* eslint-disable */
 // uni-app 全局类型定义
 declare global {
   const uni: any;

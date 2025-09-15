@@ -1,22 +1,22 @@
-// 好友服务模块
 import { getApiConfig } from '@/config/index.js';
+import tokenManager from '@/utils/tokenManager.js';
 
+// 好友服务模块
 class FriendService {
   constructor() {
-    this.baseURL = getApiConfig().baseURL;
-    // 动态导入tokenManager避免循环依赖
-    this.getAccessToken = null;
-    import('@/utils/tokenManager').then(module => {
-      this.getAccessToken = module.default.getAccessToken;
-    });
+    this.baseURL = getApiConfig().baseURL + '/friends';
+  }
+
+  // 获取基础URL
+  getBaseURL() {
+    return config.getApiUrl('/api/friends');
   }
 
   // 获取认证头
   getAuthHeader() {
-    // 动态导入authService避免循环依赖
-    const token = uni.getStorageSync('token');
+    const accessToken = tokenManager.getAccessToken();
     return {
-      Authorization: `Bearer ${token}`,
+      Authorization: accessToken ? `Bearer ${accessToken}` : '',
       'Content-Type': 'application/json',
     };
   }
@@ -35,6 +35,7 @@ class FriendService {
 
       return response.data;
     } catch (error) {
+      console.error('获取好友列表失败:', error);
       throw error;
     }
   }
@@ -53,6 +54,7 @@ class FriendService {
 
       return response.data;
     } catch (error) {
+      console.error('搜索用户失败:', error);
       throw error;
     }
   }
@@ -69,6 +71,7 @@ class FriendService {
 
       return response.data;
     } catch (error) {
+      console.error('发送好友申请失败:', error);
       throw error;
     }
   }
@@ -85,6 +88,7 @@ class FriendService {
 
       return response.data;
     } catch (error) {
+      console.error('获取好友申请失败:', error);
       throw error;
     }
   }
@@ -101,6 +105,7 @@ class FriendService {
 
       return response.data;
     } catch (error) {
+      console.error('处理好友申请失败:', error);
       throw error;
     }
   }
@@ -117,6 +122,7 @@ class FriendService {
 
       return response.data;
     } catch (error) {
+      console.error('删除好友失败:', error);
       throw error;
     }
   }
@@ -133,6 +139,7 @@ class FriendService {
 
       return response.data;
     } catch (error) {
+      console.error('设置好友备注失败:', error);
       throw error;
     }
   }
@@ -142,7 +149,8 @@ class FriendService {
     try {
       const response = await this.getFriendList(userId, { page: 1, limit: 1 });
       return response.success ? response.data.pagination.total || 0 : 0;
-    } catch (_error) {
+    } catch (error) {
+      console.error('获取好友数量失败:', error);
       return 0;
     }
   }
@@ -155,7 +163,8 @@ class FriendService {
         return response.data.requests.filter(req => req.status === 'pending').length;
       }
       return 0;
-    } catch (_error) {
+    } catch (error) {
+      console.error('获取待处理申请数量失败:', error);
       return 0;
     }
   }
@@ -171,6 +180,22 @@ class FriendService {
         successCount,
         totalCount: requests.length,
       };
+    } catch (error) {
+      console.error('批量处理申请失败:', error);
+      throw error;
+    }
+  }
+
+  // 直接添加好友（已是好友直接返回，pending则升级为accepted）
+  async addDirectFriend(userId, targetUserId, remark = '') {
+    try {
+      const response = await uni.request({
+        url: `${this.baseURL}/add-direct`,
+        method: 'POST',
+        data: { userId, targetUserId, remark },
+        header: this.getAuthHeader(),
+      });
+      return response.data;
     } catch (error) {
       throw error;
     }

@@ -360,4 +360,64 @@ router.put('/request/:requestId', async (req, res) => {
   }
 });
 
+router.post('/add-direct', async (req, res) => {
+  try {
+    const { userId, targetUserId, remark = '' } = req.body;
+
+    if (!userId || !targetUserId) {
+      return res.status(400).json({ success: false, message: '用户ID不能为空' });
+    }
+
+    if (userId === targetUserId) {
+      return res.status(400).json({ success: false, message: '不能添加自己为好友' });
+    }
+
+    // 校验目标用户存在
+    const target = await User.findById(targetUserId).select('_id');
+    if (!target) {
+      return res.status(404).json({ success: false, message: '用户不存在' });
+    }
+
+    // 查找现有关系
+    let relation = await Friend.findOne({
+      $or: [
+        { requester: userId, recipient: targetUserId },
+        { requester: targetUserId, recipient: userId },
+      ],
+    });
+
+    if (relation) {
+      if (relation.status === 'accepted') {
+        return res.json({ success: true, message: '已经是好友', data: relation });
+      }
+      // 升级为已接受
+      relation.status = 'accepted';
+      relation.acceptedAt = new Date();
+      // 写入备注到正确的一侧
+      if (relation.requester.toString() === userId) {
+        relation.requesterRemark = remark || relation.requesterRemark;
+      } else {
+        relation.recipientRemark = remark || relation.recipientRemark;
+      }
+      await relation.save();
+      return res.json({ success: true, message: '已建立好友关系', data: relation });
+    }
+
+    // 创建新关系
+    relation = new Friend({
+      requester: userId,
+      recipient: targetUserId,
+      status: 'accepted',
+      acceptedAt: new Date(),
+      requesterRemark: remark,
+    });
+    await relation.save();
+
+    return res.json({ success: true, message: '已建立好友关系', data: relation });
+  } catch (error) {
+    console.error('直接添加好友失败:', error);
+    res.status(500).json({ success: false, message: '直接添加好友失败', error: error.message });
+  }
+});
+
 module.exports = router;

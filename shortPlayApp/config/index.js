@@ -1,23 +1,48 @@
 // config/index.js - 应用配置
+
+/**
+ * =================================================================================
+ * [重要] 真机调试配置
+ * - 当您使用手机或模拟器进行真机调试时, App无法通过 'localhost' 访问到您电脑上的后台服务。
+ * - 您需要将下方 `DEV_LOCAL_IP` 的值修改为您电脑在局域网中的IP地址。
+ *
+ * 如何获取电脑的IP地址?
+ * - Windows: 在命令提示符(cmd)中输入 `ipconfig`, 查找 "IPv4 地址"。
+ * - macOS/Linux: 在终端中输入 `ifconfig` 或 `ip addr`, 查找 "inet" 地址。
+ *   通常是 `192.168.x.x` 或 `10.0.x.x` 格式。
+ * =================================================================================
+ */
+// const DEV_LOCAL_IP = 'localhost'; // 在此填入您电脑的局域网IP, 例如: '192.168.1.10'
+
+/**
+ * 环境变量与API配置
+ * 目的:
+ * 1. 根据不同的环境（开发、测试、生产）提供不同的API基础URL。
+ * 2. 确保在不同环境中使用正确的域名和端口。
+ * 3. 提供一个统一的配置接口，方便在不同模块中获取API配置。
+ */
 const config = {
   // API配置
   api: {
     // 开发环境
     development: {
-      baseURL: 'http://192.168.0.223:3000/api',
+      baseURL: `http://192.168.0.65:3000/api`,
       timeout: 10000,
     },
     // 测试环境
     test: {
-      baseURL: 'http://test-api.shortplay.com',
+      baseURL: 'http://test-api.shortplay.com/api',
       timeout: 10000,
     },
     // 生产环境
     production: {
-      baseURL: 'https://api.shortplay.com',
+      baseURL: 'https://api.shortplay.com/api',
       timeout: 10000,
     },
   },
+
+  // 资源文件基础URL (用于拼接图片等)
+  assetBaseURL: '',
 
   // 当前环境
   env: process.env.NODE_ENV || 'development',
@@ -69,6 +94,11 @@ const config = {
   },
 };
 
+// 修正 assetBaseURL 的定义，避免在对象初始化时引用自身
+const currentApiConfig = config.api[config.env] || config.api.development;
+const match = currentApiConfig.baseURL.match(/^(https?:\/\/[^/]+)/);
+config.assetBaseURL = match ? match[1] : '';
+
 // 获取当前环境的API配置
 export const getApiConfig = () => {
   return config.api[config.env] || config.api.development;
@@ -92,6 +122,16 @@ export const getDouyinConfig = () => {
 // 获取应用信息
 export const getAppInfo = () => {
   return config.app;
+};
+
+// 获取资源基础URL
+export const getAssetBaseURL = () => {
+  return config.assetBaseURL;
+};
+
+// 获取TRTC配置
+export const getTrtcConfig = () => {
+  return config.trtc;
 };
 
 export default config;
