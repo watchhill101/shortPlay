@@ -36,7 +36,7 @@
           </view>
 
           <view class="item">
-            <view class="playlet" v-for="(item, index) in searchResults" :keys="index" @tap="toPalyletDetail(item)">
+            <view class="playlet" v-for="(item, index) in searchResults" :key="index" @tap="toPalyletDetail(item)">
               <view class="cover">
                 <image
                   :src="item.image"
@@ -88,25 +88,89 @@
             <view class="error-retry" @click="retryLoadData">重新加载</view>
           </view>
 
-          <view class="item" v-else>
-            <view class="playlet" v-for="(item, index) in playletRecommends" :keys="index" @tap="toPalyletDetail(item)">
-              <view class="cover">
-                <image
-                  :src="item.image"
-                  class="goods-img"
-                  mode="scaleToFill"
-                  @error="onImageError"
-                  @load="onImageLoad"
-                ></image>
-              </view>
-
-              <view class="goods-info flex-1">
-                <view class="title">{{ item.title }}</view>
-                <view class="brief">{{ item.brief }}</view>
+          <view v-else>
+            <!-- 上半部分：6条数据，每行3个 -->
+            <view class="top-section" v-if="playletRecommends.length > 0">
+              <view class="section-title">热门推荐</view>
+              <view class="top-grid">
+                <view
+                  class="playlet top-playlet"
+                  v-for="(item, index) in topPlaylets"
+                  :key="index"
+                  @tap="toPalyletDetail(item)"
+                >
+                  <view class="cover">
+                    <image
+                      :src="item.image"
+                      class="goods-img"
+                      mode="scaleToFill"
+                      @error="onImageError"
+                      @load="onImageLoad"
+                    ></image>
+                  </view>
+                  <view class="goods-info flex-1">
+                    <view class="title">{{ item.title }}</view>
+                    <view class="brief">{{ item.brief }}</view>
+                  </view>
+                </view>
               </view>
             </view>
 
-            <view v-if="playletRecommends.length % 2 != 0" class="playlet-empty"></view>
+            <!-- 下半部分：瀑布流布局 -->
+            <view class="bottom-section" v-if="allBottomPlaylets.length > 0">
+              <view class="section-title">精彩内容</view>
+              <view class="masonry-container">
+                <!-- 左列 -->
+                <view class="masonry-column">
+                  <view
+                    class="playlet masonry-item"
+                    v-for="(item, index) in leftColumnPlayletsWithDemo"
+                    :key="'left-' + index"
+                    :class="'masonry-' + (index % 3)"
+                    @tap="toPalyletDetail(item)"
+                  >
+                    <view class="cover">
+                      <image
+                        :src="item.image"
+                        class="goods-img"
+                        mode="scaleToFill"
+                        @error="onImageError"
+                        @load="onImageLoad"
+                      ></image>
+                    </view>
+                    <view class="goods-info flex-1">
+                      <view class="title">{{ item.title }}</view>
+                      <view class="brief">{{ item.brief }}</view>
+                    </view>
+                  </view>
+                </view>
+
+                <!-- 右列 -->
+                <view class="masonry-column">
+                  <view
+                    class="playlet masonry-item"
+                    v-for="(item, index) in rightColumnPlayletsWithDemo"
+                    :key="'right-' + index"
+                    :class="'masonry-' + (index % 3)"
+                    @tap="toPalyletDetail(item)"
+                  >
+                    <view class="cover">
+                      <image
+                        :src="item.image"
+                        class="goods-img"
+                        mode="scaleToFill"
+                        @error="onImageError"
+                        @load="onImageLoad"
+                      ></image>
+                    </view>
+                    <view class="goods-info flex-1">
+                      <view class="title">{{ item.title }}</view>
+                      <view class="brief">{{ item.brief }}</view>
+                    </view>
+                  </view>
+                </view>
+              </view>
+            </view>
           </view>
         </view>
       </view>
@@ -171,6 +235,94 @@ export default {
       }
       const currentDrama = this.searchPlaceholders[this.currentPlaceholderIndex];
       return `${currentDrama}`;
+    },
+
+    // 上半部分数据：前6条
+    topPlaylets() {
+      return this.playletRecommends.slice(0, 6);
+    },
+
+    // 下半部分数据：第7条开始
+    bottomPlaylets() {
+      return this.playletRecommends.slice(6);
+    },
+
+    // 左列数据：偶数索引
+    leftColumnPlaylets() {
+      return this.bottomPlaylets.filter((item, index) => index % 2 === 0);
+    },
+
+    // 右列数据：奇数索引
+    rightColumnPlaylets() {
+      return this.bottomPlaylets.filter((item, index) => index % 2 === 1);
+    },
+
+    // 演示用的假数据（用于展示错位效果）
+    demoPlaylets() {
+      return [
+        {
+          playletId: 'demo-1',
+          title: '重生之商业帝国',
+          brief: '都市重生·1000万播放·50万收藏',
+          image: 'https://via.placeholder.com/300x400/ff6b35/ffffff?text=重生商业',
+        },
+        {
+          playletId: 'demo-2',
+          title: '仙尊归来',
+          brief: '仙侠玄幻·800万播放·30万收藏',
+          image: 'https://via.placeholder.com/300x500/4CAF50/ffffff?text=仙尊归来',
+        },
+        {
+          playletId: 'demo-3',
+          title: '都市最强医圣',
+          brief: '都市异能·1200万播放·80万收藏',
+          image: 'https://via.placeholder.com/300x350/2196F3/ffffff?text=医圣',
+        },
+        {
+          playletId: 'demo-4',
+          title: '重生之投资大亨',
+          brief: '都市重生·600万播放·25万收藏',
+          image: 'https://via.placeholder.com/300x450/FF9800/ffffff?text=投资大亨',
+        },
+        {
+          playletId: 'demo-5',
+          title: '修仙传',
+          brief: '仙侠修真·900万播放·40万收藏',
+          image: 'https://via.placeholder.com/300x380/9C27B0/ffffff?text=修仙传',
+        },
+        {
+          playletId: 'demo-6',
+          title: '都市龙王',
+          brief: '都市爽文·1500万播放·100万收藏',
+          image: 'https://via.placeholder.com/300x420/E91E63/ffffff?text=都市龙王',
+        },
+        {
+          playletId: 'demo-7',
+          title: '重生之金融巨鳄',
+          brief: '都市重生·700万播放·35万收藏',
+          image: 'https://via.placeholder.com/300x480/00BCD4/ffffff?text=金融巨鳄',
+        },
+        {
+          playletId: 'demo-8',
+          title: '武神归来',
+          brief: '都市武道·1100万播放·60万收藏',
+          image: 'https://via.placeholder.com/300x360/795548/ffffff?text=武神归来',
+        },
+      ];
+    },
+
+    // 合并真实数据和演示数据
+    allBottomPlaylets() {
+      return [...this.bottomPlaylets, ...this.demoPlaylets];
+    },
+
+    // 重新计算左右列数据（包含演示数据）
+    leftColumnPlayletsWithDemo() {
+      return this.allBottomPlaylets.filter((item, index) => index % 2 === 0);
+    },
+
+    rightColumnPlayletsWithDemo() {
+      return this.allBottomPlaylets.filter((item, index) => index % 2 === 1);
     },
   },
 
@@ -790,9 +942,18 @@ export default {
     },
 
     //点击短剧详情
-
     toPalyletDetail(item) {
       let me = this;
+
+      // 如果是演示数据，显示提示
+      if (item.playletId && item.playletId.startsWith('demo-')) {
+        uni.showToast({
+          title: '这是演示数据',
+          icon: 'none',
+          duration: 1500,
+        });
+        return;
+      }
 
       uni.navigateTo({
         url: '/pages/playlet/detail?playletId=' + item.playletId,
@@ -810,7 +971,7 @@ export default {
 
   min-height: 100vh;
 
-  background-color: #0e0f0fS;
+  background-color: #0e0f0f;
 }
 
 .content {
@@ -923,17 +1084,151 @@ export default {
   background: #1e1e1e;
 }
 
-.playlet-recommend .item {
+/* 上半部分：6条数据，每行3个 */
+.top-section {
+  margin-bottom: 40rpx;
+}
+
+.section-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 25rpx;
+  padding-left: 10rpx;
+}
+
+.top-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 30rpx;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20rpx;
+}
+
+/* 下半部分：瀑布流布局 */
+.bottom-section {
+  margin-top: 20rpx;
+  width: 100%;
+  overflow: hidden;
+}
+
+.masonry-container {
+  display: flex;
+  flex-direction: row;
+  gap: 15rpx;
+  width: 100%;
+  align-items: flex-start;
+}
+
+.masonry-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 15rpx;
+  width: calc(50% - 7.5rpx);
+}
+
+.masonry-item {
+  width: 100%;
+  margin-bottom: 0;
+  break-inside: avoid;
+}
+
+/* 错位效果：通过不同的高度比例实现瀑布流 */
+.masonry-item {
+  .cover {
+    padding-top: 140%; /* 默认高度 */
+  }
+}
+
+/* 左列：前几个项目保持整齐，后面逐渐错位 */
+.masonry-column:first-child .masonry-item:nth-child(1) {
+  .cover {
+    padding-top: 140%; /* 第1个标准高度 */
+  }
+}
+
+.masonry-column:first-child .masonry-item:nth-child(2) {
+  .cover {
+    padding-top: 150%; /* 第2个稍微高一点 */
+  }
+}
+
+.masonry-column:first-child .masonry-item:nth-child(3) {
+  .cover {
+    padding-top: 130%; /* 第3个稍微矮一点 */
+  }
+}
+
+.masonry-column:first-child .masonry-item:nth-child(4) {
+  .cover {
+    padding-top: 170%; /* 第4个明显更高 */
+  }
+}
+
+.masonry-column:first-child .masonry-item:nth-child(5) {
+  .cover {
+    padding-top: 120%; /* 第5个明显更矮 */
+  }
+}
+
+.masonry-column:first-child .masonry-item:nth-child(6) {
+  .cover {
+    padding-top: 190%; /* 第6个很高 */
+  }
+}
+
+/* 右列：从第2个开始错位，创造错开效果 */
+.masonry-column:last-child .masonry-item:nth-child(1) {
+  .cover {
+    padding-top: 160%; /* 第1个稍微高一点 */
+  }
+}
+
+.masonry-column:last-child .masonry-item:nth-child(2) {
+  .cover {
+    padding-top: 140%; /* 第2个标准高度 */
+  }
+}
+
+.masonry-column:last-child .masonry-item:nth-child(3) {
+  .cover {
+    padding-top: 180%; /* 第3个很高 */
+  }
+}
+
+.masonry-column:last-child .masonry-item:nth-child(4) {
+  .cover {
+    padding-top: 125%; /* 第4个很矮 */
+  }
+}
+
+.masonry-column:last-child .masonry-item:nth-child(5) {
+  .cover {
+    padding-top: 165%; /* 第5个中等偏高 */
+  }
+}
+
+.masonry-column:last-child .masonry-item:nth-child(6) {
+  .cover {
+    padding-top: 135%; /* 第6个中等偏矮 */
+  }
+}
+
+/* 为右列添加轻微偏移，创造更自然的错位 */
+.masonry-column:last-child {
+  margin-top: 20rpx;
+}
+
+/* 原有的item样式保留，但不再使用 */
+.playlet-recommend .item {
+  display: none;
 }
 
 .playlet-recommend .item .playlet-empty {
   display: none;
 }
 
-.playlet-recommend .item .playlet {
+/* 通用playlet样式 */
+.playlet {
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -1000,7 +1295,34 @@ export default {
   }
 }
 
-.playlet-recommend .item .playlet:active {
+/* 上半部分playlet样式调整 */
+.top-playlet {
+  .cover {
+    padding-top: 120%; /* 稍微调整比例 */
+  }
+
+  .goods-info {
+    padding: 15rpx;
+
+    .title {
+      font-size: 26rpx;
+    }
+
+    .brief {
+      font-size: 22rpx;
+    }
+  }
+}
+
+/* 下半部分错位布局playlet样式 - 移除冲突的样式 */
+.masonry-item {
+  .goods-info {
+    padding: 18rpx;
+  }
+}
+
+/* 通用playlet点击效果 */
+.playlet:active {
   transform: translateY(-5rpx);
   box-shadow: 0 12rpx 25rpx rgba(0, 0, 0, 0.3);
 }
