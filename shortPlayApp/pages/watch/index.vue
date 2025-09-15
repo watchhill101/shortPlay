@@ -1,28 +1,94 @@
 <template>
   <view class="content">
-    <u-short-video
-      :video-list="videoList"
-      :current-index="currentVideo"
-      @change="onVideoChange"
-      @like="onLike"
-      @comment="onComment"
-      @share="onShare"
-      @collect="onCollect"
-      @follow="onFollow"
-      @play="onPlay"
-      @pause="onPause"
-      @loadeddata="onLoadedData"
-      @error="onVideoError"
-      :autoplay="true"
-      :muted="false"
-      :controls="true"
-      :show-center-play-btn="true"
-      :enable-progress-gesture="true"
-    ></u-short-video>
-    <!-- 视频加载指示器 -->
-    <view v-if="isLoading" class="loading-indicator">
-      <u-loading size="50" color="#fff"></u-loading>
-      <text class="loading-text">视频加载中...</text>
+    <!-- 视频播放区域 -->
+    <view class="video-container">
+      <video
+        :src="currentVideoData.videoUrl"
+        :autoplay="true"
+        :muted="false"
+        :controls="false"
+        :show-center-play-btn="true"
+        :enable-progress-gesture="true"
+        :show-play-btn="false"
+        :show-fullscreen-btn="false"
+        :show-casting-button="false"
+        :show-screen-lock-button="false"
+        :show-mute-btn="false"
+        :show-loading="true"
+        :object-fit="'cover'"
+        :poster="currentVideoData.poster"
+        @play="onVideoPlay"
+        @pause="onVideoPause"
+        @loadeddata="onVideoLoaded"
+        @error="onVideoError"
+        @timeupdate="onTimeUpdate"
+        @ended="onVideoEnded"
+        class="video-player"
+        id="mainVideo"
+      ></video>
+
+      <!-- 视频加载指示器 -->
+      <view v-if="isLoading" class="loading-indicator">
+        <u-loading size="50" color="#fff"></u-loading>
+        <text class="loading-text">视频加载中...</text>
+      </view>
+
+      <!-- 视频信息覆盖层 -->
+      <view class="video-overlay">
+        <!-- 左侧作者信息 -->
+        <view class="author-info">
+          <image :src="currentVideoData.author.avatar" class="author-avatar"></image>
+          <view class="author-details">
+            <text class="author-name">{{ currentVideoData.author.name }}</text>
+            <text class="video-desc">{{ currentVideoData.author.desc }}</text>
+          </view>
+          <button class="follow-btn" :class="{ following: currentVideoData.author.isFollowing }" @click="onFollow">
+            {{ currentVideoData.author.isFollowing ? '已关注' : '关注' }}
+          </button>
+        </view>
+
+        <!-- 右侧操作按钮 -->
+        <view class="action-buttons">
+          <!-- 点赞按钮 -->
+          <view class="action-btn" @click="onLike">
+            <view class="action-icon">
+              <up-icon :name="currentVideoData.isLiked ? 'thumb-up-fill' : 'thumb-up'" color="#fff" size="40"></up-icon>
+            </view>
+            <text class="action-text">{{ currentVideoData.likeCount }}</text>
+          </view>
+
+          <!-- 评论按钮 -->
+          <view class="action-btn" @click="onComment">
+            <view class="action-icon">
+              <up-icon name="chat" color="#fff" size="40"></up-icon>
+            </view>
+            <text class="action-text">{{ currentVideoData.commentCount }}</text>
+          </view>
+
+          <!-- 分享按钮 -->
+          <view class="action-btn" @click="onShare">
+            <view class="action-icon">
+              <up-icon name="share" color="#fff" size="40"></up-icon>
+            </view>
+            <text class="action-text">{{ currentVideoData.shareCount }}</text>
+          </view>
+
+          <!-- 收藏按钮 -->
+          <view class="action-btn" @click="onCollect">
+            <view class="action-icon">
+              <up-icon :name="currentVideoData.isCollected ? 'heart-fill' : 'heart'" color="#fff" size="40"></up-icon>
+            </view>
+            <text class="action-text">{{ currentVideoData.collectCount }}</text>
+          </view>
+        </view>
+
+        <!-- 视频进度条 -->
+        <view class="progress-container">
+          <view class="progress-bar">
+            <view class="progress-fill" :style="{ width: progressPercent + '%' }"></view>
+          </view>
+        </view>
+      </view>
     </view>
 
     <!-- 评论模态框 -->
@@ -99,7 +165,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, onUnmounted } from 'vue';
+import { ref, reactive, onMounted, onUnmounted, computed } from 'vue';
 import { onHide, onShow } from '@dcloudio/uni-app';
 import http from '@/utils/request.js';
 import tokenManager from '@/utils/tokenManager';
@@ -118,7 +184,10 @@ let lastMediaOperationTime = 0;
 const DEBOUNCE_THRESHOLD = 300;
 // 新增一个状态，用于标记视频是否因页面切换而暂停
 let pausedBySystem = false;
-
+// 视频总时长
+const videoDuration = ref(0);
+// 当前播放时间
+const currentTime = ref(0);
 // 视频列表数据
 const videoList = reactive([]);
 
@@ -130,6 +199,102 @@ let currentWorkId = '';
 let replyToComment: any = null;
 // 当前评论会话的视频ID，确保整个评论过程中使用同一个视频ID
 let currentCommentVideoId = '';
+
+// 计算当前视频数据
+const currentVideoData = computed(() => {
+  return (
+    videoList[currentVideo.value] || {
+      id: '',
+      videoUrl: '',
+      poster: '',
+      author: {
+        id: '',
+        avatar: '/static/img/1.gif',
+        name: '未知作者',
+        collectionId: '',
+        desc: '暂无描述',
+        isFollowing: false,
+      },
+      isLiked: false,
+      likeCount: 0,
+      commentCount: 0,
+      shareCount: 0,
+      collectCount: 0,
+      isCollected: false,
+      loaded: false,
+    }
+  );
+});
+
+// 计算播放进度百分比
+const progressPercent = computed(() => {
+  if (videoDuration.value === 0) return 0;
+  return (currentTime.value / videoDuration.value) * 100;
+});
+
+// 视频播放事件
+function onVideoPlay() {
+  console.log('视频开始播放');
+  playingState.value = true;
+}
+
+// 视频暂停事件
+function onVideoPause() {
+  console.log('视频暂停');
+  playingState.value = false;
+}
+
+// 视频加载完成事件
+function onVideoLoaded() {
+  console.log('视频加载完成');
+  isLoading.value = false;
+  if (videoList[currentVideo.value]) {
+    videoList[currentVideo.value].loaded = true;
+  }
+}
+
+// 视频播放错误事件
+function onVideoError(e: any) {
+  console.error('视频播放错误:', e);
+  isLoading.value = true;
+  setTimeout(() => {
+    goNext();
+    uni.showToast({
+      title: '视频加载失败，已切换到下一个视频',
+      icon: 'none',
+    });
+  }, 1000);
+}
+
+// 视频时间更新事件
+function onTimeUpdate(e: any) {
+  currentTime.value = e.detail.currentTime;
+  videoDuration.value = e.detail.duration;
+}
+
+// 视频播放结束事件
+function onVideoEnded() {
+  console.log('视频播放结束');
+  goNext();
+}
+
+// 下一个视频
+function goNext() {
+  if (currentVideo.value < videoList.length - 1) {
+    currentVideo.value++;
+  } else {
+    currentVideo.value = 0;
+  }
+}
+
+// 上一个视频
+function goPrev() {
+  if (currentVideo.value > 0) {
+    currentVideo.value--;
+  } else {
+    currentVideo.value = videoList.length - 1;
+  }
+}
 
 // 从后端获取视频数据并添加到videoList
 async function fetchVideos() {
@@ -157,6 +322,8 @@ async function fetchVideos() {
           id: work._id || `video_${index}`,
           // 视频播放地址
           videoUrl: work.videoUrl || 'http://qn-o.jiangruyi.com/rjtsdl.MP4',
+          // 视频封面
+          poster: work.poster || '',
           // 视频进度
           progress: 0,
           bgColor: '#0e0f0f',
@@ -215,6 +382,7 @@ async function fetchVideos() {
         videoList.push({
           id: 'default_1',
           videoUrl: 'http://qn-o.jiangruyi.com/rjtsdl.MP4',
+          poster: '',
           progress: 0,
           bgColor: '#0e0f0f',
           author: {
@@ -250,6 +418,7 @@ async function fetchVideos() {
         videoList.push({
           id: 'default_2',
           videoUrl: 'http://v-cdn.zjol.com.cn/280443.mp4',
+          poster: '',
           progress: 0,
           bgColor: '#0e0f0f',
           author: {
@@ -305,6 +474,7 @@ function addDefaultVideos() {
     videoList.push({
       id: 'default_1',
       videoUrl: 'http://qn-o.jiangruyi.com/rjtsdl.MP4',
+      poster: '',
       progress: 0,
       bgColor: '#0e0f0f',
       author: {
@@ -340,6 +510,7 @@ function addDefaultVideos() {
     videoList.push({
       id: 'default_2',
       videoUrl: 'http://v-cdn.zjol.com.cn/280443.mp4',
+      poster: '',
       progress: 0,
       bgColor: '#0e0f0f',
       author: {
@@ -375,180 +546,21 @@ function addDefaultVideos() {
   }
 }
 
-// 下一个视频 - 组件内部需要此方法进行视频切换
-function goNext() {
-  if (currentVideo.value < videoList.length - 1) {
-    currentVideo.value++;
-  } else {
-    // 循环播放
-    currentVideo.value = 0;
-  }
-}
-
-// 上一个视频 - 组件内部需要此方法进行视频切换
-function goPrev() {
-  if (currentVideo.value > 0) {
-    currentVideo.value--;
-  } else {
-    // 循环播放
-    currentVideo.value = videoList.length - 1;
-  }
-}
-// 视频切换事件处理
-function onVideoChange(e: any) {
-  // 增强的参数解析逻辑，适配不同格式的参数
-  let index;
-  if (typeof e === 'number') {
-    index = e;
-  } else if (e && typeof e === 'object') {
-    index = e.index !== undefined ? e.index : e.detail?.index;
-  }
-  console.log('切换视频到:', index, '参数:', e);
-
-  // 安全检查
-  if (index === undefined || index === null || !Number.isInteger(index)) {
-    console.error('无效的索引值:', index);
-    return;
-  }
-
-  // 检查索引是否在视频列表范围内
-  if (index < 0 || index >= videoList.length) {
-    console.error('视频索引超出范围:', index, '列表长度:', videoList.length);
-    return;
-  }
-
-  // 如果切换到新视频，且视频尚未加载完成，显示加载指示器
-  if (!videoList[index]?.loaded) {
-    isLoading.value = true;
-  }
-
-  // 更新当前视频索引
-  currentVideo.value = index;
-  // 重置播放状态
-  playingState.value = false;
-
-  // 解析视频URL中的workId参数
-  const videoUrl = videoList[currentVideo.value]?.videoUrl || '';
-  let workIdFromUrl = '';
-
-  // 安全地解析URL参数
-  try {
-    const urlParts = videoUrl.split('?');
-    if (urlParts.length > 1) {
-      const urlParams = new URLSearchParams(urlParts[1]);
-      workIdFromUrl = urlParams.get('workId') || '';
-    }
-  } catch (error) {
-    console.error('解析URL参数时发生错误:', error);
-  }
-
-  // 优先使用URL中的workId，否则使用视频对象的id
-  currentWorkId = workIdFromUrl || videoList[currentVideo.value]?.id || '';
-
-  // 清空评论相关状态
-  comments.value = [];
-  commentContent.value = '';
-  replyToComment = null;
-
-  // 安全检查
-  const videoId = videoList[currentVideo.value]?.id;
-  if (videoId) {
-    // 如果评论模态框是打开的，直接使用视频对象的ID重新获取评论列表
-    if (commentModalShow.value) {
-      fetchComments(videoId);
-    }
-  } else {
-    console.warn('无效的视频ID');
-  }
-}
-
-// 视频资源加载完成事件
-function onLoadedData(e: any) {
-  // 增强的参数解析逻辑，适配不同格式的参数
-  let index;
-  if (typeof e === 'number') {
-    index = e;
-  } else if (e && typeof e === 'object') {
-    index = e.index !== undefined ? e.index : e.detail?.index;
-  }
-  console.log('视频资源加载完成:', index);
-
-  // 标记视频为已加载
-  if (index !== undefined && videoList[index]) {
-    videoList[index].loaded = true;
-  }
-
-  // 隐藏加载指示器
-  isLoading.value = false;
-
-  // 保存视频上下文实例
-  if (!videoContext) {
-    videoContext = e.detail?.context;
-  }
-}
-
-// 视频播放错误处理
-function onVideoError(e: any) {
-  let index;
-  if (typeof e === 'number') {
-    index = e;
-  } else if (e && typeof e === 'object') {
-    index = e.index !== undefined ? e.index : e.detail?.index;
-  }
-  console.error('视频播放错误:', e.detail?.errMsg || e, '索引:', index);
-
-  // 显示加载指示器
-  isLoading.value = true;
-
-  // 尝试切换到下一个视频
-  setTimeout(() => {
-    goNext();
-
-    // 显示错误提示
-    uni.showToast({
-      title: '视频加载失败，已切换到下一个视频',
-      icon: 'none',
-    });
-  }, 1000);
-}
-
 // 点赞事件处理
-function onLike(e: any) {
-  // 增强的参数解析逻辑，适配不同格式的参数
-  let index;
-  if (typeof e === 'number') {
-    index = e;
-  } else if (e && typeof e === 'object') {
-    index = e.index !== undefined ? e.index : e.detail?.index;
-  }
-  console.log('点赞视频:', index, '参数:', e);
+function onLike() {
+  const video = videoList[currentVideo.value];
+  if (!video) return;
 
-  // 安全检查
-  if (index === undefined || index === null || !Number.isInteger(index) || !videoList[index]) {
-    console.error('视频索引不存在或无效:', index);
-    return;
-  }
+  video.isLiked = !video.isLiked;
+  video.likeCount = video.isLiked ? (video.likeCount || 0) + 1 : Math.max(0, (video.likeCount || 0) - 1);
 
-  // 更新点赞状态和数量
-  const video = videoList[index];
-  if (video.hasOwnProperty('like') && video.like.hasOwnProperty('isLiked')) {
-    video.like.isLiked = !video.like.isLiked;
-    video.like.num += video.like.isLiked ? 1 : -1;
-  } else {
-    // 适配shortPlay1的视频对象结构
-    video.isLiked = !video.isLiked;
-    video.likeCount = video.isLiked ? (video.likeCount || 0) + 1 : Math.max(0, (video.likeCount || 0) - 1);
-  }
-
-  // 显示点赞反馈
   uni.showToast({
-    title: video.like?.isLiked || video.isLiked ? '点赞成功' : '取消点赞',
+    title: video.isLiked ? '点赞成功' : '取消点赞',
     icon: 'none',
     duration: 1500,
   });
 
-  // 调用API更新服务器上的点赞状态
-  updateVideoLikeStatus(video.id, video.like?.isLiked || video.isLiked);
+  updateVideoLikeStatus(video.id, video.isLiked);
 }
 
 // 调用API更新视频点赞状态
@@ -570,36 +582,13 @@ async function updateVideoLikeStatus(videoId: string, isLiked: boolean) {
 }
 
 // 评论事件处理
-function onComment(e: any) {
-  // 增强的参数解析逻辑，适配不同格式的参数
-  let index;
-  if (typeof e === 'number') {
-    index = e;
-  } else if (e && typeof e === 'object') {
-    index = e.index !== undefined ? e.index : e.detail?.index;
-  }
-  console.log('评论视频:', index, '参数:', e);
-
-  // 安全检查
-  if (index === undefined || index === null || !Number.isInteger(index) || !videoList[index]) {
-    console.error('视频索引不存在或无效:', index);
-    return;
-  }
-
-  // 先清空评论数据，避免显示旧内容
+function onComment() {
   comments.value = [];
-
-  // 立即显示模态框（带加载指示器）
   commentModalShow.value = true;
-
-  // 直接从视频对象获取id，确保使用正确的视频ID
-  const videoId = videoList[index].id;
-
-  // 保存当前评论会话的视频ID，确保整个评论过程中使用同一个ID
+  const videoId = videoList[currentVideo.value].id;
   currentCommentVideoId = videoId;
 
   if (videoId) {
-    // 调用API获取评论列表
     fetchComments(videoId);
   } else {
     console.error('无法获取有效的作品ID');
@@ -874,23 +863,7 @@ function formatTime(timeStr: string) {
 }
 
 // 分享事件处理
-function onShare(e: any) {
-  // 增强的参数解析逻辑，适配不同格式的参数
-  let index;
-  if (typeof e === 'number') {
-    index = e;
-  } else if (e && typeof e === 'object') {
-    index = e.index !== undefined ? e.index : e.detail?.index;
-  }
-  console.log('分享视频:', index, '参数:', e);
-
-  // 安全检查
-  if (index === undefined || index === null || !Number.isInteger(index) || !videoList[index]) {
-    console.error('视频索引不存在或无效:', index);
-    return;
-  }
-
-  // 调用微信小程序分享API
+function onShare() {
   uni.showShareMenu({
     withShareTicket: true,
     menus: ['shareAppMessage', 'shareTimeline'],
@@ -898,42 +871,20 @@ function onShare(e: any) {
 }
 
 // 收藏事件处理
-function onCollect(e: any) {
-  // 增强的参数解析逻辑，适配不同格式的参数
-  let index;
-  if (typeof e === 'number') {
-    index = e;
-  } else if (e && typeof e === 'object') {
-    index = e.index !== undefined ? e.index : e.detail?.index;
-  }
-  console.log('收藏视频:', index, '参数:', e);
+function onCollect() {
+  const video = videoList[currentVideo.value];
+  if (!video) return;
 
-  // 安全检查
-  if (index === undefined || index === null || !Number.isInteger(index) || !videoList[index]) {
-    console.error('视频索引不存在或无效:', index);
-    return;
-  }
+  video.isCollected = !video.isCollected;
+  video.collectCount = video.isCollected ? (video.collectCount || 0) + 1 : Math.max(0, (video.collectCount || 0) - 1);
 
-  // 更新收藏状态和数量
-  const video = videoList[index];
-  if (video.hasOwnProperty('collect') && video.collect.hasOwnProperty('isCollected')) {
-    video.collect.isCollected = !video.collect.isCollected;
-    video.collect.num += video.collect.isCollected ? 1 : -1;
-  } else {
-    // 适配shortPlay1的视频对象结构
-    video.isCollected = !video.isCollected;
-    video.collectCount = video.isCollected ? (video.collectCount || 0) + 1 : Math.max(0, (video.collectCount || 0) - 1);
-  }
-
-  // 显示收藏反馈
   uni.showToast({
-    title: video.collect?.isCollected || video.isCollected ? '收藏成功' : '取消收藏',
+    title: video.isCollected ? '收藏成功' : '取消收藏',
     icon: 'none',
     duration: 1500,
   });
 
-  // 调用API更新服务器上的收藏状态
-  updateVideoCollectStatus(video.id, video.collect?.isCollected || video.isCollected);
+  updateVideoCollectStatus(video.id, video.isCollected);
 }
 
 // 调用API更新视频收藏状态
@@ -953,76 +904,20 @@ async function updateVideoCollectStatus(videoId: string, isCollected: boolean) {
   }
 }
 
-// 关注短剧事件处理
-function onFollow(e: any) {
-  // 增强的参数解析逻辑，适配不同格式的参数
-  let index;
-  if (typeof e === 'number') {
-    index = e;
-  } else if (e && typeof e === 'object') {
-    index = e.index !== undefined ? e.index : e.detail?.index;
-  }
-  console.log('关注短剧:', index, '参数:', e);
+// 关注事件处理
+function onFollow() {
+  const video = videoList[currentVideo.value];
+  if (!video) return;
 
-  // 安全检查
-  if (index === undefined || index === null || !Number.isInteger(index) || !videoList[index]) {
-    console.error('视频索引不存在或无效:', index);
-    return;
-  }
-
-  const video = videoList[index];
-
-  // 详细日志：打印video对象结构
-  console.log('视频对象:', video);
-  console.log('author对象:', video.author);
-  console.log('原始collectionId值:', video.author?.collectionId);
-  console.log('原始collectionId类型:', typeof video.author?.collectionId);
-
-  // 获取短剧ID (collectionId)，确保它是一个字符串
-  let collectionId = video.author?.collectionId || '';
-
-  // 确保collectionId是一个有效的字符串
-  if (typeof collectionId !== 'string') {
-    // 如果是对象，尝试获取其id属性或转换为字符串
-    if (collectionId && typeof collectionId === 'object') {
-      // 优先使用对象的id属性
-      if (collectionId.id) {
-        collectionId = String(collectionId.id);
-      }
-      // 或者使用对象的_id属性（MongoDB常用格式）
-      else if (collectionId._id) {
-        collectionId = String(collectionId._id);
-      }
-      // 或者尝试转换整个对象为字符串
-      else {
-        collectionId = String(collectionId);
-      }
-    } else {
-      collectionId = String(collectionId);
-    }
-    console.log('转换后的collectionId:', collectionId);
-  }
-
-  // 如果collectionId仍然无效，尝试使用默认值
-  if (!collectionId || collectionId === '[object Object]' || collectionId === 'undefined' || collectionId === 'null') {
-    // 尝试生成一个基于视频id的默认collectionId
-    collectionId = 'collection_' + (video.id || 'default');
-    console.warn('使用默认collectionId:', collectionId);
-  }
-
-  // 更新关注状态
-  if (!video.author) video.author = {};
   video.author.isFollowing = !video.author.isFollowing;
 
-  // 显示关注反馈
   uni.showToast({
-    title: video.author.isFollowing ? '关注短剧成功' : '取消关注短剧',
+    title: video.author.isFollowing ? '关注成功' : '取消关注',
     icon: 'none',
     duration: 1500,
   });
 
-  // 调用API更新服务器上的关注状态
-  updateCollectionFollowStatus(collectionId, video.author.isFollowing);
+  updateCollectionFollowStatus(video.author.collectionId, video.author.isFollowing);
 }
 
 // 调用API更新短剧关注状态
@@ -1086,67 +981,19 @@ async function updateCollectionFollowStatus(collectionId: string, isFollowing: b
   }
 }
 
-// 视频播放事件处理 - 防抖动版本
-function onPlay(e: any) {
-  // 增强的参数解析逻辑，适配不同格式的参数
-  let index;
-  if (typeof e === 'number') {
-    index = e;
-  } else if (e && typeof e === 'object') {
-    index = e.index !== undefined ? e.index : e.detail?.index;
-  }
-
-  // 获取当前时间戳
-  const now = Date.now();
-  // 防抖动检查
-  if (now - lastMediaOperationTime < DEBOUNCE_THRESHOLD) {
-    console.log('播放操作被防抖动拦截，时间间隔过短');
-    return;
-  }
-
-  lastMediaOperationTime = now;
-  console.log('视频播放:', index, '参数:', e);
-  playingState.value = true;
-  // 添加播放成功的日志输出，方便调试
-  console.log('视频播放成功，当前索引:', index, '视频地址:', videoList[index]?.videoUrl);
-}
-
-// 视频暂停事件处理 - 防抖动版本
-function onPause(e: any) {
-  // 增强的参数解析逻辑，适配不同格式的参数
-  let index;
-  if (typeof e === 'number') {
-    index = e;
-  } else if (e && typeof e === 'object') {
-    index = e.index !== undefined ? e.index : e.detail?.index;
-  }
-
-  // 获取当前时间戳
-  const now = Date.now();
-  // 防抖动检查
-  if (now - lastMediaOperationTime < DEBOUNCE_THRESHOLD) {
-    console.log('暂停操作被防抖动拦截，时间间隔过短');
-    return;
-  }
-
-  lastMediaOperationTime = now;
-  console.log('视频暂停:', index, '参数:', e);
-  playingState.value = false;
-}
-
 // 组件挂载时的处理
 onMounted(() => {
-  // 确保视频上下文实例初始化
   console.log('watch页面组件已挂载');
-  // 获取视频数据
   fetchVideos();
+
+  // 获取视频上下文
+  videoContext = uni.createVideoContext('mainVideo');
 });
 
 // 页面隐藏时的处理
 onHide(() => {
   if (videoContext && playingState.value) {
     try {
-      pausedBySystem = true;
       videoContext.pause();
       console.log('页面已隐藏，视频已暂停');
     } catch (error) {
@@ -1157,10 +1004,9 @@ onHide(() => {
 
 // 页面显示时的处理
 onShow(() => {
-  if (videoContext && pausedBySystem) {
+  if (videoContext && !playingState.value) {
     try {
       videoContext.play();
-      pausedBySystem = false;
       console.log('页面已显示，视频已恢复播放');
     } catch (error) {
       console.error('页面显示时恢复播放视频出错:', error);
@@ -1170,9 +1016,7 @@ onShow(() => {
 
 // 组件卸载时的清理
 onUnmounted(() => {
-  // 清理视频上下文实例，保持唯一性
   if (videoContext) {
-    // 暂停视频播放
     if (playingState.value) {
       try {
         videoContext.pause();
@@ -1208,7 +1052,20 @@ button {
   overflow: hidden;
 }
 
-/* 视频加载指示器样式 */
+/* 视频容器 */
+.video-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.video-player {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* 视频加载指示器 */
 .loading-indicator {
   position: absolute;
   left: 50%;
@@ -1225,52 +1082,124 @@ button {
   font-size: 28rpx;
 }
 
-/* u-short-video组件样式优化 */
-:deep(.u-short-video) {
-  width: 100%;
-  height: 100%;
-}
-
-/* 视频播放区域样式 */
-:deep(.u-short-video video) {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-/* 底部导航栏样式优化 */
-:deep(.u-tabbar) {
-  --u-tabbar-border-color: rgba(255, 255, 255, 0.25) !important;
-  background-color: rgba(0, 0, 0, 0.7) !important;
-}
-
-/* 底部导航栏文字颜色 */
-:deep(.u-tabbar__item__text) {
-  color: rgba(255, 255, 255, 0.8) !important;
-}
-
-/* 底部导航栏激活状态文字颜色 */
-:deep(.u-tabbar__item--active .u-tabbar__item__text) {
-  color: #fff !important;
-}
-
-/* 右侧操作按钮样式优化 */
-:deep(.u-short-video__action-item) {
-  color: #fff !important;
-}
-
-/* 为scroll-view添加flex布局 */
-:deep(.u-short-video scroll-view) {
+/* 视频覆盖层 */
+.video-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
+  padding: 40rpx 30rpx;
 }
 
-/* 确保视频控件层级正确 */
-:deep(.u-short-video__controls) {
-  z-index: 10;
+/* 作者信息区域 */
+.author-info {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20rpx;
 }
 
-/* 评论模态框样式 */
+.author-avatar {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 50%;
+  margin-right: 20rpx;
+}
+
+.author-details {
+  flex: 1;
+}
+
+.author-name {
+  display: block;
+  color: #fff;
+  font-size: 32rpx;
+  font-weight: bold;
+  margin-bottom: 10rpx;
+}
+
+.video-desc {
+  display: block;
+  color: #fff;
+  font-size: 28rpx;
+  opacity: 0.9;
+}
+
+.follow-btn {
+  background-color: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  border: 2rpx solid #fff;
+  border-radius: 40rpx;
+  padding: 10rpx 30rpx;
+  font-size: 28rpx;
+  margin-left: 20rpx;
+}
+
+.follow-btn.following {
+  background-color: #ff4d4f;
+  border-color: #ff4d4f;
+}
+
+/* 右侧操作按钮 */
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 40rpx;
+}
+
+.action-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10rpx;
+}
+
+.action-icon {
+  width: 80rpx;
+  height: 80rpx;
+  background-color: rgba(0, 0, 0, 0.3);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.action-text {
+  color: #fff;
+  font-size: 24rpx;
+  text-align: center;
+}
+
+/* 进度条 */
+.progress-container {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 20rpx;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 4rpx;
+  background-color: rgba(255, 255, 255, 0.3);
+  border-radius: 2rpx;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background-color: #fff;
+  border-radius: 2rpx;
+  transition: width 0.3s ease;
+}
+
+/* 评论模态框样式保持不变 */
 .comment-modal-overlay {
   position: fixed;
   top: 0;
@@ -1311,16 +1240,6 @@ button {
 .comment-modal-close {
   font-size: 40rpx;
   color: #999;
-}
-
-/* 置顶评论标签样式 */
-.comment-top-tag {
-  background-color: #ff4d4f;
-  color: #fff;
-  font-size: 20rpx;
-  padding: 2rpx 10rpx;
-  border-radius: 10rpx;
-  margin-left: 10rpx;
 }
 
 .comment-modal-content {
@@ -1437,7 +1356,6 @@ button {
   font-size: 24rpx;
 }
 
-/* 点赞状态样式 */
 .comment-action-icon.liked,
 .comment-action-count.liked {
   color: #ff4d4f;
@@ -1483,7 +1401,6 @@ button {
   margin-top: 5rpx;
 }
 
-/* 评论加载状态样式 */
 .comment-loading {
   text-align: center;
   padding: 60rpx 0;
@@ -1499,5 +1416,14 @@ button {
   margin-top: 20rpx;
   font-size: 28rpx;
   color: #999;
+}
+
+.comment-top-tag {
+  background-color: #ff4d4f;
+  color: #fff;
+  font-size: 20rpx;
+  padding: 2rpx 10rpx;
+  border-radius: 10rpx;
+  margin-left: 10rpx;
 }
 </style>

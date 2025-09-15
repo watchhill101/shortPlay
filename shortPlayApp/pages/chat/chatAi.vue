@@ -11,7 +11,14 @@
       titleStyle="color:#fff;font-weight:700"
     >
       <template #right>
-        <u-icon name="more-dot-fill" color="#ffffff" :size="20"></u-icon>
+        <view class="nav-actions">
+          <view class="nav-action" @click="openImageModal">
+            <u-icon name="camera" color="#ffffff" :size="20"></u-icon>
+          </view>
+          <view class="nav-action" @click="openVideoModal">
+            <u-icon name="movie" color="#ffffff" :size="20"></u-icon>
+          </view>
+        </view>
       </template>
     </u-navbar>
 
@@ -309,14 +316,7 @@
               :size="18"
             ></u-icon>
           </view>
-          <view class="image-btn" @click="openImageModal">
-            <u-icon name="camera" color="#667eea" :size="18"></u-icon>
-            <view class="image-btn-badge">✨</view>
-          </view>
-          <view class="video-btn" @click="openVideoModal">
-            <u-icon name="movie" color="#667eea" :size="18"></u-icon>
-            <view class="video-btn-badge">🎬</view>
-          </view>
+          <!-- 已移至顶部导航栏：图片与视频生成功能入口 -->
           <view class="send-btn" :class="{ active: inputText.trim() }" @click="sendMessage">
             <text class="send-text">发送</text>
           </view>
@@ -3605,5 +3605,22 @@ onUnload(() => {
     transform: translateX(100%);
     opacity: 0.6;
   }
+}
+
+/* 顶部右侧动作按钮样式 */
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.nav-action {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.25);
 }
 </style>

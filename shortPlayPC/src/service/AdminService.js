@@ -288,6 +288,42 @@ class AdminService {
         });
     }
 
+    // ===== 作品管理 =====
+
+    // 获取作品列表
+    async getWorks(params = {}) {
+        const queryString = new URLSearchParams(params).toString();
+        return this.request(`/works?${queryString}`);
+    }
+
+    // 获取作品详情
+    async getWork(id) {
+        return this.request(`/works/${id}`);
+    }
+
+    // 创建作品
+    async createWork(data) {
+        return this.request('/works', {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+    }
+
+    // 更新作品
+    async updateWork(id, data) {
+        return this.request(`/works/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify(data)
+        });
+    }
+
+    // 删除作品
+    async deleteWork(id) {
+        return this.request(`/works/${id}`, {
+            method: 'DELETE'
+        });
+    }
+
     // ===== 统计数据 =====
 
     // 获取内容统计
