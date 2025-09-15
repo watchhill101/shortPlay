@@ -1,85 +1,165 @@
-// routes/api/comment.js
 const express = require('express');
-const Comment = require('./index');
 const router = express.Router();
-const auth = require('../../middleware/auth');
+const Comment = require('./index');
+const Collection = require('../collection');
 
 /**
- * @route GET /api/comment/work/:workId
+ * @route GET /api/comment
+ * @description 获取评论列表（带分页和排序）
  */
-router.get('/work/:workId', async (req, res) => {
+router.get('/', async (req, res) => {
   try {
-    const workId = req.params.workId;
-    const comments = await Comment.find({ work: workId });
-    res.json(comments);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
+    const { page = 1, pageSize = 10, sortBy = 'createdAt', sortOrder = 'desc' } = req.query;
 
-/**
- * @route POST /api/comment/work/:workId
- */
-router.post('/work/:workId', async (req, res) => {
-  try {
-    const workId = req.params.workId;
-    const newComment = new Comment({
-      work: workId,
-      user: req.body.userId,
-      text: req.body.text,
+    // 构建查询条件
+    const query = { status: { $ne: 'deleted' } };
+
+    // 构建排序对象
+    const sort = {};
+    sort[sortBy] = sortOrder === 'desc' ? -1 : 1;
+
+    // 计算分页
+    const skip = (parseInt(page) - 1) * parseInt(pageSize);
+    const limit = parseInt(pageSize);
+
+    // 执行查询
+    const [comments, total] = await Promise.all([
+      Comment.find(query).sort(sort).skip(skip).limit(limit).populate('user', 'username avatar').lean(),
+      Comment.countDocuments(query),
+    ]);
+
+    // 获取所有评论涉及的合集ID
+    const collectionIds = comments.map(comment => comment.collection).filter(Boolean);
+
+    // 批量获取合集信息
+    const collections = await Collection.find({ _id: { $in: collectionIds } })
+      .populate('work', 'title')
+      .lean();
+
+    // 创建合集信息映射
+    const collectionMap = new Map(
+      collections.map(collection => [
+        collection._id.toString(),
+        {
+          title: collection.work?.title || '未知标题',
+          episodeNumber: collection.episodeNumber || 1,
+        },
+      ])
+    );
+
+    // 格式化评论数据
+    const formattedComments = comments.map(comment => {
+      const collectionId = comment.collection?.toString();
+      const collectionInfo = collectionMap.get(collectionId) || {
+        title: '未知标题',
+        episodeNumber: 1,
+      };
+
+      return {
+        id: comment._id.toString(),
+        content: comment.content,
+        username: comment.userInfo?.nickname || comment.user?.username || '未知用户',
+        userAvatar: comment.userInfo?.avatar || comment.user?.avatar || '/static/img/avatar.png',
+        workId: comment.collection?.toString(),
+        workInfo: {
+          collectionTitle: collectionInfo.title,
+          episodeNumber: collectionInfo.episodeNumber,
+        },
+        createTime: comment.createdAt,
+        likeCount: comment.likeCount || 0,
+        replyCount: comment.replyCount || 0,
+      };
     });
-    await newComment.save();
-    res.status(201).json(newComment);
+
+    // 返回标准格式的响应
+    res.json({
+      success: true,
+      data: {
+        list: formattedComments,
+        pagination: {
+          total,
+          page: parseInt(page),
+          pageSize: limit,
+          totalPages: Math.ceil(total / limit),
+        },
+      },
+    });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    console.error('获取评论列表失败:', err);
+    res.status(500).json({
+      success: false,
+      message: err.message || '获取评论列表失败',
+    });
   }
 });
 
 /**
  * @route DELETE /api/comment/:id
+ * @description 删除评论
  */
 router.delete('/:id', async (req, res) => {
   try {
-    const comment = await Comment.findById(req.params.id);
+    const { id } = req.params;
+    const comment = await Comment.findById(id);
+
     if (!comment) {
-      return res.status(404).json({ message: 'Comment not found' });
+      return res.status(404).json({
+        success: false,
+        message: '评论不存在',
+      });
     }
-    await comment.remove();
-    res.json({ message: 'Comment deleted' });
+
+    // 软删除评论
+    comment.status = 'deleted';
+    await comment.save();
+
+    // 如果有回复，也软删除回复
+    if (comment.replies && comment.replies.length > 0) {
+      await Comment.updateMany({ _id: { $in: comment.replies } }, { status: 'deleted' });
+    }
+
+    res.json({
+      success: true,
+      message: '评论删除成功',
+      data: {
+        deletedCount: 1 + (comment.replies?.length || 0),
+      },
+    });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    console.error('删除评论失败:', err);
+    res.status(500).json({
+      success: false,
+      message: err.message || '删除评论失败',
+    });
   }
 });
 
 /**
- * @route POST /api/comment/like/:id
- * @description 点赞或取消点赞评论
+ * @route POST /api/comment/notify
+ * @description 发送通知给评论相关用户
  */
-router.post('/like/:id', auth, async (req, res) => {
+router.post('/notify', async (req, res) => {
   try {
-    const comment = await Comment.findById(req.params.id);
-    if (!comment) {
-      return res.status(404).json({ message: 'Comment not found' });
-    }
+    const { commentId, userId, message } = req.body;
 
-    const userId = req.user.id;
-    const isLiked = comment.likes.includes(userId);
-
-    if (isLiked) {
-      // 取消点赞
-      comment.likes.pull(userId);
-      comment.likeCount = Math.max(0, comment.likeCount - 1);
-      await comment.save();
-      res.json({ success: true, message: '已取消点赞', liked: false, likeCount: comment.likeCount });
-    } else {
-      // 点赞
-      comment.likes.push(userId);
-      comment.likeCount += 1;
-      await comment.save();
-      res.json({ success: true, message: '已点赞', liked: true, likeCount: comment.likeCount });
-    }
+    // TODO: 实现实际的通知逻辑
+    // 这里只返回模拟的成功响应
+    res.json({
+      success: true,
+      message: '通知发送成功',
+      data: {
+        commentId,
+        userId,
+        message,
+        sentAt: new Date(),
+      },
+    });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    console.error('发送通知失败:', err);
+    res.status(500).json({
+      success: false,
+      message: err.message || '发送通知失败',
+    });
   }
 });
 

@@ -97,7 +97,10 @@ function initFilters1() {
     filters1.value = {
         global: { value: null, matchMode: FilterMatchMode.CONTAINS },
         name: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }] },
-        'country.name': { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }] },
+        'country.name': {
+            operator: FilterOperator.AND,
+            constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }]
+        },
         representative: { value: null, matchMode: FilterMatchMode.IN },
         date: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.DATE_IS }] },
         balance: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }] },
@@ -255,7 +258,13 @@ function calculateCustomerTotal(name) {
             </Column>
             <Column field="verified" header="Verified" dataType="boolean" bodyClass="text-center" style="min-width: 8rem">
                 <template #body="{ data }">
-                    <i class="pi" :class="{ 'pi-check-circle text-green-500 ': data.verified, 'pi-times-circle text-red-500': !data.verified }"></i>
+                    <i
+                        class="pi"
+                        :class="{
+                            'pi-check-circle text-green-500 ': data.verified,
+                            'pi-times-circle text-red-500': !data.verified
+                        }"
+                    ></i>
                 </template>
                 <template #filter="{ filterModel }">
                     <label for="verified-filter" class="font-bold"> Verified </label>

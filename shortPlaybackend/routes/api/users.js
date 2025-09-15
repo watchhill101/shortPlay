@@ -7,6 +7,35 @@ const authMiddleware = require('../../middleware/auth');
 
 const router = express.Router();
 
+// 获取用户统计数据
+router.get('/stats', async (req, res) => {
+  try {
+    // 获取总用户数
+    const totalUsers = await User.countDocuments();
+
+    // 获取最近一周新增用户数
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+    const newUsers = await User.countDocuments({
+      createdAt: { $gte: oneWeekAgo },
+    });
+
+    res.json({
+      success: true,
+      data: {
+        totalUsers,
+        newUsers,
+      },
+    });
+  } catch (error) {
+    console.error('获取用户统计数据失败:', error);
+    res.status(500).json({
+      success: false,
+      message: '服务器错误',
+    });
+  }
+});
+
 // 测试认证状态
 router.get('/me', authMiddleware, async (req, res) => {
   try {

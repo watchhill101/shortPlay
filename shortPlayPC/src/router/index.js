@@ -129,6 +129,16 @@ const router = createRouter({
                     path: '/admin/episode-management',
                     name: 'episodeManagement',
                     component: () => import('@/views/admin/EpisodeManagement.vue')
+                },
+                {
+                    path: '/manager/comment',
+                    name: 'comment',
+                    component: () => import('@/views/manager/CommentManager.vue')
+                },
+                {
+                    path: '/manager/order',
+                    name: 'order',
+                    component: () => import('@/views/manager/OrderManager.vue')
                 }
             ]
         },
